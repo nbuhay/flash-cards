@@ -1,0 +1,49 @@
+Model
+
+app will have users
+	user
+		name String
+		id Mongo_id
+		pswd ???
+		email String
+		zip Int
+		decks
+			favorite [] deck_id
+			created [] deck_id
+
+app will have decks
+	deck
+		id Mongo_id
+		title String
+		category String
+		cards {} card
+	total_favorites
+
+decks have cards
+	card
+		id Mongo_id
+		question String
+		answer String
+
+---
+
+Routes
+
+intent      | REST   | URL Parms | URL
+
+create user | POST   | none      | api/user
+delete user | DELETE | user_id   | api/user/:user_id
+edit user   | PUT    | user_id   | api/user/:user_id
+get user    | GET    | user_id   | api/user/:user_id
+all users   | GET    | none      | api/user
+
+create deck | POST   | none      | api/deck/
+edit deck   | PUT    | deck_id   | api/deck/:deck_id
+delete deck | DELETE | deck_id   | api/deck/:deck_id
+all decks   | GET    | none      | api/deck/
+get a deck  | GET    | deck_id   | api/deck/:deck_id
+
+create card | POST   | deck_id          | api/deck/:deck_id/card
+edit card   | PUT    | deck_id, card_id | api/deck/:deck_id/card/:card_id
+delete card | DELETE | deck_id, card_id | api/deck/:deck_id/card/:card_id
+all cards   | GET    | deck_id          | api/deck/:deck_id/card
