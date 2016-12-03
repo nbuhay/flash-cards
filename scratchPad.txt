@@ -47,3 +47,13 @@ create card | POST   | deck_id          | api/deck/:deck_id/card
 edit card   | PUT    | deck_id, card_id | api/deck/:deck_id/card/:card_id
 delete card | DELETE | deck_id, card_id | api/deck/:deck_id/card/:card_id
 all cards   | GET    | deck_id          | api/deck/:deck_id/card
+
+--- webpages from Balsamiq mocks
+
+/login
+/signup
+/home
+/deck/form
+/deck/form/create
+/deck/create
+/deck/create/cards
