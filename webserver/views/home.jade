@@ -3,3 +3,32 @@ extends layout
 block content
 	h1 Home
 	p Good morning, user!
+	div(style='border-style: solid') 
+			h2 Deck Name
+			br
+			button(id='begin') Begin
+			br
+			button(id='edit') Edit
+			butto(id='delete') Delete
+	div(style='border-style: solid') 
+		button(id='new') Add New Deck
+	script(src='/scripts/addMultipleListeners.js')
+	script.
+		var buttonId=[
+			'begin',
+			'edit',
+			'delete',
+			'new'
+		];
+		var buttonHref=[
+			'start',
+			'edit',
+			'delete',
+			'new'
+		];
+		addMultipleListeners(
+			'click',
+			buttonId,
+			buttonHref,
+			function(href) { location.href=href; }
+		);
