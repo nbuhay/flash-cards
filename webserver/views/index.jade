@@ -1,8 +1,9 @@
 extends layout
 
 block content
-  h1 Flash Cards
-  p Welcome to #{title}
-  button Login
-  button Login with Gmail
-  button Signup
+	h1(id='h1Text') Flash Cards
+	button(id='log') Login
+	button(id='logGmail') Login with Gmail
+	button(id='sign') Signup
+
+	script(src='/scripts/index.js')

@@ -1,0 +1,18 @@
+extends layout
+
+block content
+	h1 Sign Up
+	form(action='home')
+		input(id='uname')
+		br
+		input(id='email')
+		br
+		input(id='pswd')
+		br
+		input(id='confPswd')
+		br
+		input(id='zip')
+		br
+		button(id='submit') Submit
+
+	script(src='/scripts/signup.js')
