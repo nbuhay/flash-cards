@@ -1,0 +1,13 @@
+extends layout
+
+block content
+	h1 Add a Deck
+	input(type="file" id="upload" onchange="changed(this.files)")
+	br
+	input(type="button" id="create" onclick="location.href='/deck/form/create'" value="Start from Scratch")
+	br
+	input(type="button" id="search" onclick="location.href='/deck/search'" value="Search")
+	script.
+		var changed = function(files) {
+			console.log(files[0].name);
+		}

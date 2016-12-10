@@ -1,0 +1,54 @@
+extends layout
+
+block content
+	h1 How many cards would you like to create?
+	#numCards
+	#cardEntry
+	input(type="button" onclick="location.href='/home'" value="Create")
+	script.
+		var numCards = 10;
+
+		var drawCards = function (numCards) {
+			var cardEntry = document.getElementById("cardEntry");
+			 if(cardEntry.hasChildNodes()) {
+				cardEntry.removeChild(cardEntry.childNodes[0]);
+			}
+			var div = document.createElement("div");
+			div.style.border = "solid";
+			for(var i = 0; i < numCards; i++) {
+				div.appendChild(document.createTextNode(i+1));
+				div.appendChild(document.createElement("br"));
+				var question = document.createElement("input");
+				question.setAttribute("value", "Question");
+				var answer = document.createElement("input");
+				answer.setAttribute("value", "Answer");
+				div.appendChild(question);
+				div.appendChild(document.createElement("br"));
+				div.appendChild(answer);
+				div.appendChild(document.createElement("br"));
+				div.appendChild(document.createElement("br"));
+			}
+			cardEntry.append(div);
+		}
+
+		var drawSelect = function (numCards) {
+			var select = document.createElement("select");
+			select.addEventListener(
+				'change',
+				function(numCards) {
+					drawCards(this.value)
+				},
+				false
+			);
+			for(var i = 1; i <= numCards; i++) {
+				var option = document.createElement("option");
+				option.setAttribute("value", i);
+				option.appendChild(document.createTextNode(i));
+				select.appendChild(option);
+			}
+			select.childNodes[0].setAttribute("selected", "selected");
+			document.getElementById("numCards").appendChild(select);
+		}
+
+		drawSelect(numCards);
+		drawCards(document.getElementById("numCards").childNodes[0].value);

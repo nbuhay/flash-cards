@@ -22,21 +22,18 @@ block content
 			+deckDiv(deck)
 		h2 Discover
 		div(style='border-style: solid') 
-			button(id='new') Add New Deck
-
+			input(id='new' type='button' onclick="location.href='/deck/form'" value='New')
 	script(src='/scripts/addMultipleListeners.js')
 	script.
 		var buttonId=[
 			'begin',
 			'edit',
-			'delete',
-			'new'
+			'delete'
 		];
 		var buttonHref=[
 			'start',
 			'edit',
-			'delete',
-			'new'
+			'delete'
 		];
 		addMultipleListeners(
 			'click',

@@ -74,14 +74,17 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 			+--- load decks from user object
 			+--- iterate through decks
 			+--- add mixin per deck
-	---- import page
-		- load json
-		- goto search page
+	+---- import page
+		+--- load json
+		+--- goto search page
 	---- deck data object: no cards, yet
 			--- mongoose library
 			--- make object definition
 			--- load into home page
 	- Fun Project: Eyes and Sound
-	---- Picture w/ moving eyes
-	---- Animated arm
-	---- Noise when hits instrument  
+		-- Picture 
+			- moving eyes
+		-- Animated hand
+		-- Noise01 when click face
+		-- Noise02 when click background
+		-- Noise03 when click body

@@ -1,6 +1,14 @@
 extends layout
 
 block content
-	h1 Add a Deck
-	button Import
-	button Start from Scratch
+	input(type="text" value="Deck Name")
+	br
+	input(type="text" value="Description")
+	#tags(style="border: solid")
+		div(style="background-color: blue")
+			p music
+		div(style="background-color: blue")
+			p guitar
+		div(style="background-color: green")
+			p Add Tag +
+	input(type="button" onclick="location.href='/deck/create/cards'" value="Add Cards")
