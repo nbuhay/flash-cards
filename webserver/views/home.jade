@@ -1,17 +1,29 @@
 extends layout
 
+mixin deckDiv(data)
+	div(style='border-style: solid')
+		h3= data 
+		br
+		button(id='begin') Begin
+		br
+		button(id='edit') Edit
+		button(id='delete') Delete
+		
 block content
-	h1 Home
-	p Good morning, user!
-	div(style='border-style: solid') 
-			h2 Deck Name
-			br
-			button(id='begin') Begin
-			br
-			button(id='edit') Edit
-			butto(id='delete') Delete
-	div(style='border-style: solid') 
-		button(id='new') Add New Deck
+	h1 FlashCard Decks
+	p Good morning #{data.userName}!
+	div(id='createdDecks')
+		h2 Created	
+		each deck in data.decks.created
+			+deckDiv(deck)
+	div(id='favDecks')
+		h2 Favorites
+		each deck in data.decks.fav
+			+deckDiv(deck)
+		h2 Discover
+		div(style='border-style: solid') 
+			button(id='new') Add New Deck
+
 	script(src='/scripts/addMultipleListeners.js')
 	script.
 		var buttonId=[

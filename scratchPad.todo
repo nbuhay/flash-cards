@@ -57,3 +57,31 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 /deck/form/create
 /deck/create
 /deck/create/cards
+
+-	Complete Import: Saturday and Sunday `Morning` Work
+	+---- display all user's decks
+		+- user data object
+			+--- mongoose library
+			+--- make object definition
+			+--- create controller for home page
+			+--- create user data here
+			+--- send call to home route to the use home controller
+			+--- return user data to home.jade
+		+- home.html changes
+			+--- deck div with ID
+			+- deck data from user 
+			+--- deck resuseable mixin
+			+--- load decks from user object
+			+--- iterate through decks
+			+--- add mixin per deck
+	---- import page
+		- load json
+		- goto search page
+	---- deck data object: no cards, yet
+			--- mongoose library
+			--- make object definition
+			--- load into home page
+	- Fun Project: Eyes and Sound
+	---- Picture w/ moving eyes
+	---- Animated arm
+	---- Noise when hits instrument  
