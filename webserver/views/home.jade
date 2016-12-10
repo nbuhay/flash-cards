@@ -4,10 +4,10 @@ mixin deckDiv(data)
 	div(style='border-style: solid')
 		h3= data 
 		br
-		button(id='begin') Begin
+		input(type="button" class="begin" value="Begin")
 		br
-		button(id='edit') Edit
-		button(id='delete') Delete
+		input(type="button" class="edit" value="Edit")
+		input(type="button" class="delete" value="Delete")
 		
 block content
 	h1 FlashCard Decks
@@ -31,9 +31,9 @@ block content
 			'delete'
 		];
 		var buttonHref=[
-			'start',
-			'edit',
-			'delete'
+			'/deck/learn/card/question',
+			'/edit',
+			'/delete'
 		];
 		addMultipleListeners(
 			'click',

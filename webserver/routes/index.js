@@ -31,6 +31,16 @@ router.get("/deck/create/cards", function(req, res) {
 	res.render("deckCreateCards");
 });
 
+router.get("/deck/learn/card/question", function(req, res) {
+	res.status(200);
+	res.render("question");
+});
+
+router.get("/deck/learn/card/answer", function(req, res) {
+	res.status(200);
+	res.render("answer");
+});
+
 router.get("/deck/search", function (req, res) {
   res.status(200);
   res.send("<h1>Search</h1>")

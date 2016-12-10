@@ -1,0 +1,12 @@
+extends layout
+
+block content
+	h1 Answer
+	h2 !
+	script.
+		window.top.addEventListener(
+			'click',
+			function () {
+				location.href='/home'
+			}
+		);
