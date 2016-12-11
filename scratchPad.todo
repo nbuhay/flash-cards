@@ -1,15 +1,14 @@
-Model
-
-app will have users
-	user
-		name String
-		id Mongo_id
-		pswd ???
-		email String
-		zip Int
-		decks
-			favorite [] deck_id
-			created [] deck_id
+--- Model
+	+-- app will have users
+		- user
+		- name String
+		- id Mongo_id
+		- pswd ???
+		- email String
+		- zip Int
+		- decks
+			- favorite [] deck_id
+			- created [] deck_id
 
 app will have decks
 	deck
