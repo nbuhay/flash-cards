@@ -13,5 +13,7 @@ module.exports.getTestUser = function(req, res) {
 		}
 	});
 
+	// take deck _id, get the deck name, return that only
+
 	return bu;
 };

@@ -1,28 +1,28 @@
---- Model
-	+-- app will have users
-		- user
-		- name String
-		- id Mongo_id
-		- pswd ???
-		- email String
-		- zip Int
-		- decks
-			- favorite [] deck_id
-			- created [] deck_id
-
-app will have decks
-	deck
-		id Mongo_id
-		title String
-		category String
-		cards {} card
-	total_favorites
-
-decks have cards
-	card
-		id Mongo_id
-		question String
-		answer String
++---- Model
+	+--- app will have users
+		-- user
+			- name String
+			- id Mongo_id
+			- pswd ???
+			- email String
+			- zip Int
+			- decks
+				- favorite [] deck_id
+				- created [] deck_id
+	+--- app will have decks
+		-- deck
+			- id Mongo_id
+			- title String
+			- category String
+			- cards[questions]
+				- question
+				- answer 
+			- totalFavs
+	+--- decks have cards
+		- card
+			- id Mongo_id
+			- question String
+			- answer String
 
 ---
 
@@ -76,14 +76,53 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 	+---- import page
 		+--- load json
 		+--- goto search page
-	---- deck data object: no cards, yet
-			--- mongoose library
-			--- make object definition
-			--- load into home page
-	- Fun Project: Eyes and Sound
-		-- Picture 
-			- moving eyes
-		-- Animated hand
-		-- Noise01 when click face
-		-- Noise02 when click background
-		-- Noise03 when click body
+	+---- deck data object: no cards, yet
+		--- mongoose library
+		--- make object definition
+		--- load into home page
+	--- Edit Questions
+		-- Load all Questions
+		- plesant display
+		- fuzzy search
+		- punch in/out editing
+		- send all back to db at one time
+		-- Should be limit on questions allowed
+	--- Add Data to Controllers and Add Controllers to HTML Skeleton 
+	-- homeCtrl
+		- /home
+		- greeting userName
+		- GET user
+		- GET decks
+	-- signUpCtrl
+		- /signup
+			- GET single user
+				- check exists
+			- PUT new user data
+	-- deckCtrl
+		- /deck/form:import
+			- GET single user
+			- PUT deck _id to user created
+			- Check is JSON
+			- Read in data from JSON
+			- POST deck
+		- /deck/create
+			- GET single user
+			- keep data available as card input happens
+		- /deck/create/cards
+			- keep data from /deck/create
+			- GET single user
+			- POST cards to created deck
+		- /deck/learn/card/answer and /deck/learn/card/question
+			- GET all cards in deck
+			- iterate and redraw DOM until through deck
+
+---- Questions
+	--- When/where should res.send(STATUS); be called during mongoose query operations?
+
+---- Fun Project: Eyes and Sound
+	-- Picture 
+		- moving eyes
+	-- Animated hand
+	-- Noise01 when click face
+	-- Noise02 when click background
+	-- Noise03 when click body
