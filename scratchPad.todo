@@ -92,7 +92,11 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 		- /home
 		- greeting userName
 		- GET user
+			- home controller
+				call for user, pass in the name
 		- GET decks
+			- home controller
+				get deck _ids from user
 	-- signUpCtrl
 		- /signup
 			- GET single user

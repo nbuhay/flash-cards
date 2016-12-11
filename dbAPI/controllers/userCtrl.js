@@ -1,7 +1,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var User = require('../models/user');
-var sendJsonRes = require('../modules/sendJsonResponse');
+var JsonRes = require('../modules/jsonResponse');
 
 module.exports.mockData = function (req, res) {
 
@@ -24,10 +24,9 @@ module.exports.mockData = function (req, res) {
 				console.warn("defaultUser saved")
 			}
 		});
-
-		sendJsonRes(res, 200, 'db api');
 	});
 
+	JsonRes.send(res, 200, 'db api');
 };
 
 module.exports.oneUser = function (req, res) {
@@ -35,6 +34,6 @@ module.exports.oneUser = function (req, res) {
 		{ 'userName': req.params.userName },
 		function (err, user) {
 			if (err) console.log("Error");
-			sendJsonRes(res, 200, user);
+			JsonRes.send(res, 200, user);
 		});
 };
