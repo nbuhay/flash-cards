@@ -2,7 +2,8 @@ extends layout
 
 mixin deckDiv(data)
 	div(style='border-style: solid')
-		h3= data 
+		h3= data.name
+		p #{data.description}
 		br
 		input(type="button" class="begin" value="Begin")
 		br
@@ -11,18 +12,18 @@ mixin deckDiv(data)
 		
 block content
 	h1 FlashCard Decks
-	p Good morning #{data.userName}!
+	p Good morning #{data.user.userName}!
 	div(id='createdDecks')
 		h2 Created	
 		each deck in data.decks.created
 			+deckDiv(deck)
-	div(id='favDecks')
-		h2 Favorites
-		each deck in data.decks.fav
-			+deckDiv(deck)
-		h2 Discover
-		div(style='border-style: solid') 
-			input(id='new' type='button' onclick="location.href='/deck/form'" value='New')
+	//- div(id='favDecks')
+	//- 	h2 Favorites
+	//- 	each deck in data.decks.fav
+	//- 		+deckDiv(deck)
+	//- 	h2 Discover
+	div(style='border-style: solid') 
+		input(id='new' type='button' onclick="location.href='/deck/form'" value='New')
 	script(src='/scripts/addMultipleListeners.js')
 	script.
 		var buttonId=[

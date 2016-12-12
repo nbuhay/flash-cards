@@ -5,7 +5,7 @@ var userCtrl = require('../controllers/userCtrl');
 var deckCtrl = require('../controllers/deckCtrl');
 
 router.get('/mockData', mockDataCtrl.insert);
-router.get('/user/:userName', userCtrl.findOne);
+router.get('/user/name/:userName', userCtrl.findOne);
 router.get('/deck/name/:name', deckCtrl.findOne);
 router.get('/deck/id/:id', deckCtrl.findOneId);
 
