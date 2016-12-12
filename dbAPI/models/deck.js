@@ -12,4 +12,4 @@ var deckSchema = mongoose.Schema({
 	favs: Number
 });
 
-var Deck = mongoose.model('Deck', deckSchema);
+module.exports = mongoose.model('Deck', deckSchema);

@@ -47,8 +47,7 @@ edit card   | PUT    | deck_id, card_id | api/deck/:deck_id/card/:card_id
 delete card | DELETE | deck_id, card_id | api/deck/:deck_id/card/:card_id
 all cards   | GET    | deck_id          | api/deck/:deck_id/card
 
---- webpages from Balsamiq mocks
-
+-- webpages from Balsamiq mocks
 /login
 /signup
 /home
@@ -80,23 +79,29 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 		--- mongoose library
 		--- make object definition
 		--- load into home page
-	--- Edit Questions
+	---- Edit Questions
 		-- Load all Questions
 		- plesant display
 		- fuzzy search
 		- punch in/out editing
 		- send all back to db at one time
 		-- Should be limit on questions allowed
-	--- Add Data to Controllers and Add Controllers to HTML Skeleton 
+	---- Add data to controllers -> controllers populate JADE templates 
 	-- homeCtrl
-		- /home
-		- greeting userName
-		- GET user
+		+- /home
+			- greeting userName
+			- GET user
 			- home controller
 				call for user, pass in the name
-		- GET decks
-			- home controller
-				get deck _ids from user
+		+- GET decks
+			+- get deck _ids from user
+				+----- Deck db api route needed
+					+- save mock decks
+						- created by mock user
+						+- favorites by mock user
+					+- lookup mock decks
+					+- call db api with Node.js http.request from home controller
+					- return to Jade template
 	-- signUpCtrl
 		- /signup
 			- GET single user
