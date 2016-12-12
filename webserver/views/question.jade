@@ -1,7 +1,7 @@
 extends layout
 
 block content
-	h1 Question
+	h1= decks.created[0].description
 	h2 ?
 	script.
 		window.top.addEventListener(
@@ -10,3 +10,6 @@ block content
 				location.href='/deck/learn/card/answer'
 			}
 		);
+	// HANLE ALL CREATION
+	//- - iterate over cards
+	//- -	 redraw DOM until through deck
