@@ -20,10 +20,19 @@ module.exports.insert = function (req, res) {
 			description: 'New learnings from Harmony book.',
 			tags: ['music theory', 'composition'],
 			cards: [
-			{
-				question: 'What tones are in a triad?',
-				answer: 'Tonic, mediant, dominant'
-			}],
+				{
+					question: 'What tones are in a triad?',
+					answer: 'Tonic, mediant, dominant'
+				},
+				{
+					question: 'Who is Chopin?',
+					answer: 'Solo pianist.'
+				},
+				{
+					question: 'What is your favorite color?',
+					answer: 'Green.'
+				}
+			],
 			favs: 1
 		});
 
@@ -63,10 +72,10 @@ module.exports.insert = function (req, res) {
 							// Save user to mongoDb
 							defaultUser.save(function (err) {
 								if (err) { 
-									console.log("Error Saving defaultUser");
+									console.log('Error Saving defaultUser');
 									res.status(500);
 								} else {
-									console.log("defaultUser saved")
+									console.log('defaultUser saved')
 									jsonRes.send(res, 200, 'db api');
 								}
 							});

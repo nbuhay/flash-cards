@@ -1,15 +1,51 @@
 extends layout
 
 block content
-	h1= decks.created[0].description
-	h2 ?
+	- var first = true; // by default, display first card
+	for card in decks.created[0].cards
+		if first
+			div(class='card' style='display: inline')
+				h1= card.question
+				h2 ?
+				h1= card.answer
+				br
+			- first = false;
+		else
+			div(class='card' style='display: none')
+				h1= card.question
+				h2 ?
+				h1= card.answer
+				br
 	script.
-		window.top.addEventListener(
+		var decks = document.getElementsByClassName('card');
+		var i = 1; // first card already displayed
+
+		// show/hide cards in deck
+		window.document.addEventListener(
 			'click',
 			function () {
-				location.href='/deck/learn/card/answer'
-			}
+				if (i == decks.length) { // last, return home
+					location.href='/home';
+				} else { // somewhere in the middle
+					decks[i-1].style.setProperty('display', 'none');
+				}
+				decks[i++].style.setProperty('display', 'inline');
+			},
+			false
 		);
 	// HANLE ALL CREATION
-	//- - iterate over cards
-	//- -	 redraw DOM until through deck
+	// draw all cards
+	// put cards in random order 
+	//  assign a unique id or value
+	// 	apply hide css
+	// Javascript to iterate over uniquie id 1-by-1
+	//	draw card
+	//   question
+	//	 answer	
+	//    'Got it! - Green'
+	//    'Need Practice. - Red'
+	//  next
+	//  end
+	//   how many did you
+	//    get
+	//    need practice
