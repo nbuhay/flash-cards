@@ -1,51 +1,48 @@
 extends layout
 
 block content
-	- var first = true; // by default, display first card
 	for card in decks.created[0].cards
-		if first
-			div(class='card' style='display: inline')
+		div(class='card' style='display: none; margin: auto; text-align: center;')
+			div(style='display: inline')
 				h1= card.question
-				h2 ?
+			div(style='display: none')
 				h1= card.answer
-				br
-			- first = false;
-		else
-			div(class='card' style='display: none')
-				h1= card.question
-				h2 ?
-				h1= card.answer
-				br
 	script.
 		var decks = document.getElementsByClassName('card');
-		var i = 1; // first card already displayed
+		
+		// randomize order of deck indexes
+		var shuffleDeck = [];
+		while(shuffleDeck.length < decks.length) {
+			var randomNum = Math.ceil(Math.random()*decks.length-1);
+			if(shuffleDeck.indexOf(randomNum) > -1) continue;
+			shuffleDeck[shuffleDeck.length] = randomNum;
+		}
+
+		// map deck cards to their randomized indxes 
+		var randomDeck = shuffleDeck.map(function (randomNum) {
+			return decks[randomNum];
+		});
+
+		// display first card
+		randomDeck[0].style.setProperty('display', 'inline');
+		var i = 1; // since first card already displayed
+		var clicks = 0;
 
 		// show/hide cards in deck
 		window.document.addEventListener(
 			'click',
 			function () {
-				if (i == decks.length) { // last, return home
-					location.href='/home';
-				} else { // somewhere in the middle
-					decks[i-1].style.setProperty('display', 'none');
+				if (clicks % 2 == 1) { // even click, move on to next card
+					if (i == randomDeck.length) { // last, return home
+						location.href='/home';
+					} else { // somewhere in the middle
+						randomDeck[i-1].style.setProperty('display', 'none');
+					}
+					randomDeck[i++].style.setProperty('display', 'inline');
+				} else { // odd lick, show answer
+					randomDeck[i-1].childNodes[1].style.setProperty('display', 'inline');
 				}
-				decks[i++].style.setProperty('display', 'inline');
+				clicks++;
 			},
 			false
 		);
-	// HANLE ALL CREATION
-	// draw all cards
-	// put cards in random order 
-	//  assign a unique id or value
-	// 	apply hide css
-	// Javascript to iterate over uniquie id 1-by-1
-	//	draw card
-	//   question
-	//	 answer	
-	//    'Got it! - Green'
-	//    'Need Practice. - Red'
-	//  next
-	//  end
-	//   how many did you
-	//    get
-	//    need practice
