@@ -3,11 +3,27 @@ extends layout
 block content
 	for card in decks.created[0].cards
 		div(class='card' style='display: none; margin: auto; text-align: center;')
-			div(style='display: inline')
+			div(style='display: inline;')
 				h1= card.question
-			div(style='display: none')
+			div(style='display: none;')
 				h1= card.answer
+	div(id='correct' style='height: 100px; width: 100px; background-color: #55AA55; margin: auto; display: none;')
+	div(id='incorrect' style='height: 100px; width: 100px; background-color: #D46A6A; margin: auto; display: none;')
 	script.
+		document.getElementById('correct').addEventListener(
+			'click',
+			function () {
+				console.log('Got it!');
+			},
+			false
+		);
+		document.getElementById('incorrect').addEventListener(
+			'click',
+			function () {
+				console.log('Need practice.');
+			},
+			false
+		);
 		var decks = document.getElementsByClassName('card');
 		
 		// randomize order of deck indexes
@@ -32,15 +48,19 @@ block content
 		window.document.addEventListener(
 			'click',
 			function () {
-				if (clicks % 2 == 1) { // even click, move on to next card
+				if (clicks % 2 == 1) { // even click, hide feedback btn, move on to next card
+					document.getElementById('correct').style.setProperty('display', 'none');
+					document.getElementById('incorrect').style.setProperty('display', 'none');
 					if (i == randomDeck.length) { // last, return home
 						location.href='/home';
 					} else { // somewhere in the middle
 						randomDeck[i-1].style.setProperty('display', 'none');
 					}
 					randomDeck[i++].style.setProperty('display', 'inline');
-				} else { // odd lick, show answer
+				} else { // show answer, display feedback btns
 					randomDeck[i-1].childNodes[1].style.setProperty('display', 'inline');
+					document.getElementById('correct').style.setProperty('display', 'block');
+					document.getElementById('incorrect').style.setProperty('display', 'block');
 				}
 				clicks++;
 			},
