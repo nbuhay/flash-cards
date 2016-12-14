@@ -123,15 +123,39 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 			- keep data from /deck/create
 			- GET single user
 			- POST cards to created deck
-	----- /deck/learn/card/answer and /deck/learn/card/question
-		- GET User
-		- GET deck
-		- iterate over cards
-		-	 redraw DOM until through deck
+	----- Enhancement - Deck Model and Learning
+		---- Decks being practied by a user need to be stored with that user model
+			-- save to user object
+				- how to update if deck gets new additions?
+			-- what becomes of favs?
+		---- Basic Learning Algorithm 
+			-- save state on practice feedback:  What could be added?
+				- date last got correct
+				- number of times did not get correct:  show ones with less success more often
+				- success/practice
+				- suggestion when to study next
+					- 1 day
+					- 3 days
+					- 1 week
+					- 2 weeks
+					- 1 month
+					- 2 months
+					- 3 months
+		---- Incorporate into questons.jade
+			-- update deck model as questions answered
+				- lastTime true/false -> gotIt/needPractice
+				- timestamp of last time
+				- answerHistory -> record success past 10 times, number or percent
+		---- Beautify questions.jade
+			- center vertically
+			- correct/incorrect inline, adjacent
+				- consistent spacing
+			- questions don't redraw
+			- no highlighting when clicking
 
----- Questions
 	--- When/where should res.send(STATUS); be called during mongoose query operations?
 	--- When to use map() over iterating?
+	--- How to asynchronously unit test?
 
 ---- Fun Project: Eyes and Sound
 	-- Picture 
