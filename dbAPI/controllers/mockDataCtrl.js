@@ -1,6 +1,7 @@
 var express = require('express');
 var http = require('http');
 var mongoose = require('mongoose');
+var mockUsers = require('../../mockData/users');
 var User = require('../models/user');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');

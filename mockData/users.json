@@ -1,0 +1,25 @@
+{
+	"users": [
+		{
+			"userName": "Bu",
+			"pswd": "abc123",
+			"email": "nichobu@flash.com",
+			"zip": 55555,
+			"decks": {}
+		},
+		{
+			"userName": "Ant",
+			"pswd": "Merman",
+			"email": "celwyn@yah.com",
+			"zip": 44444,
+			"decks": {}
+		},
+		{
+			"userName": "Jane",
+			"pswd": "Doe",
+			"email": "jd@jd.com",
+			"zip": 11111,
+			"decks": {}
+		}
+	]
+}

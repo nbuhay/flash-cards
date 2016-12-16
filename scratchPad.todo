@@ -123,7 +123,7 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 			- keep data from /deck/create
 			- GET single user
 			- POST cards to created deck
-	----- Enhancement - Deck Model and Learning
+	---- Enhancement - Deck Model and Learning
 		---- Decks being practied by a user need to be stored with that user model
 			-- save to user object
 				- how to update if deck gets new additions?
@@ -152,10 +152,16 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 				- consistent spacing
 			- questions don't redraw
 			- no highlighting when clicking
+	----- Testing with Mocha
+	http://taylor.fausak.me/2013/02/17/testing-a-node-js-http-server-with-mocha/
+	--- Boilerplate
+		- start server before, kill server after
+		- 
 
 	--- When/where should res.send(STATUS); be called during mongoose query operations?
 	--- When to use map() over iterating?
 	--- How to asynchronously unit test?
+	--- How does done() really work in Mocha?
 
 ---- Fun Project: Eyes and Sound
 	-- Picture 
