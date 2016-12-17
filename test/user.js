@@ -32,11 +32,11 @@ describe('User Model', () => {
 		});
 	});
 
-	describe('GET /api/user/name/Bu', function () {
-		it('should GET user object for Bu', function (done) {
+	describe('GET /api/user/name/' + mockUsers[DEFAULT_USER].userName, () => {
+		it('should GET User user with user.userName == ' + mockUsers[DEFAULT_USER].userName, (done) => {
 			var options = {
-				port: 3000,
-				path: '/api/user/name/Bu'
+				port: DEFAULT_PORT,
+				path: '/api/user/name/' + mockUsers[DEFAULT_USER].userName
 			};
 			var resStr = '';
 			var callback = function (response) {
@@ -44,7 +44,7 @@ describe('User Model', () => {
 					resStr += chunk;
 				});
 				response.on('end', function () {
-					assert(JSON.parse(resStr).userName == 'Bu');
+					assert(JSON.parse(resStr).userName == mockUsers[DEFAULT_USER].userName);
 					done();
 				});
 			};
