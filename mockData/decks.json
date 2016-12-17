@@ -1,0 +1,40 @@
+{
+	"decks": [
+		{
+			"name": "Harmony",
+			"description": "New learnings from Harmony book.",
+			"tags": ["music theory", "composition"],
+			"cards": [
+				{
+					"question": "What tones are in a triad?",
+					"answer": "Tonic, mediant, dominant"
+				},
+				{
+					"question": "Who is Chopin?",
+					"answer": "Solo pianist."
+				},
+				{
+					"question": "What is your favorite color?",
+					"answer": "Green."
+				}
+			],
+			"favs": 1
+		},
+		{
+			"name": "AWS_Certified_Developer",
+			"description": "Review material from Udemy",
+			"tags": ["AWS", "cloud"],
+			"cards": [
+				{
+					"question": "What is the EC2 service?",
+					"answer": "Elastic Compute Cloud"
+				},
+				{
+					"question": "Where is the Route53 name derived from?",
+					"answer": "Route66 was first USA route and 53 is DNS port for publicly exposing to internet"
+				}
+			],
+			"favs": 4
+		}
+	]
+}
