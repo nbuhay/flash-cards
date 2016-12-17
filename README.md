@@ -13,3 +13,6 @@ mongo
 use admin
 db.shutdownServer()
 exit
+
+[Arrow Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
+Two factors influenced the introduction of arrow functions: shorter functions and non-binding of this.

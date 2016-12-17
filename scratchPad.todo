@@ -83,10 +83,10 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 ---- Week of Dec12-Dec18
 	---- Edit Questions
 		-- Load all Questions
-		- plesant display
-		- fuzzy search
-		- punch in/out editing
-		- send all back to db at one time
+			- plesant display
+			- fuzzy search
+			- punch in/out editing
+			- send all back to db at one time
 		-- Should be limit on questions allowed
 	---- Add data to controllers -> controllers populate JADE templates 
 	+-- homeCtrl
@@ -127,7 +127,9 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 		---- Decks being practied by a user need to be stored with that user model
 			-- save to user object
 				- how to update if deck gets new additions?
-			-- what becomes of favs?
+				- fork their own copy of the deck
+				- create cards off originals
+				- what becomes of favs?
 		---- Basic Learning Algorithm 
 			-- save state on practice feedback:  What could be added?
 				- date last got correct
@@ -170,3 +172,36 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 	-- Noise01 when click face
 	-- Noise02 when click background
 	-- Noise03 when click body
+
+https://apigee.com/about/blog/technology/restful-api-design-what-about-errors
+APIs are supposed to make the developer successful
+	outsiders calling api, the api should be a black box
+		black box, system can be viewed as input/output function
+	errors are supposed to be given back to outsiders to help them understand 
+
+	good to send correct error code, granular message, and possibly link to find out more
+
+	folks only use small set of http error codes
+		200
+		201
+		304
+		400
+		401
+		403
+		404
+		409
+		410
+		412
+		500
+
+	three true outcomes
+		200 OK
+		404 Not Found
+		500 Internal Server Error
+
+	or five more if don't like only 3
+		201 - Created
+		304 - Not Modified
+		400 - Bad Request
+		401 - Unauthorized
+		403 - Forbidden

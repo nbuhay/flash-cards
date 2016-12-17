@@ -7,12 +7,18 @@ var User = require('../models/user');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
 
-var DEFAULT_DECK = 1;
+var DEFAULT_PORT = 3000;
+var DEFAULT_DECK = 0;
 var DEFAULT_DECK_REQ_OPTS = {
-	port: 3000,
+	port: DEFAULT_PORT,
 	path: '/api/deck/name/' + mockDecks[DEFAULT_DECK].name
-}
+};
 var DEFAULT_USER = 0;
+var DEFAULT_USER_REQ_OPTS = {
+	port: DEFAULT_PORT,
+	path: '/api/user',
+	method: 'POST'
+};
 
 // Clear old dummy data:  VERY DESTRUCTIVE
 // Create dummy data:  one user and one deck
@@ -45,24 +51,33 @@ module.exports.insert = function (req, res) {
 						});
 						response.on('end', function () {
 
+							// ned to send response using original req/res
+
 							// Create dummy data
 							var defaultUser = new User(mockUsers[DEFAULT_USER]);
 
 							// Associate dummy data
 							defaultUser.decks.created.push((JSON.parse(str))._id);
 
-							// Save user to mongoDb
-							defaultUser.save(function (err) {
-								if (err) { 
-									console.log('Error Saving defaultUser');
-									res.status(500);
-								} else {
-									console.log('defaultUser saved')
-									jsonRes.send(res, 200, 'Mock User Creation Successful');
-								}
+							// callback only called when request hears a response event
+							var callback = function (response) {
+								jsonRes.send(res, 200, {'MockDataLoaded':  true});	
+							};
+
+							// setup the POST request
+							var request = http.request(DEFAULT_USER_REQ_OPTS, callback);
+
+							// listen for POST error
+							req.on('error', (e) => {
+								console.log('There was an error with the request');
+								console.log(e);
 							});
+
+							// post the data i.e. save user to mongoDb
+							request.write(JSON.stringify(defaultUser));
+							request.end();
 						});
-					};
+					}
 
 					http.request(DEFAULT_DECK_REQ_OPTS, callback).end();
 				});

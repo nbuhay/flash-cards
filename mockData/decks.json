@@ -32,6 +32,38 @@
 				{
 					"question": "Where is the Route53 name derived from?",
 					"answer": "Route66 was first USA route and 53 is DNS port for publicly exposing to internet"
+				},
+				{
+					"question": "What is Amazon's data warehousing service?",
+					"answer": "RedShift"
+				},
+				{
+					"question": "How many AWS regions are there (2017)?",
+					"answer": "14"
+				},
+				{
+					"question": "What is IAM responsible for?",
+					"answer": "Create and give users permissions"
+				},
+				{
+					"question": "What is the root AWS account?",
+					"answer": "The AWS email used to sign up for AWS"
+				},
+				{
+					"question": "What are some steps afte setting up an account?",
+					"answer": "Change link for users to sign on.  Multifactor auth.  Create users.  Associate to groups."
+				},
+				{
+					"question": "What default permissions do new AWS users have after created?",
+					"answer": "None, they must be added to groups or have policies attached manually"
+				},
+				{
+					"question": "What is an IAM group and why is it useful?",
+					"answer": "Groups are definable sets of policies.  Users assigned to a group get all policies assigned to that group.  It is much easier to add a user to a group than to add many policies individually to each user."
+				},
+				{
+					"question": "What is an IAM policy?",
+					"answer": "Define actions, services, and more that a user has access to within AWS"
 				}
 			],
 			"favs": 4
