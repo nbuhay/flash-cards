@@ -43,3 +43,4 @@ process.on('SIGTERM', function () {
 
 require('./deck');
 require('./user');
+require('./card');

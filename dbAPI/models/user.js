@@ -3,11 +3,19 @@ var mongoose = require('mongoose');
 var userSchema = mongoose.Schema({
 	userName: String,
 	pswd: String,
-	email: String,
+	email: {
+		type: String,
+		required: true
+	},
 	zip: Number,
 	decks: {
 		created: [String],
-		fav: [String]
+		learning: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'Card'
+			}
+		]
 	}
 });
 
