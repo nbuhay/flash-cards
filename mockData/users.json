@@ -3,21 +3,33 @@
 		{
 			"userName": "Bu",
 			"pswd": "abc123",
-			"email": "nichobu@flash.com",
+			"email": {
+				"domainId": "nichobu",
+				"domain": "flash",
+				"extension": "com"
+			},
 			"zip": 55555,
 			"decks": {}
 		},
 		{
 			"userName": "Ant",
 			"pswd": "Merman",
-			"email": "celwyn@yah.com",
+			"email": {
+				"domainId": "celwyn",
+				"domain": "yah",
+				"extension": "com"
+			},
 			"zip": 44444,
 			"decks": {}
 		},
 		{
 			"userName": "Jane",
 			"pswd": "Doe",
-			"email": "jd@jd.com",
+			"email": {
+				"domainId": "jd",
+				"domain": "jd",
+				"extension": "com"
+			},
 			"zip": 11111,
 			"decks": {}
 		}

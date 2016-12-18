@@ -2,20 +2,20 @@
 	"decks": [
 		{
 			"name": "Harmony",
-			"description": "New learnings from Harmony book.",
+			"description": "New learnings from Harmony book",
 			"tags": ["music theory", "composition"],
 			"cards": [
 				{
-					"question": "What tones are in a triad?",
+					"question": "What tones are in a triad",
 					"answer": "Tonic, mediant, dominant"
 				},
 				{
-					"question": "Who is Chopin?",
-					"answer": "Solo pianist."
+					"question": "Who is Chopin",
+					"answer": "Solo pianist"
 				},
 				{
-					"question": "What is your favorite color?",
-					"answer": "Green."
+					"question": "What is your favorite color",
+					"answer": "Green"
 				}
 			],
 			"favs": 1
@@ -26,43 +26,43 @@
 			"tags": ["AWS", "cloud"],
 			"cards": [
 				{
-					"question": "What is the EC2 service?",
+					"question": "What is the EC2 service",
 					"answer": "Elastic Compute Cloud"
 				},
 				{
-					"question": "Where is the Route53 name derived from?",
+					"question": "Where is the Route53 name derived from",
 					"answer": "Route66 was first USA route and 53 is DNS port for publicly exposing to internet"
 				},
 				{
-					"question": "What is Amazon's data warehousing service?",
+					"question": "What is Amazon's data warehousing service",
 					"answer": "RedShift"
 				},
 				{
-					"question": "How many AWS regions are there (2017)?",
+					"question": "How many AWS regions are there (2017)",
 					"answer": "14"
 				},
 				{
-					"question": "What is IAM responsible for?",
+					"question": "What is IAM responsible for",
 					"answer": "Create and give users permissions"
 				},
 				{
-					"question": "What is the root AWS account?",
+					"question": "What is the root AWS account",
 					"answer": "The AWS email used to sign up for AWS"
 				},
 				{
-					"question": "What are some steps afte setting up an account?",
+					"question": "What are some steps afte setting up an account",
 					"answer": "Change link for users to sign on.  Multifactor auth.  Create users.  Associate to groups."
 				},
 				{
-					"question": "What default permissions do new AWS users have after created?",
+					"question": "What default permissions do new AWS users have after created",
 					"answer": "None, they must be added to groups or have policies attached manually"
 				},
 				{
-					"question": "What is an IAM group and why is it useful?",
+					"question": "What is an IAM group and why is it useful",
 					"answer": "Groups are definable sets of policies.  Users assigned to a group get all policies assigned to that group.  It is much easier to add a user to a group than to add many policies individually to each user."
 				},
 				{
-					"question": "What is an IAM policy?",
+					"question": "What is an IAM policy",
 					"answer": "Define actions, services, and more that a user has access to within AWS"
 				}
 			],

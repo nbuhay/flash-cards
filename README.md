@@ -16,3 +16,9 @@ exit
 
 [Arrow Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
 Two factors influenced the introduction of arrow functions: shorter functions and non-binding of this.
+
+[Nodejs Docs HTTP.request](https://nodejs.org/dist/latest-v4.x/docs/api/http.html#http_http_request_options_callback)
+
+[Node.js error-first callbacks](http://fredkschott.com/post/2014/03/understanding-error-first-callbacks-in-node-js/)
+
+[Node.js error API docs](https://nodejs.org/api/errors.html)

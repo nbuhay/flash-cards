@@ -1,8 +1,14 @@
 var mongoose = require('mongoose');
 
 var cardSchema = mongoose.Schema({
-		question: String,
-		answer: String,
+		question: { 
+			type: String,
+			required: true
+		},
+		answer: { 
+			type: String,
+			required: true
+		},
 		gotCorrect: Boolean,
 		lastSeen: Date,
 		lastCorrect: Date,

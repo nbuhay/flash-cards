@@ -4,10 +4,15 @@ var deckSchema = mongoose.Schema({
 	name: String,
 	description: String,
 	tags: [String],
-	cards: [
-		{
-			question: String,
-			answer: String
+	cards: [{
+			question: {
+				type: String,
+				required: true
+			},
+			answer: {
+				type: String,
+				required: true
+			}
 		}],
 	favs: Number
 });

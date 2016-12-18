@@ -13,8 +13,7 @@ module.exports.findOne = function (req, res) {
 };
 
 module.exports.findOneId = function (req, res) {
-	Deck.findById(req.params.id, 
-		function (err, deck) {
+	Deck.findById(req.params._id, (err, deck) => {
 			if (err) console.error('Error:dbAPI:deckCtrl.findOneId:' + err);
 			jsonRes.send(res, 200, deck);
 	});

@@ -4,18 +4,33 @@ var userSchema = mongoose.Schema({
 	userName: String,
 	pswd: String,
 	email: {
-		type: String,
-		required: true
+		domainId: String,
+		domain: String,
+		extension: String
 	},
 	zip: Number,
 	decks: {
 		created: [String],
-		learning: [
-			{
+		learning: [{
+			refDeck: {
 				type: mongoose.Schema.Types.ObjectId,
-				ref: 'Card'
-			}
-		]
+				ref: 'Deck'
+			},
+			flashCards: [{
+				question: { 
+					type: String,
+					required: true
+				},
+				answer: { 
+					type: String,
+					required: true
+				},
+				gotCorrect: Boolean,
+				lastSeen: Date,
+				lastCorrect: Date,
+				correctStreak: Number		
+			}]
+		}]
 	}
 });
 

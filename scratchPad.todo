@@ -30,7 +30,7 @@ Routes
 
 intent      | REST   | URL Parms | URL
 
-create user | POST   | none      | api/user
++create user | POST   | none      | api/user
 delete user | DELETE | user_id   | api/user/:user_id
 edit user   | PUT    | user_id   | api/user/:user_id
 get user    | GET    | user_id   | api/user/:user_id
@@ -164,6 +164,7 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 	--- When to use map() over iterating?
 	--- How to asynchronously unit test?
 	--- How does done() really work in Mocha?
+	--- Gracefully handle errors?
 
 ---- Fun Project: Eyes and Sound
 	-- Picture 
