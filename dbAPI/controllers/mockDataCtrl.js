@@ -1,3 +1,4 @@
+var CONST = require('../../global');
 var http = require('http');
 var mongoose = require('mongoose');
 var mockUsers = require('../../mockData/users').users;
@@ -6,15 +7,14 @@ var User = require('../models/user');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
 
-var DEFAULT_PORT = 3000;
 var DEFAULT_DECK = 0;
 var DEFAULT_DECK_REQ_OPTS = {
-	port: DEFAULT_PORT,
+	port: CONST.PORT(),
 	path: '/api/deck/name/' + mockDecks[DEFAULT_DECK].name
 };
 var DEFAULT_USER = 0;
 var DEFAULT_USER_REQ_OPTS = {
-	port: DEFAULT_PORT,
+	port: CONST.PORT(),
 	path: '/api/user',
 	method: 'POST'
 };
@@ -24,6 +24,7 @@ module.exports.insertUsers = (req, res) => {
 	mongoose.connection.db.dropCollection('users', () => {
 		console.warn('users table dropped!');
 
+		console.log('inserting mock users...');
 		var count = 0;
 		// save all mock users
 		mockUsers.map((user) => {
@@ -34,8 +35,7 @@ module.exports.insertUsers = (req, res) => {
 				} else {
 					console.log('user'+ count + ' saved!');
 					if (++count == mockUsers.length) {
-						res.statusCode = 200;
-						res.send('Done');						
+						jsonRes.send(res, 200, 'All users saved!');
 					}
 				}
 			});
