@@ -1,4 +1,3 @@
-var express = require('express');
 var http = require('http');
 var mongoose = require('mongoose');
 var mockUsers = require('../../mockData/users').users;
@@ -19,6 +18,30 @@ var DEFAULT_USER_REQ_OPTS = {
 	path: '/api/user',
 	method: 'POST'
 };
+
+module.exports.insertUsers = (req, res) => {
+	// Clear old dummy data
+	mongoose.connection.db.dropCollection('users', () => {
+		console.warn('users table dropped!');
+
+		var count = 0;
+		// save all mock users
+		mockUsers.map((user) => {
+			var tmpUser = new User(user);
+			tmpUser.save((err) => {
+				if (err) {
+					jsonRes.send(res, 500, 'Error importing all mock users');
+				} else {
+					console.log('user'+ count + ' saved!');
+					if (++count == mockUsers.length) {
+						res.statusCode = 200;
+						res.send('Done');						
+					}
+				}
+			});
+		});
+	});
+}
 
 // Clear old dummy data:  VERY DESTRUCTIVE
 // Create dummy data:  one user and one deck
