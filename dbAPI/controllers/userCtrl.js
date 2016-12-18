@@ -5,17 +5,7 @@ var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
 
 module.exports.findOne = function (req, res) {
-	var options;
-	if (req.params.userName) {
-		options = { 'userName': req.params.userName };
-	} else if (req.params.email) {
-		// NO WAY TO SEACH BY EMAIL IF EMAIL IS DIFFERENT IN THE DB
-		options = { 
-			'email': ((req.params.email.split('.')).join('').split('@')).join('') 
-		};
-	}
-
-	User.findOne(options, (err, user) => {
+	User.findOne({'userName': req.params.userName}, (err, user) => {
 		if (err) console.log("Error");
 		jsonRes.send(res, 200, user);
 	});

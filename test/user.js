@@ -73,7 +73,6 @@ describe('User Model', () => {
 						//   'response' event is only triggered one time
 						//     triggered on response back form server you POSTed to
 						var request = http.request(options, (response) => {
-							console.log('assert now');	
 							assert(response.statusCode == 200);
 							done();
 						});
