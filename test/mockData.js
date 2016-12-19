@@ -11,7 +11,7 @@ describe('Mock Data', () => {
 	describe('INSERT Users', () => {
 		it('should insert all mock user data', (done) =>{
 			var options = {
-				path: CONST.PORT(),
+				port: CONST.PORT(),
 				path: '/api/mockData/users'
 			}
 			var callback = (response) => {
@@ -21,7 +21,7 @@ describe('Mock Data', () => {
 						res += chunk;
 					})
 					.on('end', () => {
-						assert((JSON.parse(res)).responseCode == CONST.RES('OK'));
+						assert(response.statusCode == CONST.RES('OK'));
 						done();
 					});
 			};
