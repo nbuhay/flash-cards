@@ -1,137 +1,89 @@
-+---- Model
-	+--- app will have users
-		-- user
-			- name String
-			- id Mongo_id
-			- pswd ???
-			- email String
-			- zip Int
-			- decks
-				- favorite [] deck_id
-				- created [] deck_id
-	+--- app will have decks
-		-- deck
-			- id Mongo_id
-			- title String
-			- category String
-			- cards[questions]
-				- question
-				- answer 
-			- totalFavs
-	+--- decks have cards
-		- card
-			- id Mongo_id
-			- question String
-			- answer String
-
----
-
-Routes
-
-intent      | REST   | URL Parms | URL
-
-+create user | POST   | none      | api/user
-delete user | DELETE | user_id   | api/user/:user_id
-edit user   | PUT    | user_id   | api/user/:user_id
-get user    | GET    | user_id   | api/user/:user_id
-all users   | GET    | none      | api/user
-
-create deck | POST   | none      | api/deck/
-edit deck   | PUT    | deck_id   | api/deck/:deck_id
-delete deck | DELETE | deck_id   | api/deck/:deck_id
-all decks   | GET    | none      | api/deck/
-get a deck  | GET    | deck_id   | api/deck/:deck_id
-
-create card | POST   | deck_id          | api/deck/:deck_id/card
-edit card   | PUT    | deck_id, card_id | api/deck/:deck_id/card/:card_id
-delete card | DELETE | deck_id, card_id | api/deck/:deck_id/card/:card_id
-all cards   | GET    | deck_id          | api/deck/:deck_id/card
-
--- webpages from Balsamiq mocks
-
-/login
-/signup
-/home
-/deck/form
-/deck/form/create
-/deck/create
-/deck/create/cards
-
-	+Complete Import: Saturday and Sunday `Morning` Work
-		+---- display all user's decks
-			+- user data object
-				+--- mongoose library
-				+--- make object definition
-				+--- create controller for home page
-				+--- create user data here
-				+--- send call to home route to the use home controller
-				+--- return user data to home.jade
-			+- home.html changes
-				+--- deck div with ID
-				+- deck data from user 
-				+--- deck resuseable mixin
-				+--- load decks from user object
-				+--- iterate through decks
-				+--- add mixin per deck
-		+---- import page
-			+--- load json
-			+--- goto search page
-		+---- deck data object: no cards, yet
-			--- mongoose library
-			--- make object definition
-			--- load into home page
----- Week of Dec12-Dec18
-	---- Edit Questions
-		-- Load all Questions
-			- plesant display
-			- fuzzy search
-			- punch in/out editing
-			- send all back to db at one time
-		-- Should be limit on questions allowed
-	---- Add data to controllers -> controllers populate JADE templates 
-	+-- homeCtrl
-		+- /home
-			- greeting userName
-			- GET user
-			- home controller
-				call for user, pass in the name
-		+- GET decks
-			+- get deck _ids from user
-				+----- Deck db api route needed
-					+- save mock decks
-						- created by mock user
-						+- favorites by mock user
-					+- lookup mock decks
-					+- call db api with Node.js http.request from home controller
-					- return to Jade template
-	-- signUpCtrl
+---- Back End
+	--- Routes: intent | REST | URL Parms | URL
+		-- USER
+			+- create user | POST   | none      | /api/user
+			- delete user | DELETE | _id       | /api/user/_id/:_id
+			- edit user   | PUT    | _id       | /api/user/_id/:_id
+			- get user    | GET    | _id       | /api/user/_id/:_id
+			+- get user    | GET    | userName  | /api/user/name/:userName
+			- all users   | GET    | none      | /api/users
+		-- DECK
+			- create deck | POST   | none      | /api/deck
+			- edit deck   | PUT    | _id       | /api/deck/_id/:_id
+			- delete deck | DELETE | _id       | /api/deck/_id/:_id
+			- all decks   | GET    | none      | /api/decks
+			+- get a deck  | GET    | _id       | /api/deck/_id/:_id
+			+- get a deck  | GET    | name      | /api/deck/name/:name
+		-- CARD
+			- create card | POST   | deck_id          | /api/deck/:deck_id/card
+			- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+			- delete card | DELETE | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+			- all cards   | GET    | deck_id          | /api/deck/:deck_id/card
+		-- MOCK Data
+			+- insert all user data
+			+- insert all deck
+			- associations between default decks and users
+	--- Model
+		----- Cards
+			- answer and answer as [String], allows multi line responses
+		-- Deck
+			- Decks being practied by a user need to be stored with that user model
+				+- save to user object
+				- how to update if deck gets new additions?
+				+- fork their own copy of the deck
+				+- create cards off originals
+				- what becomes of favs?
+	--- Mocha
+		-- Better testing with a DB
+			- how to know the state
+			- create separate test db
+			- how to test users
+			- how to make sure no interactions are messing with eachother
+		-- Assertion library usage
+		-- How to load instance of server for testing vs running main
+	--- Misc
+			-- think/write out routes for interactions with Decks, Users, and Cards
+			-- standard load order for requires
+			-- finalize global.js and load everywhere
+			-- research/implement better API error handling
+---- Front End
+	--- Balsamiq mocks
+		- /login
+		- /signup
+		- /home
+		- /deck/form
+		- /deck/form/create
+		- /deck/create
+		- /deck/create/cards
+	--- Controller calls
+		-- signUpCtrl
 		- /signup
 			- GET single user
 				- check exists
 			- PUT new user data
-	-- deckCtrl
-		- /deck/form:import
-			- GET single user
-			- PUT deck _id to user created
-			- Check is JSON
-			- Read in data from JSON
-			- POST deck
-		- /deck/create
-			- GET single user
-			- keep data available as card input happens
-		- /deck/create/cards
-			- keep data from /deck/create
-			- GET single user
-			- POST cards to created deck
-	---- Enhancement - Deck Model and Learning
-		---- Decks being practied by a user need to be stored with that user model
-			-- save to user object
-				- how to update if deck gets new additions?
-				- fork their own copy of the deck
-				- create cards off originals
-				- what becomes of favs?
-		---- Basic Learning Algorithm 
-			-- save state on practice feedback:  What could be added?
+		-- deckCtrl
+			- /deck/form:import
+				- GET single user
+				- PUT deck _id to user created
+				- Check is JSON
+				- Read in data from JSON
+				- POST deck
+			- /deck/create
+				- GET single user
+				- keep data available as card input happens
+			- /deck/create/cards
+				- keep data from /deck/create
+				- GET single user
+				- POST cards to created deck
+	--- Beautify questions.jade
+			- center vertically
+			- correct/incorrect inline, adjacent
+				- consistent spacing
+			- questions don't redraw
+			- no highlighting when clicking
+	--- Client side computing
+		-- Learning Algorithm
+			- save state on practice feedback:  What could be added?
 				- date last got correct
 				- number of times did not get correct:  show ones with less success more often
 				- success/practice
@@ -143,66 +95,23 @@ all cards   | GET    | deck_id          | api/deck/:deck_id/card
 					- 1 month
 					- 2 months
 					- 3 months
-		---- Incorporate into questons.jade
-			-- update deck model as questions answered
+		-- Incorporate into questons.jade
+			- update deck model as questions answered
 				- lastTime true/false -> gotIt/needPractice
 				- timestamp of last time
 				- answerHistory -> record success past 10 times, number or percent
-		---- Beautify questions.jade
-			- center vertically
-			- correct/incorrect inline, adjacent
-				- consistent spacing
-			- questions don't redraw
-			- no highlighting when clicking
-	----- Testing with Mocha
-	http://taylor.fausak.me/2013/02/17/testing-a-node-js-http-server-with-mocha/
-	--- Boilerplate
-		- start server before, kill server after
-		- 
-
-	--- When/where should res.send(STATUS); be called during mongoose query operations?
-	--- When to use map() over iterating?
-	--- How to asynchronously unit test?
-	--- How does done() really work in Mocha?
-	--- Gracefully handle errors?
-
----- Fun Project: Eyes and Sound
-	-- Picture 
-		- moving eyes
-	-- Animated hand
-	-- Noise01 when click face
-	-- Noise02 when click background
-	-- Noise03 when click body
-
-https://apigee.com/about/blog/technology/restful-api-design-what-about-errors
-APIs are supposed to make the developer successful
-	outsiders calling api, the api should be a black box
-		black box, system can be viewed as input/output function
-	errors are supposed to be given back to outsiders to help them understand 
-
-	good to send correct error code, granular message, and possibly link to find out more
-
-	folks only use small set of http error codes
-		200
-		201
-		304
-		400
-		401
-		403
-		404
-		409
-		410
-		412
-		500
-
-	three true outcomes
-		200 OK
-		404 Not Found
-		500 Internal Server Error
-
-	or five more if don't like only 3
-		201 - Created
-		304 - Not Modified
-		400 - Bad Request
-		401 - Unauthorized
-		403 - Forbidden
+	--- Future Enhancements
+		-- Edit Questions
+		- Load all Questions
+			- plesant display
+			- fuzzy search
+			- punch in/out editing
+			- send all back to db at one time
+		-- Should be limit on questions allowed
+---- Misc
+	--- Questions
+		-- When/where should res.send(STATUS); be called during mongoose query operations?
+		-- When to use map() over iterating?
+		-- How to asynchronously unit test?
+		-- How does done() really work in Mocha?
+		-- Gracefully handle errors?

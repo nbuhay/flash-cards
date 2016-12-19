@@ -67,6 +67,26 @@
 				}
 			],
 			"favs": 4
+		},
+		{
+			"name": "Audio_Recording",
+			"description": "Pro Tools and audio recording techniques.",
+			"tags": ["recording", "pro tools", "audio"],
+			"cards": [
+				{
+					"question": "",
+					"answer": ""
+				},
+				{
+					"question": "What options are available fo rgrouped PT audio",
+					"answer": "Mix, edit, and mix/edit"
+				},
+				{
+					"question": "What is voice priority",
+					"answer": "When > 32 tracks of audio, voice priority determines which 32 are heard.  The first 32 in the list are heard."
+				}
+			],
+			"favs": 0
 		}
 	]
 }
