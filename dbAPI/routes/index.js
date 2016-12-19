@@ -6,6 +6,7 @@ var deckCtrl = require('../controllers/deckCtrl');
 
 router.get('/mockData', mockDataCtrl.insert);
 router.get('/mockData/users', mockDataCtrl.insertUsers);
+router.get('/mockData/decks', mockDataCtrl.insertDecks);
 
 router.get('/user/name/:userName', userCtrl.findOne);
 router.post('/user', userCtrl.newUser);

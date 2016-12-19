@@ -1,19 +1,18 @@
-var CONST = require('../../global');
 var http = require('http');
+var CONST = require('../../global');
 var mongoose = require('mongoose');
-var mockUsers = require('../../mockData/users').users;
 var mockDecks = require('../../mockData/decks').decks;
-var User = require('../models/user');
+var mockUsers = require('../../mockData/users').users;
 var Deck = require('../models/deck');
+var User = require('../models/user');
 var jsonRes = require('../modules/jsonResponse');
 
-var DEFAULT_DECK = 0;
-var DEFAULT_DECK_REQ_OPTS = {
+var DECK_REQ_OPTS = {
 	port: CONST.PORT(),
-	path: '/api/deck/name/' + mockDecks[DEFAULT_DECK].name
+	path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
 };
-var DEFAULT_USER = 0;
-var DEFAULT_USER_REQ_OPTS = {
+
+var USER_REQ_OPTS = {
 	port: CONST.PORT(),
 	path: '/api/user',
 	method: 'POST'
@@ -23,7 +22,6 @@ module.exports.insertUsers = (req, res) => {
 	// Clear old dummy data
 	mongoose.connection.db.dropCollection('users', () => {
 		console.warn('users table dropped!');
-
 		console.log('inserting mock users...');
 		var count = 0;
 		// save all mock users
@@ -31,11 +29,34 @@ module.exports.insertUsers = (req, res) => {
 			var tmpUser = new User(user);
 			tmpUser.save((err) => {
 				if (err) {
-					jsonRes.send(res, 500, 'Error importing all mock users');
+					jsonRes.send(res, CONST.RES('SERVFAIL'), 'Error importing all mock users');
 				} else {
-					console.log('user'+ count + ' saved!');
+					console.log('user' + count + ' saved!');
 					if (++count == mockUsers.length) {
-						jsonRes.send(res, 200, 'All users saved!');
+						jsonRes.send(res, CONST.RES('OK'), {msg: 'All users saved!'});
+					}
+				}
+			});
+		});
+	});
+}
+
+module.exports.insertDecks = (req, res) => {
+	// Clear old dummy data
+	mongoose.connection.db.dropCollection('decks', () => {
+		console.warn('decks table droped!');
+		console.log('inserting mock decks...');
+		var count = 0;
+		// save all mock decks
+		mockDecks.map((deck) => {
+			var tmpDeck = new Deck(deck);
+			tmpDeck.save((err) => {
+				if (err) {
+					jsonRes.send(res, CONST.RES('SERVFAIL'), 'Error importing all mock decks');
+				} else {
+				console.log('deck' + count + ' saved!');
+				if(++count == mockDecks.length) {
+					jsonRes.send(res, CONST.RES('OK'), {msg: 'All decks saved!'});
 					}
 				}
 			});
@@ -54,7 +75,7 @@ module.exports.insert = function (req, res) {
 		console.warn('Decks dropped');
 
 		// Create dummy data
-		var defaultDeck = new Deck(mockDecks[DEFAULT_DECK]);
+		var defaultDeck = new Deck(mockDecks[CONST.TEST_DECK()]);
 
 		// Save deck to mongoDb
 		defaultDeck.save(function (err) {
@@ -77,18 +98,18 @@ module.exports.insert = function (req, res) {
 							// ned to send response using original req/res
 
 							// Create dummy data
-							var defaultUser = new User(mockUsers[DEFAULT_USER]);
+							var defaultUser = new User(mockUsers[CONST.TEST_USER()]);
 
 							// Associate dummy data
 							defaultUser.decks.created.push((JSON.parse(str))._id);
 
 							// callback only called when request hears a response event
 							var callback = function (response) {
-								jsonRes.send(res, 200, {'MockDataLoaded':  true});	
+								jsonRes.send(res, CONST.RES('OK'), {'MockDataLoaded':  true});	
 							};
 
 							// setup the POST request
-							var request = http.request(DEFAULT_USER_REQ_OPTS, callback);
+							var request = http.request(USER_REQ_OPTS, callback);
 
 							// listen for POST error
 							req.on('error', (e) => {
@@ -102,7 +123,7 @@ module.exports.insert = function (req, res) {
 						});
 					}
 
-					http.request(DEFAULT_DECK_REQ_OPTS, callback).end();
+					http.request(DECK_REQ_OPTS, callback).end();
 				});
 			}
 		});
