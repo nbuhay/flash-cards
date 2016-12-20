@@ -18,11 +18,11 @@ var userSchema = mongoose.Schema({
 			},
 			flashCards: [{
 				question: { 
-					type: String,
+					type: [String],
 					required: true
 				},
 				answer: { 
-					type: String,
+					type: [String],
 					required: true
 				},
 				gotCorrect: Boolean,
