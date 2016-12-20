@@ -1,3 +1,4 @@
+var CONST = require('../global.js');
 var mongoose = require('mongoose');
 var mockUsers = require('../mockData/users').users;
 var mockDecks = require('../mockData/decks').decks;
@@ -5,17 +6,13 @@ var User = require('../dbAPI/models/user');
 var assert = require('assert');
 var http = require('http');
 
-var DEFAULT_PORT = 3000;
-var DEFAULT_USER = 0;
-var DEFAULT_DECK = 0;
-
 describe('User Model', () => {
 
 	// arrow functions
 	describe('POST /api/user', () => {
 		it('should get a 200 response', (done) => {
 			var options = {
-				port: DEFAULT_PORT,
+				port: CONST.PORT(),
 				path: '/api/user',
 				method: 'POST'
 			};
@@ -23,16 +20,16 @@ describe('User Model', () => {
 				assert(res.statusCode == 200);
 				done();
 			});
-			req.write(JSON.stringify(mockUsers[DEFAULT_USER]));
+			req.write(JSON.stringify(mockUsers[CONST.TEST_USER()]));
 			req.end();
 		});
 	});
 
-	describe('GET /api/user/name/' + mockUsers[DEFAULT_USER].userName, () => {
-		it('should GET User user with user.userName == ' + mockUsers[DEFAULT_USER].userName, (done) => {
+	describe('GET /api/user/name/' + mockUsers[CONST.TEST_USER()].userName, () => {
+		it('should GET User user with user.userName == ' + mockUsers[CONST.TEST_USER()].userName, (done) => {
 			var options = {
-				port: DEFAULT_PORT,
-				path: '/api/user/name/' + mockUsers[DEFAULT_USER].userName
+				port: CONST.PORT(),
+				path: '/api/user/name/' + mockUsers[CONST.TEST_USER()].userName
 			};
 			var resStr = '';
 			var callback = function (response) {
@@ -40,7 +37,7 @@ describe('User Model', () => {
 					resStr += chunk;
 				});
 				response.on('end', function () {
-					assert(JSON.parse(resStr).userName == mockUsers[DEFAULT_USER].userName);
+					assert(JSON.parse(resStr).userName == mockUsers[CONST.TEST_USER()].userName);
 					done();
 				});
 			};
@@ -52,8 +49,8 @@ describe('User Model', () => {
 		it('should POST new Deck into user.decks.learning', (done) => {
 			// need deck._id, setup GET by deck.name
 			var options = {
-				port: DEFAULT_PORT,
-				path: '/api/deck/name/' + mockDecks[DEFAULT_DECK].name
+				port: CONST.PORT(),
+				path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
 			};
 			var callback = function (response) {
 				var deck = '';
@@ -64,8 +61,8 @@ describe('User Model', () => {
 					.on('end', () => {
 						// got deck, setup options using deck._id
 						var options = {
-							port: DEFAULT_PORT,
-							path: '/api/user/' + mockUsers[DEFAULT_USER].userName + '/learning/' + (JSON.parse(deck))._id,
+							port: CONST.PORT(),
+							path: '/api/user/' + mockUsers[CONST.TEST_USER()].userName + '/learning/' + (JSON.parse(deck))._id,
 							method: 'POST'
 						};
 						// setup request
@@ -85,6 +82,42 @@ describe('User Model', () => {
 						request.end();
 					});
 			};
+			http.request(options, callback).end();
+		});
+	});
+
+	describe('DELETE /api/user/_id/:_id', () => {
+		it('should delete User user with user._id==:_id', (done) => {
+			var options = {
+				port: CONST.PORT(),
+				path: '/api/user/name/' + mockUsers[CONST.TEST_USER()].userName
+			};
+			var callback = (response) => {
+				var user = '';
+				response
+					.on('data', (chunk) => {
+						user += chunk;
+					})
+					.on('end', () => {
+						var options = {
+							port: CONST.PORT(),
+							path: '/api/user/_id/' + (JSON.parse(user))._id,
+							method: 'DELETE'
+						};
+						var request = http.request(options, (response) => {
+							assert(response.statusCode == CONST.RES('OK'));
+							done();
+							});
+						request
+							.on('error', (e) => {
+								console.log('There was an error' + e);
+								console.log('err.stack: ' + e.stack);
+								assert(true == false);
+								done();
+						});
+						request.end();
+					});
+				};
 			http.request(options, callback).end();
 		});
 	});

@@ -2,7 +2,8 @@
 	--- Routes: intent | REST | URL Parms | URL
 		-- USER
 			+- create user | POST   | none      | /api/user
-			- delete user | DELETE | _id       | /api/user/_id/:_id
+			+- delete user | DELETE | _id       | /api/user/_id/:_id
+				User.findOneAndRemove
 			- edit user   | PUT    | _id       | /api/user/_id/:_id
 			- get user    | GET    | _id       | /api/user/_id/:_id
 			+- get user    | GET    | userName  | /api/user/name/:userName
@@ -23,9 +24,10 @@
 			+- insert all user data
 			+- insert all deck
 			- associations between default decks and users
+			----- create more decks
 	--- Model
-		----- Cards
-			- answer and answer as [String], allows multi line responses
+		+-- Cards
+			+- answer and answer as [String], allows multi line responses
 		-- Deck
 			- Decks being practied by a user need to be stored with that user model
 				+- save to user object
@@ -33,6 +35,7 @@
 				+- fork their own copy of the deck
 				+- create cards off originals
 				- what becomes of favs?
+					- +1 each time someone chooses to 'learn' the deck
 	--- Mocha
 		-- Better testing with a DB
 			- how to know the state
@@ -109,6 +112,10 @@
 			- send all back to db at one time
 		-- Should be limit on questions allowed
 ---- Misc
+	--- Tools
+		-- BitBucket auth
+		-- Github auth
+		-- Jenkins RasPi
 	--- Questions
 		-- When/where should res.send(STATUS); be called during mongoose query operations?
 		-- When to use map() over iterating?

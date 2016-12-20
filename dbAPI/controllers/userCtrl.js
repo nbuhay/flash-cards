@@ -1,4 +1,4 @@
-var express = require('express');
+var CONST = require('../../global.js');
 var mongoose = require('mongoose');
 var User = require('../models/user');
 var Deck = require('../models/deck');
@@ -66,5 +66,17 @@ module.exports.insertLearning = (req, res) => {
 				jsonRes.send(res, 200, updatedUser);
 			});
 		});
+	});
+}
+
+module.exports.findOneAndRemove = (req, res) => {
+	var options = {
+		_id: req.params._id
+	};
+	User.findOneAndRemove(options, (err, user) => {
+		if (err) {
+			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: 'findOneAndRemove.findOneAndRemove.error: ' + err} );
+		}
+		jsonRes.send(res, CONST.RES('OK'), { msg: 'user.' + user._id + ' sucessfully deleted!'});
 	});
 }
