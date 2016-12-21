@@ -11,9 +11,10 @@ router.get('/mockData/decks', mockDataCtrl.insertDecks);
 router.post('/user', userCtrl.newUser);
 router.get('/user/name/:userName', userCtrl.findOne);
 router.post('/user/:userName/learning/:deck_id', userCtrl.insertLearning);
+router.get('/user/_id/:_id', userCtrl.findById)
 router.delete('/user/_id/:_id', userCtrl.findOneAndRemove);
 
 router.get('/deck/name/:name', deckCtrl.findOne);
-router.get('/deck/_id/:_id', deckCtrl.findOneId);
+router.get('/deck/_id/:_id', deckCtrl.findById);
 
 module.exports = router;

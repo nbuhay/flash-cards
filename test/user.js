@@ -45,6 +45,41 @@ describe('User Model', () => {
 		});
 	});
 
+	describe('GET /api/user/_id/:_id', () => {
+		it('should GET User user with user._id==:_id', (done) => {
+			var options = {
+				port: CONST.PORT(),
+				path: '/api/user/name/' + mockUsers[CONST.TEST_USER()].userName
+			};
+			var callback = (response) => {
+				var user = '';
+				response
+					.on('data', (chunk) => {
+						user += chunk;
+					})
+					.on('end', () => {
+						var options = {
+							port: CONST.PORT(),
+							path: '/api/user/_id/' + (JSON.parse(user))._id
+						};
+						var callback = (response) => {
+							var user = '';
+							response
+								.on('data', (chunk) => {
+									user += chunk;
+								})
+								.on('end', () => {
+									assert(response.statusCode == CONST.RES('OK'));
+									done();
+								});
+						};
+						http.request(options, callback).end();
+					});
+			};
+			http.request(options, callback).end();
+		});
+	});
+
 	describe('POST /api/user/:nameUser/learning/:deck_id', () => {
 		it('should POST new Deck into user.decks.learning', (done) => {
 			// need deck._id, setup GET by deck.name
