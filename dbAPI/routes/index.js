@@ -10,7 +10,8 @@ router.get('/mockData/decks', mockDataCtrl.insertDecks);
 
 router.get('/user', userCtrl.findAll);
 router.post('/user', userCtrl.newUser);
-router.get('/user/_id/:_id', userCtrl.findById)
+router.get('/user/_id/:_id', userCtrl.findById);
+router.put('/user/_id/:_id', userCtrl.findByIdAndUpdate);
 router.get('/user/name/:userName', userCtrl.findByName);
 router.delete('/user/_id/:_id', userCtrl.findOneAndRemove);
 router.post('/user/:userName/learning/:deck_id', userCtrl.insertLearning);

@@ -34,13 +34,22 @@ module.exports.findById = (req, res) => {
 	};
 	User.findById(options, (err, user) => {
 		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), {'msg':  err});
+			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg:  err });
 		}
 		jsonRes.send(res, CONST.RES('OK'), user);
 	});
 };
 
-module.exports.findByName = function (req, res) {
+module.exports.findByIdAndUpdate = (req, res) => {
+	User.findByIdAndUpdate(req.params._id, req.body, (err, user) => {
+		if (err) {
+			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: err });
+		}
+		jsonRes.send(res, CONST.RES('OK'), {msg: 'Update Succesful'});
+	});
+};
+
+module.exports.findByName = (req, res) => {
 	User.findOne({'userName': req.params.userName}, (err, user) => {
 		if (err) console.log("Error");
 		jsonRes.send(res, 200, user);

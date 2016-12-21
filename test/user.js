@@ -100,6 +100,50 @@ describe('User Model', () => {
 		});
 	});
 
+	describe('PUT /api/user/_id/:_id', () => {
+		it('should update User user where user._id == :_id', (done) => {
+			var newUserName = 'Test';
+			var newZip = 00000;
+			var options = {
+				port: CONST.PORT(),
+				path: '/api/user/name/' + mockUsers[CONST.TEST_USER()].userName
+			};
+			var callback = (response) => {
+				var user = '';
+				response
+					.on('data', (chunk) => {
+						user += chunk;
+					})
+					.on('end', () => {
+						var userJson = JSON.parse(user);
+						userJson.userName = newUserName;
+						userJson.zip = newZip;
+						var options = {
+							port: CONST.PORT(),
+							path: '/api/user/_id/' + userJson._id,
+							method: 'PUT',
+							headers: {
+				        'Content-Type': 'application/json'
+				        'Content-Length': Buffer.byteLength(JSON.stringify(userJson))
+				      }
+						};
+						var request = http.request(options, (response) => {
+							assert(response.statusCode == CONST.RES('OK'));
+							done();
+						});
+						request
+							.on('error', (err) => {
+								assert(true == false);
+								done();
+							});
+						request.write(JSON.stringify(userJson));
+						request.end();
+					});
+			}
+			http.request(options, callback).end();
+		});
+	});
+
 	describe('POST /api/user/:nameUser/learning/:deck_id', () => {
 		it('should POST new Deck into user.decks.learning', (done) => {
 			// need deck._id, setup GET by deck.name
