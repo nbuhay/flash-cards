@@ -8,7 +8,27 @@ var http = require('http');
 
 describe('User Model', () => {
 
-	// arrow functions
+	describe('GET /api/user', () => {
+		it('should GET all Users', (done) => {
+			var options = {
+				port: CONST.PORT(),
+				path: '/api/user'
+			};
+			var callback = (response) => {
+				var users = '';
+				response
+					.on('data', (chunk) => {
+						users += chunk;
+					})
+					.on('end', () => {
+						assert((JSON.parse(users)).length == mockUsers.length);
+						done();
+					});
+			};
+			http.request(options, callback).end();
+		});
+	});
+
 	describe('POST /api/user', () => {
 		it('should get a 200 response', (done) => {
 			var options = {
@@ -25,8 +45,8 @@ describe('User Model', () => {
 		});
 	});
 
-	describe('GET /api/user/name/' + mockUsers[CONST.TEST_USER()].userName, () => {
-		it('should GET User user with user.userName == ' + mockUsers[CONST.TEST_USER()].userName, (done) => {
+	describe('GET /api/user/name/:userName', () => {
+		it('should GET User user with user.userName == :userName', (done) => {
 			var options = {
 				port: CONST.PORT(),
 				path: '/api/user/name/' + mockUsers[CONST.TEST_USER()].userName
@@ -46,7 +66,7 @@ describe('User Model', () => {
 	});
 
 	describe('GET /api/user/_id/:_id', () => {
-		it('should GET User user with user._id==:_id', (done) => {
+		it('should GET User user with user._id == :_id', (done) => {
 			var options = {
 				port: CONST.PORT(),
 				path: '/api/user/name/' + mockUsers[CONST.TEST_USER()].userName

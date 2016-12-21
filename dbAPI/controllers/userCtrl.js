@@ -1,15 +1,16 @@
 var CONST = require('../../global.js');
-var mongoose = require('mongoose');
 var User = require('../models/user');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
 
-module.exports.findOne = function (req, res) {
-	User.findOne({'userName': req.params.userName}, (err, user) => {
-		if (err) console.log("Error");
-		jsonRes.send(res, 200, user);
+module.exports.findAll = (req, res) => {
+	User.find((err, users) => {
+		if (err) {
+			jsonRes.send(res, CONST.RES('SERVFAIL'), {'msg': err});
+		}
+		jsonRes.send(res, CONST.RES('OK'), users);
 	});
-}
+};
 
 module.exports.newUser = (req, res) => {
 	var body = [];
@@ -25,7 +26,38 @@ module.exports.newUser = (req, res) => {
 			jsonRes.send(res, 200, JSON.parse(body.join()));
 		});
 	});
-}
+};
+
+module.exports.findById = (req, res) => {
+	var options = {
+		_id: req.params._id
+	};
+	User.findById(options, (err, user) => {
+		if (err) {
+			jsonRes.send(res, CONST.RES('SERVFAIL'), {'msg':  err});
+		}
+		jsonRes.send(res, CONST.RES('OK'), user);
+	});
+};
+
+module.exports.findByName = function (req, res) {
+	User.findOne({'userName': req.params.userName}, (err, user) => {
+		if (err) console.log("Error");
+		jsonRes.send(res, 200, user);
+	});
+};
+
+module.exports.findOneAndRemove = (req, res) => {
+	var options = {
+		_id: req.params._id
+	};
+	User.findOneAndRemove(options, (err, user) => {
+		if (err) {
+			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: 'findOneAndRemove.findOneAndRemove.error: ' + err} );
+		}
+		jsonRes.send(res, CONST.RES('OK'), { msg: 'user.' + user._id + ' sucessfully deleted!'});
+	});
+};
 
 module.exports.insertLearning = (req, res) => {
 	var options = {
@@ -66,29 +98,5 @@ module.exports.insertLearning = (req, res) => {
 				jsonRes.send(res, 200, updatedUser);
 			});
 		});
-	});
-}
-
-module.exports.findOneAndRemove = (req, res) => {
-	var options = {
-		_id: req.params._id
-	};
-	User.findOneAndRemove(options, (err, user) => {
-		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: 'findOneAndRemove.findOneAndRemove.error: ' + err} );
-		}
-		jsonRes.send(res, CONST.RES('OK'), { msg: 'user.' + user._id + ' sucessfully deleted!'});
-	});
-}
-
-module.exports.findById = (req, res) => {
-	var options = {
-		_id: req.params._id
-	};
-	User.findById(options, (err, user) => {
-		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), {'msg':  err});
-		}
-		jsonRes.send(res, CONST.RES('OK'), user);
 	});
 };
