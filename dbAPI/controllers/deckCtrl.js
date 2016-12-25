@@ -1,7 +1,17 @@
-var express = require('express');
+var CONST = require('../../global');
 var mongoose = require('mongoose');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
+
+module.exports.findAll = (req, res) => {
+	Deck.find((err, decks) => {
+		if (err) {
+			console.error('Error:dbAPI:deckCtrl.findAll:' + err);
+			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: 'Error:dbAPI:deckCtrl.findAll:' + err });
+		}
+		jsonRes.send(res, CONST.RES('OK'), decks);
+	});
+};
 
 module.exports.findOne = function (req, res) {
 	Deck.findOne(

@@ -6,15 +6,15 @@ var deckSchema = mongoose.Schema({
 	tags: [String],
 	cards: [{
 			question: {
-				type: String,
+				type: [String],
 				required: true
 			},
 			answer: {
-				type: String,
+				type: [String],
 				required: true
 			}
 		}],
-	favs: Number
+	learning: Number
 });
 
 module.exports = mongoose.model('Deck', deckSchema);
