@@ -110,4 +110,48 @@ describe('Deck Model', () => {
 		});
 	});
 
+	// Does not use done() callback!
+	// try to return just the promise
+	//   .then and .catch immediately after
+	describe('POST /api/deck', () => {
+		it('should add a new deck to the db', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: CONST.PORT(),
+					path: '/api/deck',
+					method: 'POST'
+				};
+				var mockDeck = {
+					name: 'TestDeck',
+					description: 'POST /api/deck description',
+					tags: ['mock', 'test', 'data'],
+					cards: [
+						{
+							question: ['Is this a test'],
+							answer: ['Yes']
+						},
+						{
+							question: ['R U Sure'],
+							answer: ['Ys']
+						}
+					],
+					learning: 10
+				};
+				// requests only get the response, no .on
+				var request = http.request(options, (response) => {
+					resolve(response);
+				});
+				request.on('error', (err) => reject(err));
+				request.end(JSON.stringify(mockDeck));
+			})
+			.then((resolveValue) => {
+				assert(resolveValue.statusCode == CONST.RES('OK'));
+			})
+			.then(undefined, (rejectValue) => {
+				console.error({ msg: rejectValue });
+				assert(true == false);
+			});
+		});
+	});
+
 });
