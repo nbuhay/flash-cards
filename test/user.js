@@ -123,7 +123,7 @@ describe('User Model', () => {
 							path: '/api/user/_id/' + userJson._id,
 							method: 'PUT',
 							headers: {
-				        'Content-Type': 'application/json'
+				        'Content-Type': 'application/json',
 				        'Content-Length': Buffer.byteLength(JSON.stringify(userJson))
 				      }
 						};
