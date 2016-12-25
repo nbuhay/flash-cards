@@ -6,32 +6,46 @@ var Deck = require('../dbAPI/models/deck');
 
 describe('Deck Model', () => {
 
+	// promise implementation
 	describe('GET /api/decks', () => {
 		it('should return all Deck objects', (done) => {
-			var options = {
-				port: CONST.PORT(),
-				path: '/api/decks'
-			};
-			var callback = (response) => {
-				var decks = '';
-				response
-					.on('data', (chunk) => {
-						decks += chunk;
-					})
-					.on('end', () => {
-						assert(response.statusCode == CONST.RES('OK'));
-						done();
+			var promise = new Promise((resolve, reject) => {
+				var options = {
+					port: CONST.PORT(),
+					path: '/api/decks'
+				};
+				var callback = (response) => {
+					var decks = '';
+					response
+						.on('data', (chunk) => {
+							decks += chunk;
+						})
+						.on('end', () => {
+							resolve(JSON.parse(decks));
+						});
+				};
+				var req = http.request(options, callback);
+				req
+					.on('error', (e) => {
+						console.log('Error: ', e);
+						reject(e); 	 	
 					});
-			};
-			var req = http.request(options, callback);
-			req
-				.on('error', (e) => {
+				req.end();
+			});
+			promise
+				.then((resolveValue) => {
+					assert(resolveValue.length == mockDecks.length);
+					done();
+				})
+				// will catch node.js runtime errors
+				//   possibly can catch resolve() error in the assert because:
+				//     assert is a node library
+				//		 failure counts as a node.js runtime error
+				.catch((rejectValue) => {
+					console.log({ msg: rejectValue });
 					assert(true == false);
 					done();
 				});
-			req.end();
-			// promise
-			// var promise = new Promise()
 		});
 	});
 
