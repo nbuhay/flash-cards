@@ -1,58 +1,87 @@
 var CONST = require('../global');
+var config = require('../global').config();
 var assert = require('assert');
 var http = require('http');
-var mockDecks = require('../mockData/decks').decks;
+var mongoose = require('mongoose');
 var Deck = require('../dbAPI/models/deck');
+var mockDecks = require('../mockData/decks').decks;
 
 describe('Deck Model', () => {
 
-	// promise implementation
-	describe('GET /api/decks', () => {
-		it('should return all Deck objects', (done) => {
+	before((done) => {
+		// db ceremony...
+		console.log('Bootstrap Unit Tests');
+		require('../dbAPI/models/db');
+		require('../bin/www');
+		// make sure connection is established
+		mongoose.connection.once('connected', () => {
 			var promise = new Promise((resolve, reject) => {
-				var options = {
-					port: CONST.PORT(),
-					path: '/api/decks'
-				};
-				var callback = (response) => {
-					var decks = '';
-					response
-						.on('data', (chunk) => {
-							decks += chunk;
-						})
-						.on('end', () => {
-							resolve(JSON.parse(decks));
-						});
-				};
-				var req = http.request(options, callback);
-				req
-					.on('error', (e) => {
-						console.log('Error: ', e);
-						reject(e); 	 	
-					});
-				req.end();
-			});
-			promise
-				.then((resolveValue) => {
-					assert(resolveValue.length == mockDecks.length);
-					done();
-				})
-				// will catch node.js runtime errors
-				//   possibly can catch resolve() error in the assert because:
-				//     assert is a node library
-				//		 failure counts as a node.js runtime error
-				.catch((rejectValue) => {
-					console.log({ msg: rejectValue });
-					assert(true == false);
+				// cleanse the db
+				mongoose.connection.db.dropDatabase(() => {
+					console.log('mongoose.connection.db.dropDatabase.success');
+					resolve();
+				});
+			})
+			.then((resolveValue) => {
+				// drop the collections
+				mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
+					if (err) reject(err);
+					console.log('decks.insertedCount=%s', decks.insertedCount);
 					done();
 				});
+			})
+			.then(undefined, (rejectValue) => {
+				console.log('Something bad happened, should cancel tests...%s', rejectValue);
+			});
+		});
+	});
+
+	// beforeEach(() => {
+	// 	// console.log('Before Each Test');
+	// });
+	// afterEach(() => {
+	// 	// console.log('After Each Test');
+	// });
+	// after(() => {		
+	// 	console.log('After Tests');		
+	// });
+
+	// promise implementation
+	describe('GET /api/decks', () => {
+		it('should return all Deck objects', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.port,
+					path: '/api/decks'
+				};
+				var callback = (res) => {
+					var decks = '';
+					res
+						.on('data', (chunk) => decks += chunk)
+						.on('end', () => resolve(JSON.parse(decks)));
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject(err));
+				req.end();
+			})
+			.then((resolveValue) => {
+				assert(resolveValue.length == mockDecks.length);
+			})
+			// will catch node.js runtime errors
+			//   possibly can catch resolve() error in the assert because:
+			//     assert is a node library
+			//		 failure counts as a node.js runtime error
+			.then(undefined, (rejectValue) => {
+				console.log({ msg: rejectValue });
+				assert(true == false);
+			});
 		});
 	});
 
 	describe('GET /deck/name/' + mockDecks[CONST.TEST_DECK()].name, () => {
 		it('should return Deck deck with deck.name=' + mockDecks[CONST.TEST_DECK()].name, (done) => {
 			var options = {
-				port: CONST.PORT(),
+				port: config.port,
 				path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
 			};
 			var callback = function (response) {
@@ -74,7 +103,7 @@ describe('Deck Model', () => {
 		it('should GET Deck deck with deck._id == req.params._id', (done) => {
 			// need to GET by name first, inserted in test above
 			var options = {
-				port: CONST.PORT(),
+				port: config.port,
 				path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
 			};
 			var callback = function (response) {
@@ -89,7 +118,7 @@ describe('Deck Model', () => {
 						// store the deck._id
 						var deckWith_id = (JSON.parse(deck)); 
 						var options = {
-							port: CONST.PORT(),
+							port: config.port,
 							path: '/api/deck/_id/' + deckWith_id._id
 						};
 						var callback = function (response) {
@@ -117,7 +146,7 @@ describe('Deck Model', () => {
 		it('should add a new deck to the db', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: CONST.PORT(),
+					port: config.port,
 					path: '/api/deck',
 					method: 'POST'
 				};
@@ -151,6 +180,23 @@ describe('Deck Model', () => {
 				console.error({ msg: rejectValue });
 				assert(true == false);
 			});
+		});
+	});
+
+	describe('DELETE /api/deck/_id/:_id', () => {
+		it('should delete Deck deck where deck._id == :_id', () => {
+			// return new Promise((resolve, reject) => {
+			// 	var options = {
+			// 		port: config.port,
+			// 		path: '/api/deck/_id/' + 
+			// 	};
+			// })
+			// .then((resolveValue) => {
+
+			// })
+			// .then((undefined, rejectValue) => {
+
+			// });
 		});
 	});
 

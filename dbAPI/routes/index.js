@@ -8,7 +8,7 @@ router.get('/mockData', mockDataCtrl.insert);
 router.get('/mockData/users', mockDataCtrl.insertUsers);
 router.get('/mockData/decks', mockDataCtrl.insertDecks);
 
-router.get('/user', userCtrl.findAll);
+router.get('/users', userCtrl.findAll);
 router.post('/user', userCtrl.newUser);
 router.get('/user/_id/:_id', userCtrl.findById);
 router.put('/user/_id/:_id', userCtrl.findByIdAndUpdate);

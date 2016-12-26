@@ -15,7 +15,6 @@ module.exports.findAll = (req, res) => {
 
 module.exports.save = (req, res) => {
 	var deck = new Deck(req.body);
-	jsonRes.send(res, CONST.RES('OK'), deck);
 	deck.save()
 		.then((resolveValue) => {
 			jsonRes.send(res, CONST.RES('OK'), resolveValue);

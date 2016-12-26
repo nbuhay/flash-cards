@@ -1,3 +1,5 @@
+const env = require('./env.json');
+
 const RES = {
 	OK: 200,
 	SERVFAIL: 500,
@@ -11,6 +13,12 @@ const RES = {
 const PORT = 3000;
 const TEST_DECK = 0;
 const TEST_USER = 0;
+
+
+module.exports.config = () => {
+	var node_env = [process.env.NODE_ENV || 'development'];
+	return env[node_env];
+}
 
 module.exports.PORT = () => {
 	return PORT;

@@ -76,3 +76,5 @@ p.then
 	else error
 
 [NODE_ENV for dev/prod](http://himanshu.gilani.info/blog/2012/09/26/bootstraping-a-node-dot-js-app-for-dev-slash-prod-environment/)
+
+[Node Debugger](https://github.com/node-inspector/node-inspector)
