@@ -47,3 +47,23 @@ module.exports.findById = (req, res) => {
 		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.findOneId:' + rejectValue});
 	});
 };
+
+module.exports.findOneAndRemove = (req, res) => {
+	var promise = new Promise((resolve, reject) => {
+		var options = {
+			_id: req.params._id
+		};
+		Deck.findOneAndRemove(options, (err, user) => {
+			if (err) {
+				reject('findOneAndRemove:%s', err);
+			}
+			resolve('findOneAndRemove:success:%s', user);
+		});
+	})
+	.then((resolveValue) => {
+		jsonRes.send(res, resCode['OK'], resolveValue);
+	})
+	.then(undefined, (rejectValue) => {
+		jsonRes.send(res, resCode['SERVFAIL'], rejectValue);
+	});
+};

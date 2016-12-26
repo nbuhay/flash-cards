@@ -11,7 +11,7 @@ var mockDecks = require('../mockData/decks').decks;
 describe('Deck Model', () => {
 
 	before((done) => {
-		console.log('    Bootstrap Unit Tests');
+		console.log('    Before Tests');
 		require('../bin/www');
 		// db ceremony...
 		// make sure connection is established
@@ -42,7 +42,7 @@ describe('Deck Model', () => {
 	});
 
 	after(() => {		
-		console.log('    Post-Test Cleanup');
+		console.log('   After Tests');
 		console.log('\tClosing server...');
 		server.close((err, data) => (err) ? console.log('Error:' + err) : console.log('\tServer Closed'));		
 	});
@@ -159,12 +159,16 @@ describe('Deck Model', () => {
 					}
 				};
 				// requests only get the response, no .on
-				var req = http.request(options, (res) => resolve(res));
-				req.on('error', (err) => reject(err));
+				var req = http.request(options, (res) => {
+					if (res.statusCode != resCode['OK']) {
+						reject('badStatusCode:' + res.statusCode);
+					}
+					resolve();
+				});
+				req.on('error', (err) => reject('reqError:' + err));
 				req.end(JSON.stringify(mockDeck));
 			})
-			.then((resolveValue) => {
-				if (resolveValue.statusCode != resCode['OK']) reject(resolveValue.statusCode);
+			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.port,
@@ -177,32 +181,63 @@ describe('Deck Model', () => {
 							.on('end', () => resolve(deck));
 					};
 					var req = http.request(options, callback);
-					req.on('error', (err) => reject(err));
+					req.on('error', (err) => reject('reqError:' + err));
 					req.end();
 				});
 			})
 			.then((resolveValue) => {
 				assert((JSON.parse(resolveValue))._id == mockDeck._id);
 			})
-			.then(undefined, (rejectValue) => assert(true == false));
+			.then(undefined, (rejectValue) => {
+				// console.log('promiseRejected:%s', rejectValue);
+				assert(true == false);
+			});
 		});
 	});
 
-	// describe('DELETE /api/deck/_id/:_id', () => {
-	// 	it('should delete Deck deck where deck._id == :_id', () => {
-	// 		return new Promise((resolve, reject) => {
-	// 			var options = {
-	// 				port: config.port,
-	// 				path: '/api/deck/_id/' + 
-	// 			};
-	// 		})
-	// 		.then((resolveValue) => {
-
-	// 		})
-	// 		.then((undefined, rejectValue) => {
-
-	// 		});
-	// 	});
-	// });
+	describe('DELETE /api/deck/_id/:_id', () => {
+		it('should delete Deck deck from the db where deck._id == :_id', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.port,
+					path: '/api/deck/_id/' + mockDecks[testDeck]._id,
+					method: 'DELETE'
+				};
+				var req = http.request(options, (res) => {
+					if (res.statusCode != resCode['OK']) {
+						reject('badStatusCode:' + res.statusCode);
+					}
+					resolve();
+				});
+				req.on('error', (err) => reject('reqError:' + err));
+				req.end();
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.port,
+						path: '/api/deck/_id/' + mockDecks[testDeck]._id
+					};
+					var callback = (res) => {
+						var deck = '';
+						res
+							.on('data', (chunk) => deck += chunk)
+							.on('end', () => resolve(JSON.parse(deck)));
+					};
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject('reqError:' + err));
+					req.end();
+				});
+			})
+			.then((resolveValue) => {
+				// console.log('promiseResolved:expectNullAfterDelete');
+				assert(resolveValue == null);
+			})
+			.then(undefined, (rejectValue) => {
+				// console.log('promiseRejected:%s', rejectValue);
+				assert(true == false);
+			});
+		});
+	});
 
 });
