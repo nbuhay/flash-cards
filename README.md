@@ -43,3 +43,36 @@ folks only use small set of http error codes
 		410
 		412
 		500
+[Joyent Node.js Error Practices](https://www.joyent.com/node-js/production/design/errors)
+
+[MDN Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+	Async computation
+	promise represent value which may be available now, or in the future, or never
+
+	new Promise (/* executor */ function(resolve, reject) { ... } );
+		immediately executor is invoked and passed resolve and reject functions
+			executes some kind of work
+			calls either resolve ore reject to resolve or reject the Promise
+				if error, promise is rejected, return value of resolve ignored
+
+A Promise is a proxy for a value not necessarily known when the promise is created. It allows you to associate handlers to an asynchronous action's eventual success value or failure reason. This lets asynchronous methods return values like synchronous methods: instead of the final value, the asynchronous method returns a promise for the value at some point in the future.
+
+Pending: Initial state, not fulfilled or rejected
+Fulfilled: completed successfully
+Rejected:  operation failed
+
+
+Promise
+
+promise (resolve, reject)
+	do your task
+		if ok, resolve
+		else reject
+
+
+p.then
+	okay what happened?
+		do something with the result
+	else error
+
+[NODE_ENV for dev/prod](http://himanshu.gilani.info/blog/2012/09/26/bootstraping-a-node-dot-js-app-for-dev-slash-prod-environment/)
