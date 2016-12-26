@@ -34,8 +34,16 @@ module.exports.findOne = function (req, res) {
 };
 
 module.exports.findById = function (req, res) {
-	Deck.findById(req.params._id, (err, deck) => {
-			if (err) console.error('Error:dbAPI:deckCtrl.findOneId:' + err);
-			jsonRes.send(res, 200, deck);
+	var promise = new Promise((resolve, reject) => {
+		Deck.findById(req.params._id, (err, deck) => {
+			if (err) reject(err);
+			resolve(deck);
+		});
+	})
+	.then((resolveValue) => {
+		jsonRes.send(res, 200, resolveValue);
+	})
+	.then(undefined, (rejectValue) => {
+		jsonRes.send(res, 500, 'Error:dbAPI:deckCtrl.findOneId:' + rejectValue);
 	});
 };

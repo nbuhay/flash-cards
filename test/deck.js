@@ -1,5 +1,6 @@
 var CONST = require('../global');
 var config = require('../global').config();
+const testDeck = require('../global').TEST_DECK();
 var assert = require('assert');
 var http = require('http');
 var mongoose = require('mongoose');
@@ -16,13 +17,17 @@ describe('Deck Model', () => {
 		// make sure connection is established
 		mongoose.connection.once('connected', () => {
 			var promise = new Promise((resolve, reject) => {
-				// cleanse the db
+				// cleanse the dbw
 				mongoose.connection.db.dropDatabase(() => {
 					console.log('mongoose.connection.db.dropDatabase.success');
 					resolve();
 				});
 			})
 			.then((resolveValue) => {
+				// mockDecks[i]._id casted to Mongo ObjectId type
+				for (var i = 0; i < mockDecks.length; i++) {
+					mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
+				}
 				// drop the collections
 				mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
 					if (err) reject(err);
@@ -48,7 +53,7 @@ describe('Deck Model', () => {
 
 	// promise implementation
 	describe('GET /api/decks', () => {
-		it('should return all Deck objects', () => {
+		it('should return all Deck docs', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.port,
@@ -78,11 +83,11 @@ describe('Deck Model', () => {
 		});
 	});
 
-	describe('GET /deck/name/' + mockDecks[CONST.TEST_DECK()].name, () => {
-		it('should return Deck deck with deck.name=' + mockDecks[CONST.TEST_DECK()].name, (done) => {
+	describe('GET /deck/name/:name', () => {
+		it('should return Deck deck with deck.name == :name', (done) => {
 			var options = {
 				port: config.port,
-				path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
+				path: '/api/deck/name/' + mockDecks[testDeck].name
 			};
 			var callback = function (response) {
 				var deck = '';
@@ -91,7 +96,7 @@ describe('Deck Model', () => {
 						deck += chunk;
 					})
 					.on('end', () => {
-						assert(JSON.parse(deck).name == mockDecks[CONST.TEST_DECK()].name);
+						assert(JSON.parse(deck).name == mockDecks[testDeck].name);
 						done();
 					});
 			}
@@ -100,39 +105,19 @@ describe('Deck Model', () => {
 	});
 
 	describe('GET /api/deck/_id/:_id', () => {
-		it('should GET Deck deck with deck._id == req.params._id', (done) => {
+		it('should GET Deck deck with deck._id == :_id', (done) => {
 			// need to GET by name first, inserted in test above
 			var options = {
 				port: config.port,
-				path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
+				path: '/api/deck/_id/' + mockDecks[testDeck]._id
 			};
-			var callback = function (response) {
+			var callback = function (res) {
 				var deck = '';
-				response
-					.on('data', (chunk) => {
-						deck += chunk;
-					});
-				response
-					.on('end', function () {
-						// got deck by name, now get by _id
-						// store the deck._id
-						var deckWith_id = (JSON.parse(deck)); 
-						var options = {
-							port: config.port,
-							path: '/api/deck/_id/' + deckWith_id._id
-						};
-						var callback = function (response) {
-							var deck = '';
-							response
-								.on('data', (chunk) => {
-									deck += chunk;
-								})
-								.on('end', () => {
-									assert((JSON.parse(deck))._id == deckWith_id._id);
-									done();
-								});
-						};
-						http.request(options, callback).end();
+				res
+					.on('data', (chunk) => deck += chunk)
+					.on('end', () => {
+						assert(JSON.parse(deck)._id == mockDecks[testDeck]._id);
+						done();
 					});
 			};
 			http.request(options, callback).end();
@@ -151,6 +136,7 @@ describe('Deck Model', () => {
 					method: 'POST'
 				};
 				var mockDeck = {
+					_id: 4,
 					name: 'TestDeck',
 					description: 'POST /api/deck description',
 					tags: ['mock', 'test', 'data'],
