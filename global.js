@@ -1,6 +1,5 @@
 const env = require('./env.json');
-
-const RES = {
+const resCode = {
 	OK: 200,
 	SERVFAIL: 500,
 	NOTFOUND: 404,
@@ -11,9 +10,8 @@ const RES = {
 	FORBID: 403
 };
 const PORT = 3000;
-const TEST_DECK = 0;
+const testDeck = 0;
 const TEST_USER = 0;
-
 
 module.exports.config = () => {
 	var node_env = [process.env.NODE_ENV || 'development'];
@@ -25,7 +23,7 @@ module.exports.PORT = () => {
 } 
 
 module.exports.TEST_DECK = () => {
-	return TEST_DECK;
+	return testDeck;
 }
 
 module.exports.TEST_USER = () => {
@@ -33,5 +31,13 @@ module.exports.TEST_USER = () => {
 }
 
 module.exports.RES = (code) => {
-	return RES[code];
+	return resCode[code];
+}
+
+module.exports.resCode = () => {
+	return resCode;
+}
+
+module.exports.testDeck = () => {
+	return testDeck;
 }
