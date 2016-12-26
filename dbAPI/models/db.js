@@ -6,9 +6,9 @@ mongoose.connect(config.dbURI);
 var db = mongoose.connection;
 
 // Log MongoDB connection activity
-db.on('connected', () => console.log('Mongoose connected to ' + config.dbURI));
-db.on('error', (err) => console.log('Mongoose connection error: ' + err));
-db.on('disconnected', () => console.log('Mongoose disconnected'));
+db.on('connected', () => console.log('\tMongoose connected to ' + config.dbURI));
+db.on('error', (err) => console.log('\tMongoose connection error: ' + err));
+db.on('disconnected', () => console.log('\tMongoose disconnected'));
 
 // close MongoDB connections
 var gracefulShutdown = function (msg, callback) {

@@ -4,7 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-if (process.env.NODE_ENV != 'test') require('./dbAPI/models/db');
+require('./dbAPI/models/db');
 
 var index = require('./webserver/routes/index');
 var deck = require('./webserver/routes/deck');
