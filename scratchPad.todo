@@ -4,15 +4,18 @@
 			+- create user | POST   | none      | /api/user
 			+- delete user | DELETE | _id       | /api/user/_id/:_id
 				User.findOneAndRemove
-			- edit user   | PUT    | _id       | /api/user/_id/:_id
-			- get user    | GET    | _id       | /api/user/_id/:_id
+			+- edit user   | PUT    | _id       | /api/user/_id/:_id
+			+- get user    | GET    | _id       | /api/user/_id/:_id
 			+- get user    | GET    | userName  | /api/user/name/:userName
-			- all users   | GET    | none      | /api/users
-		-- DECK
-			- create deck | POST   | none      | /api/deck
-			- edit deck   | PUT    | _id       | /api/deck/_id/:_id
-			- delete deck | DELETE | _id       | /api/deck/_id/:_id
-			- all decks   | GET    | none      | /api/decks
+			+- all users   | GET    | none      | /api/users
+			- learning     | POST   | 
+			- rm learning  | DELETE |
+			- updtLearning | PUT    |
+		+-- DECK
+			+- create deck | POST   | none      | /api/deck
+			+- edit deck   | PUT    | _id       | /api/deck/_id/:_id
+			+- delete deck | DELETE | _id       | /api/deck/_id/:_id
+			+- all decks   | GET    | none      | /api/decks
 			+- get a deck  | GET    | _id       | /api/deck/_id/:_id
 			+- get a deck  | GET    | name      | /api/deck/name/:name
 		-- CARD
@@ -32,14 +35,18 @@
 			- Decks being practied by a user need to be stored with that user model
 				+- save to user object
 				- how to update if deck gets new additions?
+					- check for new cards
+					- compare check with master
+					- determine which cards want
 				+- fork their own copy of the deck
 				+- create cards off originals
 				- what becomes of favs?
+					+- rename learning
 					- +1 each time someone chooses to 'learn' the deck
 	--- Mocha
 		-- Better testing with a DB
 			- how to know the state
-			- create separate test db
+			+- create separate test db
 			- how to test users
 			- how to make sure no interactions are messing with eachother
 		-- Assertion library usage
@@ -112,13 +119,77 @@
 			- send all back to db at one time
 		-- Should be limit on questions allowed
 ---- Misc
+	----- global.js refactor
+		-- change across all files
+			- access resCode
+			- removal CONST
+			- rename to config.js
+			- mockData.jsons loaded here?
+	--- Error Handling
+		-- use __filename for better error string
+		-- use function name
+		-- built per file
+	--- Testing
+		!----- Testing ceremonies
+			+-- test/deck.js
+				+- drop databse
+				+- insert expected values
+					- objects
+					- associations
+				+- continue onto test
+				+- DB Connectivity specific to testing
+			-- test/user.js
+				- drop databse
+				- insert expected values
+					- objects
+					- associations
+				- continue onto test
+				- DB Connectivity specific to testing
+			-- test/mockData.js
+				- drop databse
+				- insert expected values
+					- objects
+					- associations
+				- continue onto test
+				- DB Connectivity specific to testing				
+		-- How to structure so before, beforeEach, afterEach, and after are used?
+			- is this supposed to happen once before all tests suites?
+			- do I overload each definition per test suite?
+			- how to best load if definitions affect all test suites?
+		-- Chai Integration
+		-- Mongoose promise library to stop warnings during mocha tests
+	--- Project
+		-- proper README.md
+		-- github description
 	--- Tools
 		-- BitBucket auth
 		-- Github auth
 		-- Jenkins RasPi
+		-- Travis for test case status
 	--- Questions
 		-- When/where should res.send(STATUS); be called during mongoose query operations?
 		-- When to use map() over iterating?
 		-- How to asynchronously unit test?
 		-- How does done() really work in Mocha?
 		-- Gracefully handle errors?
+			https://www.joyent.com/node-js/production/design/errors
+				Difference between error and exception
+					errors are Error class, pased to function/thrown
+						when thrown, is considered an exception
+						throw new Error('something bad'); // exception
+						callback(new Error('something bas')); // regular error
+					suggest try/catch when JSON.parse or other user-input validation
+					not common to catch error from async
+
+					Operational errors
+						run-time problems experienced by correctly written programs
+						not bugs, problems with something else
+							failed to connect to server, failed to resolve hostname, invalid user input, request timeout, server returned a 500 response, socket hang-up, system is out of memory
+						Programmer Errors
+							bugs in program, things that can always be avoided by changing code.
+								tried to read property of "undefined"
+								called an asynchronous function without a callback
+								passed a string where an object was expected
+								passed an object where an IP address string was expected
+
+						This distinction is very important: operational errors are part of the normal operation of a program. Programmer errors are bugs.

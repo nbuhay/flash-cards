@@ -20,6 +20,7 @@ router.get('/decks', deckCtrl.findAll);
 router.post('/deck', deckCtrl.save);
 router.get('/deck/name/:name', deckCtrl.findOne);
 router.get('/deck/_id/:_id', deckCtrl.findById);
+router.put('/deck/_id/:_id', deckCtrl.findByIdAndUpdate);
 router.delete('/deck/_id/:_id', deckCtrl.findOneAndRemove);
 
 module.exports = router;

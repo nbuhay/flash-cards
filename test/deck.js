@@ -195,6 +195,73 @@ describe('Deck Model', () => {
 		});
 	});
 
+	describe('PUT /api/deck/_id/:_id', () => {
+		it('should update Deck deck in the db where deck._id == :_id', () => {
+			var mockDeck = {
+				name: 'UpdatedDeck',
+				description: 'PUT /api/deck/_id/:_id',
+				tags: ['mock', 'test', 'data'],
+				cards: [
+					{
+						question: ['PUT test'],
+						answer: ['Ys']
+					},
+					{
+						question: ['GET test'],
+						answer: ['No']
+					}
+				],
+				learning: 0
+			};
+			mockDeck._id = mockDecks[testDeck]._id;
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.port,
+					path: '/api/deck/_id/' + mockDeck._id,
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Content-Length': Buffer.byteLength(JSON.stringify(mockDeck))
+					}
+				};
+				var req = http.request(options, (res) => {
+					if (res.statusCode != resCode['OK']) {
+						reject('badStatusCode:' + res.statusCode);
+					}
+					resolve();
+				});
+				req.on('error', (err) => reject('reqError:' + err));
+				req.end(JSON.stringify(mockDeck));
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.port,
+						path: '/api/deck/_id/' + mockDeck._id
+					};
+					var callback = (res) => {
+						var deck = '';
+						res
+							.on('data', (chunk) => deck += chunk)
+							.on('end', () => {
+								resolve(JSON.parse(deck));
+							});
+					};
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject('reqError:' + err));
+					req.end();
+				});
+			})
+			.then((resolveValue) => {
+				assert(mockDeck._id == resolveValue._id && mockDeck.name == resolveValue.name);
+			})
+			.then(undefined, (rejectValue) => {
+				console.log('promiseRejected:%s', rejectValue);
+				assert(true == false);
+			});
+		});
+	});
+
 	describe('DELETE /api/deck/_id/:_id', () => {
 		it('should delete Deck deck from the db where deck._id == :_id', () => {
 			return new Promise((resolve, reject) => {

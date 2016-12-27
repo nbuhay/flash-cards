@@ -44,7 +44,29 @@ module.exports.findById = (req, res) => {
 		jsonRes.send(res, resCode['OK'], resolveValue);
 	})
 	.then(undefined, (rejectValue) => {
-		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.findOneId:' + rejectValue});
+		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.findOneId:' + rejectValue });
+	});
+};
+
+module.exports.findByIdAndUpdate = (req,res) => {
+	// options params.req._id
+	// findByIdAndUpdate, passing options and req body
+	// see what it returns, promise probability
+	var promise = new Promise((resolve, reject) => {
+		var options = {
+			new: true
+		};
+		var updatedDeck = Deck(req.body);
+		Deck.findByIdAndUpdate(req.params._id, updatedDeck, options, (err, deck) => {
+			if (err) reject('findByIdAndUpdate:' + err);
+			resolve(deck);
+		});
+	})
+	.then((resolveValue) => {
+		jsonRes.send(res, resCode['OK'], resolveValue);
+	})
+	.then(undefined, (rejectValue) => {
+		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.' + rejectValue });
 	});
 };
 
