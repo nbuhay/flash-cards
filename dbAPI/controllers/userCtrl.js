@@ -114,40 +114,4 @@ module.exports.saveLearning = (req, res) => {
 	})
 	.then((updatedUser) => jsonRes.send(res, resCode['OK'], updatedUser))
 	.then(undefined, (rejectValue) => jsonRes.send(res, resCode['SERVFAIL'], { message: 'saveLearning.' + rejectValue }));
-	
-	// User.findOne(options, (err, user) => {
-	// 	if (err) {
-	// 		jsonRes.send(res, 500 , 'insertLearning.User.findOne.error: ' + err);
-	// 	}
-
-	// 	var options = {
-	// 		_id: req.params.deck_id
-	// 	};
-
-	// 	Deck.findById(options, (err, deck) => {
-	// 		if (err) {
-	// 			jsonRes.send(res, 500 , 'insertLearning.findOne.findById.error: ' + err);
-	// 		}
-	// 		var flashCards = [];
-	// 		deck.cards.map((card) => {
-	// 			flashCards.push({
-	// 				question: card.question,
-	// 				answer: card.answer,
-	// 				gotCorrect: false,
-	// 				lastSeen: new Date(),
-	// 				lastCorrect: new Date(),
-	// 				correctStreak: 0
-	// 			});
-	// 		});
-	// 		user.decks.learning.push({
-	// 			refDeck: deck._id,
-	// 			flashCards: flashCards
-	// 		});
-	// 		user.save((err, updatedUser) => {
-	// 			if (err) {
-	// 				jsonRes.send(res, 500, 'insertLearning.findOne.findById.save.error: ' + err);
-	// 			}
-	// 			jsonRes.send(res, 200, updatedUser);
-	// 		});
-	// 	});
 };
