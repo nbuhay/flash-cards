@@ -7,3 +7,5 @@ services:
   - mongodb
 env:
   - NODE_ENV=test
+script:
+  - npm test test/deck.js
