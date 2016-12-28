@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/nbuhay/flashCards.svg?branch=master)](https://travis-ci.org/nbuhay/flashCards)
 Create flash cards to study any subject.  Great for learning!
 
 **Coding Reference**
