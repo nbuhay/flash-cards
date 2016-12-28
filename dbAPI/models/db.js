@@ -1,6 +1,7 @@
 var config = require('../../global').config();
 var mongoose = require('mongoose');
 
+mongoose.Promise = global.Promise;
 mongoose.connect(config.dbURI);
 
 var db = mongoose.connection;
