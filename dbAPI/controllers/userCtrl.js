@@ -112,3 +112,41 @@ module.exports.saveLearning = (req, res) => {
 	.then((updatedUser) => jsonRes.send(res, resCode['OK'], updatedUser))
 	.then(undefined, (rejectValue) => jsonRes.send(res, resCode['SERVFAIL'], { message: 'saveLearning.' + rejectValue }));
 };
+
+module.exports.findByIdAndRemoveLearning = (req, res) => {
+	var promise = new Promise((resolve, reject) => {
+		User.findById(req.params.user_id, { 'learning' : 'decks.learning' }, (err, learning) => {
+			if (err) reject('User.findById:error: ' + err);
+			// find matching learning
+			resolve(learning);
+		});
+	})
+	.then((learning) => {
+		return new Promise((resolve, reject) => {
+			var i = 0;
+			while (i < learning.length) {
+				if (learning[i].refDeck == req.params.deck_id) {
+					learning.splice(i, 1);
+					break;
+				}	
+				i++;
+			};
+			resolve(learning);
+		});
+	})
+	.then((updatedLearning) => {
+		return new Promise((resolve, reject) => {
+			User.findByIdAndUpdate(req.params.user_id, { 'decks.learning' : updatedLearning }, 
+				{ new: true }, (err, updatedUser) => {
+					if (err) reject('User.findByIdAndUpdate:error: ' + err);
+					resolve(updatedUser);
+				});
+		});
+	})
+	.then((updatedUser) => {
+		jsonRes.send(res, resCode['OK'], updatedUser);
+	})
+	.then(undefined, (reason) => { 
+		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'findByIdAndRemoveLearning.' + reason });
+	});
+};

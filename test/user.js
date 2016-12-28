@@ -261,7 +261,7 @@ describe('User Model', () => {
 	});
 
 	describe('POST /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
-		it('should save Deck deck into User user\'s user.decks.learning', () => {
+		it('should save Deck deck to User user\'s user.decks.learning', () => {
 			return new Promise((resolve, reject) => {
 				var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
 				var options = {
@@ -305,6 +305,74 @@ describe('User Model', () => {
 				assert.equal(resolveValue.decks.learning[0].refDeck, mockDecks[testDeck]._id);
 			})
 			.then(undefined, (rejectValue) => assert(false, rejectValue.message));
+		});
+	});
+
+	describe('DELETE /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
+		it('should delete Deck deck from User user\'s user.decks.learning where deck._id == :deck_id', () => {
+			var mockUser = {
+				_id:  mockUsers[testUser]._id,
+				userName: 'MockUser',
+				pswd: '123123',
+				email: {
+					domainId: 'mock',
+					domain: 'mock',
+					extension: 'mock'
+				},
+				zip: 33333,
+				decks: {
+					created: [],
+					learning: []
+				}
+			};
+			return new Promise((resolve, reject) => {
+				var path = '/api/user/_id/' + mockUser._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
+				var options = {
+					port: config.port,
+					path: path,
+					method: 'DELETE'
+				};
+				var req = http.request(options, (res) => {
+					try {
+						assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+					} catch (err) {
+						reject(err);
+					}
+					resolve();
+				});
+				req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+				req.end();
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.port,
+						path: '/api/user/_id/' + mockUser._id
+					};
+					var req = http.request(options, (res) => {
+						var user = '';
+						res
+							.on('data', (chunk) => user += chunk)
+							.on('end', () => {
+								try {
+									assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+								} catch (err) {
+									reject(err);
+								}
+								user = JSON.parse(user);
+								for (var i = 0; i < user.decks.learning.length; i++) {
+									if (user.decks.learning[i].refDeck == mockDecks[testDeck]._id)
+										reject({ message: 'deleteError: deck was not deleted' })
+								};
+								resolve();
+							});
+					});
+					req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+					req.end();
+				});
+			})
+			.then((user) => assert(true))
+			.then(undefined, (reason) => assert(false, reason.message));
 		});
 	});
 
