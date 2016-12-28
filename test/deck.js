@@ -17,7 +17,7 @@ describe('Deck Model', () => {
 		// make sure connection is established
 		mongoose.connection.once('connected', () => {
 			var promise = new Promise((resolve, reject) => {
-				// cleanse the dbw
+				// cleanse the db
 				mongoose.connection.db.dropDatabase(() => {
 					console.log('\tMongoose.connection.db.dropDatabase:success');
 					resolve();

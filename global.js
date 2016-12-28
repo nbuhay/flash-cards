@@ -1,4 +1,6 @@
 const env = require('./env.json');
+const mockUsers = require('./mockData/users').users;
+const mockDecks = require('./mockData/decks').decks;
 const resCode = {
 	OK: 200,
 	SERVFAIL: 500,
@@ -9,17 +11,17 @@ const resCode = {
 	UNAUTH: 401,
 	FORBID: 403
 };
-const PORT = 3000;
+const port = 3000;
 const testDeck = 0;
-const TEST_USER = 0;
+const testUser = 0;
 
 module.exports.config = () => {
-	var node_env = [process.env.NODE_ENV || 'development'];
+	var node_env = [process.env.NODE_ENV || 'dev'];
 	return env[node_env];
 }
 
 module.exports.PORT = () => {
-	return PORT;
+	return port;
 } 
 
 module.exports.TEST_DECK = () => {
@@ -27,7 +29,7 @@ module.exports.TEST_DECK = () => {
 }
 
 module.exports.TEST_USER = () => {
-	return TEST_USER;
+	return testUser;
 }
 
 module.exports.RES = (code) => {
@@ -40,4 +42,16 @@ module.exports.resCode = () => {
 
 module.exports.testDeck = () => {
 	return testDeck;
+}
+
+module.exports.testUser = () => {
+	return testUser;
+}
+
+module.exports.mockDecks = () => {
+	return mockDecks;
+}
+
+module.exports.mockUsers = () => {
+	return mockUsers;
 }

@@ -1,4 +1,6 @@
 var CONST = require('../../global.js');
+const config = require('../../global').config();
+const resCode = require('../../global').resCode();
 var User = require('../models/user');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
@@ -68,44 +70,84 @@ module.exports.findOneAndRemove = (req, res) => {
 	});
 };
 
-module.exports.insertLearning = (req, res) => {
-	var options = {
-		userName: req.params.userName
-	};
-	User.findOne(options, (err, user) => {
-		if (err) {
-			jsonRes.send(res, 500 , 'insertLearning.User.findOne.error: ' + err);
-		}
-
-		var options = {
-			_id: req.params.deck_id
-		};
-
-		Deck.findById(options, (err, deck) => {
-			if (err) {
-				jsonRes.send(res, 500 , 'insertLearning.findOne.findById.error: ' + err);
-			}
-			var flashCards = [];
-			deck.cards.map((card) => {
-				flashCards.push({
-					question: card.question,
-					answer: card.answer,
-					gotCorrect: false,
-					lastSeen: new Date(),
-					lastCorrect: new Date(),
-					correctStreak: 0
-				});
-			});
-			user.decks.learning.push({
-				refDeck: deck._id,
-				flashCards: flashCards
-			});
-			user.save((err, updatedUser) => {
-				if (err) {
-					jsonRes.send(res, 500, 'insertLearning.findOne.findById.save.error: ' + err);
+module.exports.saveLearning = (req, res) => {
+		console.log('====here=====');
+	var promise = new Promise((resolve, reject) => {
+		// get the user object
+		// save deck to user
+		Deck.findById(req.params.deck_id, (err, deck) => {
+			if (err) reject('Deck.findById.error: ' + err);
+			resolve(deck);
+		});
+	})
+	.then((deck) => {
+		return new Promise((resolve, reject) => {
+			User.findById(req.params.user_id, (err, user) => {
+				if (err) reject('User.findById.error: ' + err);
+				var flashCards = [];
+				for (var i = 0; i < deck.cards.length; i++) {
+					flashCards.push({
+						question: deck.cards[i].question,
+						answer: deck.cards[i].answer,
+						gotCorrect: false,
+						lastSeen: new Date(),
+						lastCorrect: new Date(),
+						correctStreak: 0
+					});
 				}
-				jsonRes.send(res, 200, updatedUser);
+				user.decks.learning.push({
+					refDeck: deck._id,
+					flashCards: flashCards
+				});
+				resolve(user)
 			});
 		});
-	});
+	})
+	.then((user) => {
+		return new Promise((resolve, reject) => {
+			user.save((err, updatedUser) => {
+				console.log('updateUser: ' + updatedUser);
+				if (err) reject('insertLearning.user.save:error: ' + err);
+				resolve(updatedUser);	
+			});
+		});
+	})
+	.then((updatedUser) => jsonRes.send(res, resCode['OK'], updatedUser))
+	.then(undefined, (rejectValue) => jsonRes.send(res, resCode['SERVFAIL'], { message: 'saveLearning.' + rejectValue }));
+	
+	// User.findOne(options, (err, user) => {
+	// 	if (err) {
+	// 		jsonRes.send(res, 500 , 'insertLearning.User.findOne.error: ' + err);
+	// 	}
+
+	// 	var options = {
+	// 		_id: req.params.deck_id
+	// 	};
+
+	// 	Deck.findById(options, (err, deck) => {
+	// 		if (err) {
+	// 			jsonRes.send(res, 500 , 'insertLearning.findOne.findById.error: ' + err);
+	// 		}
+	// 		var flashCards = [];
+	// 		deck.cards.map((card) => {
+	// 			flashCards.push({
+	// 				question: card.question,
+	// 				answer: card.answer,
+	// 				gotCorrect: false,
+	// 				lastSeen: new Date(),
+	// 				lastCorrect: new Date(),
+	// 				correctStreak: 0
+	// 			});
+	// 		});
+	// 		user.decks.learning.push({
+	// 			refDeck: deck._id,
+	// 			flashCards: flashCards
+	// 		});
+	// 		user.save((err, updatedUser) => {
+	// 			if (err) {
+	// 				jsonRes.send(res, 500, 'insertLearning.findOne.findById.save.error: ' + err);
+	// 			}
+	// 			jsonRes.send(res, 200, updatedUser);
+	// 		});
+	// 	});
 };
