@@ -4,6 +4,7 @@ const resCode = require('../../global').resCode();
 var User = require('../models/user');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
+const errHeader = 'error:dbAPI:userCtrl.';
 
 module.exports.findAll = (req, res) => {
 	User.find((err, users) => {
@@ -11,22 +12,6 @@ module.exports.findAll = (req, res) => {
 			jsonRes.send(res, CONST.RES('SERVFAIL'), {'msg': err});
 		}
 		jsonRes.send(res, CONST.RES('OK'), users);
-	});
-};
-
-module.exports.newUser = (req, res) => {
-	var body = [];
-	req.on('data', (chunk) => {
-		body.push(chunk);
-	}).on('end', () => {
-		// combine all array elments into single string
-		var user = new User(JSON.parse(body.join()));
-		user.save((err) => {
-			if (err) {
-				jsonRes.send(res, 500, 'Internal Server Error');
-			}
-			jsonRes.send(res, 200, JSON.parse(body.join()));
-		});
 	});
 };
 
@@ -39,6 +24,20 @@ module.exports.findById = (req, res) => {
 			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg:  err });
 		}
 		jsonRes.send(res, CONST.RES('OK'), user);
+	});
+};
+
+module.exports.save = (req, res) => {
+	var promise = new Promise((resolve, reject) => {
+		var user = new User(req.body);
+		user.save((err, user) => {
+			if (err) reject('user.save: ' + err);
+			resolve(user);
+		});
+	})
+	.then((user) => jsonRes.send(res, resCode['OK'], user))
+	.then(undefined, (reason) => {
+		jsonRes(res, resCode['SERVFAIL'], { message: errHeader + 'save.' + reason })
 	});
 };
 
@@ -71,7 +70,6 @@ module.exports.findOneAndRemove = (req, res) => {
 };
 
 module.exports.saveLearning = (req, res) => {
-		console.log('====here=====');
 	var promise = new Promise((resolve, reject) => {
 		// get the user object
 		// save deck to user
@@ -106,7 +104,6 @@ module.exports.saveLearning = (req, res) => {
 	.then((user) => {
 		return new Promise((resolve, reject) => {
 			user.save((err, updatedUser) => {
-				console.log('updateUser: ' + updatedUser);
 				if (err) reject('insertLearning.user.save:error: ' + err);
 				resolve(updatedUser);	
 			});

@@ -9,7 +9,7 @@ router.get('/mockData/users', mockDataCtrl.insertUsers);
 router.get('/mockData/decks', mockDataCtrl.insertDecks);
 
 router.get('/users', userCtrl.findAll);
-router.post('/user', userCtrl.newUser);
+router.post('/user', userCtrl.save);
 router.get('/user/_id/:_id', userCtrl.findById);
 router.put('/user/_id/:_id', userCtrl.findByIdAndUpdate);
 router.get('/user/name/:userName', userCtrl.findByName);

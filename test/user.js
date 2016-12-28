@@ -63,7 +63,7 @@ describe('User Model', () => {
 	});
 
 	describe('GET /api/users', () => {
-		it('should GET all Users inserted from mockUsers', () => {
+		it('should return all Users inserted from mockUsers', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.port,
@@ -92,43 +92,77 @@ describe('User Model', () => {
 	});
 
 	describe('POST /api/user', () => {
-		it('should get a 200 response', (done) => {
-			var options = {
-				port: config.port,
-				path: '/api/user',
-				method: 'POST'
+		it('should save new User to the db', () => {
+			var mockUser = {
+				_id: mongoose.Types.ObjectId("000000000000000000000003"),
+				userName: 'MockUser',
+				pswd: '123123',
+				email: {
+					domainId: 'mock',
+					domain: 'mock',
+					extension: 'mock'
+				},
+				zip: 33333,
+				decks: {
+					created: [],
+					learning: []
+				}
 			};
-			var req = http.request(options, res => {
-				assert(res.statusCode == 200);
-				done();
-			});
-			req.write(JSON.stringify(mockUsers[testUser]));
-			req.end();
-		});
-	});
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.port,
+					path: '/api/user',
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Content-Length': Buffer.byteLength(JSON.stringify(mockUser))
+					}
+				};
+				var req = http.request(options, (res) => {
+					try {
+						assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+					} catch (err) {
+						reject(err);
+					}
+					resolve();
+				});
+				req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+				req.write(JSON.stringify(mockUser));
+				req.end();
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.port,
+						path: '/api/user/_id/' + mockUser._id
+					};
+					var req = http.request(options, (res) => {
+						var user = '';
+						res
+							.on('data', (chunk) => user += chunk)
+							.on('end', () => {
+								try {
+									assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+								} catch (err) {
+									reject(err);
+								}
+								resolve(JSON.parse(user));
+							});
+					});
+					req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+					req.end();
+				});
+			})
+			.then((user) => {
+				assert.equal(user._id, mockUser._id)
+			})
+			.then(undefined, (reason) => assert(false, reason.message));
 
-	describe('GET /api/user/name/:userName', () => {
-		it('should GET User user with user.userName == :userName', (done) => {
-			var options = {
-				port: config.port,
-				path: '/api/user/name/' + mockUsers[testUser].userName
-			};
-			var resStr = '';
-			var callback = function (response) {
-				response.on('data', function (chunk) {
-					resStr += chunk;
-				});
-				response.on('end', function () {
-					assert(JSON.parse(resStr).userName == mockUsers[testUser].userName);
-					done();
-				});
-			};
-			http.request(options, callback).end();
 		});
 	});
 
 	describe('GET /api/user/_id/:_id', () => {
-		it('should GET User user with user._id == :_id', (done) => {
+		it('should return User user with user._id == :_id', (done) => {
 			var options = {
 				port: config.port,
 				path: '/api/user/name/' + mockUsers[testUser].userName
@@ -162,7 +196,27 @@ describe('User Model', () => {
 		});
 	});
 
-	describe('PUT /api/user/_id/:_id', () => {
+	describe.skip('GET /api/user/name/:userName', () => {
+		it('should GET User user with user.userName == :userName', (done) => {
+			var options = {
+				port: config.port,
+				path: '/api/user/name/' + mockUsers[testUser].userName
+			};
+			var resStr = '';
+			var callback = function (response) {
+				response.on('data', function (chunk) {
+					resStr += chunk;
+				});
+				response.on('end', function () {
+					assert(JSON.parse(resStr).userName == mockUsers[testUser].userName);
+					done();
+				});
+			};
+			http.request(options, callback).end();
+		});
+	});
+
+	describe.skip('PUT /api/user/_id/:_id', () => {
 		it('should update User user where user._id == :_id', (done) => {
 			var newUserName = 'Test';
 			var newZip = 00000;
@@ -248,56 +302,13 @@ describe('User Model', () => {
 				});
 			})
 			.then((resolveValue) => {
-				console.log(resolveValue);
-				assert.equal(resolveValue.decks.learning[0].refDeck, mockDecks[testDeck]._id, 'error in learning')
+				assert.equal(resolveValue.decks.learning[0].refDeck, mockDecks[testDeck]._id);
 			})
 			.then(undefined, (rejectValue) => assert(false, rejectValue.message));
 		});
 	});
 
-	
-	describe.skip('POST /api/user/_id/:_id/learn/deck/_id/:deck_id', () => {
-		it('should POST new Deck into user.decks.learning', (done) => {
-			// need deck._id, setup GET by deck.name
-			var options = {
-				port: config.port,
-				path: '/api/deck/name/' + mockDecks[testDeck].name
-			};
-			var callback = function (response) {
-				var deck = '';
-				response
-					.on('data', (chunk) => {
-						deck += chunk;
-					})
-					.on('end', () => {
-						// got deck, setup options using deck._id
-						var options = {
-							port: config.port,
-							path: '/api/user/' + mockUsers[testUser].userName + '/learning/' + (JSON.parse(deck))._id,
-							method: 'POST'
-						};
-						// setup request
-						//   callback called when 'response' event is triggered
-						//   'response' event is only triggered one time
-						//     triggered on response back form server you POSTed to
-						var request = http.request(options, (response) => {
-							assert(response.statusCode == 200);
-							done();
-						});
-						request.on('error', (e) => {
-							console.log('There was an error' + e);
-							console.log('err.stack: ' + e.stack);
-							assert(true == false);
-							done();
-						});
-						request.end();
-					});
-			};
-			http.request(options, callback).end();
-		});
-	});
-
-	describe('DELETE /api/user/_id/:_id', () => {
+	describe.skip('DELETE /api/user/_id/:_id', () => {
 		it('should delete User user with user._id==:_id', (done) => {
 			var options = {
 				port: config.port,
