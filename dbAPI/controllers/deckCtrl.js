@@ -56,8 +56,8 @@ module.exports.findByIdAndUpdate = (req, res) => {
 		var options = {
 			new: true
 		};
-		var updatedDeck = Deck(req.body);
-		updatedDeck._id = mongoose.Types.ObjectId(req.params._id);
+		var updatedDeck = req.body;
+		delete updatedDeck._id;
 		Deck.findByIdAndUpdate(req.params._id, updatedDeck, options, (err, deck) => {
 			if (err) reject('findByIdAndUpdate:' + err);
 			resolve(deck);
