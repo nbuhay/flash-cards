@@ -48,7 +48,7 @@ module.exports.findById = (req, res) => {
 	});
 };
 
-module.exports.findByIdAndUpdate = (req,res) => {
+module.exports.findByIdAndUpdate = (req, res) => {
 	// options params.req._id
 	// findByIdAndUpdate, passing options and req body
 	// see what it returns, promise probability
@@ -57,6 +57,7 @@ module.exports.findByIdAndUpdate = (req,res) => {
 			new: true
 		};
 		var updatedDeck = Deck(req.body);
+		updatedDeck._id = mongoose.Types.ObjectId(req.params._id);
 		Deck.findByIdAndUpdate(req.params._id, updatedDeck, options, (err, deck) => {
 			if (err) reject('findByIdAndUpdate:' + err);
 			resolve(deck);
@@ -66,7 +67,7 @@ module.exports.findByIdAndUpdate = (req,res) => {
 		jsonRes.send(res, resCode['OK'], resolveValue);
 	})
 	.then(undefined, (rejectValue) => {
-		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.' + rejectValue });
+		jsonRes.send(res, resCode['SERVFAIL'], { message: 'error:dbAPI:deckCtrl.' + rejectValue });
 	});
 };
 
