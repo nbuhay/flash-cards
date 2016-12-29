@@ -16,6 +16,7 @@ router.get('/user/name/:userName', userCtrl.findByName);
 router.delete('/user/_id/:_id', userCtrl.findOneAndRemove);
 router.post('/user/_id/:user_id/learning/deck/_id/:deck_id', userCtrl.saveLearning);
 router.delete('/user/_id/:user_id/learning/deck/_id/:deck_id', userCtrl.findByIdAndRemoveLearning);
+router.put('/user/_id/:user_id/learning/deck/_id/:deck_id', userCtrl.findByIdAndUpdateLearning);
 
 router.get('/decks', deckCtrl.findAll);
 router.post('/deck', deckCtrl.save);

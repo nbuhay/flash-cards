@@ -150,3 +150,28 @@ module.exports.findByIdAndRemoveLearning = (req, res) => {
 		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'findByIdAndRemoveLearning.' + reason });
 	});
 };
+
+module.exports.findByIdAndUpdateLearning = (req, res) => {
+	var updates = req.body;
+	return new Promise((resolve, reject) => {
+		User.findById(req.params.user_id, (err, user) => {
+			if (err) reject('User.findById:error: ' + err);
+			resolve(user);
+		})
+	})
+	.then((user) => {
+		return new Promise((resolve, reject) => {
+			User.findByIdAndUpdate(req.params.user_id, { 'decks.learning' : updates.decks.learning },
+			{ 'new' : true}, (err, updatedUser) => {
+				if (err) reject('User.findByIdandUpdate:error: ' + err );
+				resolve(updatedUser);
+			});
+		});
+	})
+	.then((updatedUser) => {
+		jsonRes.send(res, resCode['OK'], updatedUser);
+	})
+	.then(undefined, (reason) => {
+		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'findByIdAndUpdateLearning.' + reason });
+	});
+};

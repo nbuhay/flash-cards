@@ -269,8 +269,9 @@ describe('User Model', () => {
 					path: path,
 					method: 'POST',
 					headers: {
-						'Content-Type': 'application/json',
-						'Conteng-Length': Buffer.byteLength(JSON.stringify(mockDecks[testDeck]))
+						'Content-Type': 'application/json'
+						// FAILS IF BELOW UN-COMMENTED  ???
+						// 'Content-Length': Buffer.byteLength(JSON.stringify(mockDecks[testDeck]))
 					}
 				};
 				var req = http.request(options, (res) => {
@@ -308,25 +309,104 @@ describe('User Model', () => {
 		});
 	});
 
+	describe('PUT /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
+		it('should save updates to Deck deck from User user\'s user.decks.learning where deck._id == :deck_id', () => {
+			var mockUser = {};
+			return new Promise((resolve, reject) => {
+				// get mock user (needs mongo generated IDs)
+				var options = {
+					port: config.port,
+					path: '/api/user/_id/' + mockUsers[testUser]._id
+				};
+				var req = http.request(options, (res) => {
+					var user = '';
+					res
+						.on('data', (chunk) => user += chunk)
+						.on('end', () => {
+							try {
+								assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+							} catch (err) {
+								reject(err);
+							}
+							resolve(JSON.parse(user));
+						});
+				});
+				req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+				req.end();
+			})
+			.then((user) => {
+				mockUser = user;
+				return new Promise((resolve, reject) => {
+					// make and save edits to user's user.decks.learning
+					for (var i = 0; i < mockUser.decks.learning.length; i++) {
+						for (var j = 0; j < mockUser.decks.learning[i].flashCards.length; j++) {
+							mockUser.decks.learning[i].flashCards[j].gotCorrect = true;
+							mockUser.decks.learning[i].flashCards[j].lastSeen = new Date();
+							mockUser.decks.learning[i].flashCards[j].lastCorrect = new Date();
+							mockUser.decks.learning[i].flashCards[j].correctStreak = 1337;
+						}
+					}
+					// findbyidandupdate edits
+					var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
+					var options = {
+						port: config.port,
+						path: path,
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockUser))
+						}
+					};
+					var req = http.request(options, (res) => {
+						try {
+							assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+						} catch (err) {
+							reject(err);
+						}
+						resolve();
+					});
+					req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+					req.write(JSON.stringify(mockUser));
+					req.end();
+				});
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+				// get mock user (needs mongo generated IDs)
+				var options = {
+					port: config.port,
+					path: '/api/user/_id/' + mockUsers[testUser]._id
+				};
+				var req = http.request(options, (res) => {
+					var updatedUser = '';
+					res
+						.on('data', (chunk) => updatedUser += chunk)
+						.on('end', () => {
+							try {
+								assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+							} catch (err) {
+								reject(err);
+							}
+							resolve(JSON.parse(updatedUser));
+						});
+				});
+				req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+				req.end();
+			})
+			})
+			.then((updatedUser) => {
+					// get and verify edits
+				assert.equal(updatedUser.decks.learning[0].flashCards[0].correctStreak, 
+					mockUser.decks.learning[0].flashCards[0].correctStreak);
+			})
+			.then(undefined, (reason) => assert(false, reason.message));
+		});
+	});
+
 	describe('DELETE /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
 		it('should delete Deck deck from User user\'s user.decks.learning where deck._id == :deck_id', () => {
-			var mockUser = {
-				_id:  mockUsers[testUser]._id,
-				userName: 'MockUser',
-				pswd: '123123',
-				email: {
-					domainId: 'mock',
-					domain: 'mock',
-					extension: 'mock'
-				},
-				zip: 33333,
-				decks: {
-					created: [],
-					learning: []
-				}
-			};
 			return new Promise((resolve, reject) => {
-				var path = '/api/user/_id/' + mockUser._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
+				var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
 				var options = {
 					port: config.port,
 					path: path,
@@ -347,7 +427,7 @@ describe('User Model', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.port,
-						path: '/api/user/_id/' + mockUser._id
+						path: '/api/user/_id/' + mockUsers[testUser]._id
 					};
 					var req = http.request(options, (res) => {
 						var user = '';
