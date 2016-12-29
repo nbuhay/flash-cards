@@ -1,11 +1,11 @@
 language: node_js
 node_js:
   - "node" 
-  - "5.0"
+  - "5"
   - "4"
 services:
   - mongodb
 env:
   - NODE_ENV=test
 script:
-  - npm test test/user.js
+  - npm test
