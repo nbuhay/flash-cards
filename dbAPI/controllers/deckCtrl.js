@@ -1,4 +1,4 @@
-const resCode = require('../../global').resCode();
+const resCode = require('../../config').resCode();
 var mongoose = require('mongoose');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
@@ -16,11 +16,11 @@ module.exports.findAll = (req, res) => {
 module.exports.save = (req, res) => {
 	var deck = new Deck(req.body);
 	deck.save()
-	.then((resolveValue) => {
-		jsonRes.send(res, resCode['OK'], resolveValue);
+	.then((user) => {
+		jsonRes.send(res, resCode['OK'], user);
 	})
-	.then((undefined, rejectValue) => {
-		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.save:' + rejectValue });
+	.then(undefined, (reason) => {
+		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.save:' + reason });
 	});	
 };
 

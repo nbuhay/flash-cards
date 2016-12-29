@@ -6,7 +6,7 @@ var mockUsers = ('../../mockData/users').users;
 var Deck = require('../dbAPI/models/deck');
 var User = require('../dbAPI/models/user');
 
-describe('Mock Data', () => {
+describe.skip('Mock Data', () => {
 
 	describe('INSERT Users', () => {
 		it('should insert all mock user data', (done) =>{

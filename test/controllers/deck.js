@@ -1,58 +1,62 @@
-const config = require('../global').config();
-const resCode = require('../global').resCode();
-const testDeck = require('../global').testDeck();
-const server = require('../bin/www').server();
-var assert = require('assert');
-var http = require('http');
-var mongoose = require('mongoose');
-var Deck = require('../dbAPI/models/deck');
-var mockDecks = require('../mockData/decks').decks;
+const config = require('../../config').config();
+const resCode = require('../../config').resCode();
+const assert = require('chai').assert;
+const http = require('http');
+const mockUsers = require('../../config').mockUsers();
+const mockDecks = require('../../config').mockDecks();
+const testDeck = require('../../config').testDeck();
+const testUser = require('../../config').testUser();
+const mongoose = require('mongoose');
 
-describe('Deck Model', () => {
+describe('dbAPI/controllers/deckCtrl.js', () => {
 
 	before((done) => {
-		console.log('    Before Tests');
-		require('../bin/www');
+		console.log('\tBefore Tests');
 		// db ceremony...
-		// make sure connection is established
-		mongoose.connection.once('connected', () => {
-			var promise = new Promise((resolve, reject) => {
-				// cleanse the db
-				mongoose.connection.db.dropDatabase(() => {
-					console.log('\tMongoose.connection.db.dropDatabase:success');
-					resolve();
-				});
-			})
-			.then((resolveValue) => {
-				// mockDecks[i]._id casted to Mongo ObjectId type
-				for (var i = 0; i < mockDecks.length; i++) {
-					mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
-				}
-				// drop the collections
-				mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
-					if (err) reject(err);
-					console.log('\tMongoose.connection.collection(\'decks\').insertedCount:%s', decks.insertedCount);
-					done();
-				});
-			})
-			.then(undefined, (rejectValue) => {
-				console.log('\tSomething bad happened, should cancel tests...%s', rejectValue);
+		var promise = new Promise((resolve, reject) => {
+			// cleanse the db
+			mongoose.connection.db.dropDatabase(() => {
+				console.log('\tmongoose.connection.db.dropDatabase: success');
+				resolve();
 			});
-		});
-	});
-
-	after(() => {		
-		console.log('   After Tests');
-		console.log('\tClosing server...');
-		server.close((err, data) => (err) ? console.log('Error:' + err) : console.log('\tServer Closed'));		
+		})
+		.then(() => {
+			// mockDecks[i]._id casted to Mongo ObjectId type
+			for (var i = 0; i < mockDecks.length; i++) {
+				mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
+			}
+			// drop the collections
+			mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
+				if (err) reject(err);
+				console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
+				done();
+			});
+		})
+		.catch((reason) => console.log('error:before.%s', reason));
 	});
 
 	// promise implementation
 	describe('GET /api/decks', () => {
-		it('should return all Deck docs', () => {
+
+		it('should not return a 404', () => {
+			var options = {
+				port: config.dbPort,
+				path: '/api/decks'
+			};
+			var callback = (res) => {
+				res.on('end', () => {
+					assert.notEqual(res.statusCode, resCode['NOTFOUND'], 'route not found');
+				});
+			};
+			var req = http.request(options, callback);
+			req.on('error', (err) => assert(false, { message: 'dbAPIRequest:error: ' + err }));
+			req.end();
+		});
+
+		it('should return all Deck documents inserted into the db', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.dbPort,
 					path: '/api/decks'
 				};
 				var callback = (res) => {
@@ -62,19 +66,11 @@ describe('Deck Model', () => {
 						.on('end', () => resolve(JSON.parse(decks)));
 				};
 				var req = http.request(options, callback);
-				req.on('error', (err) => reject(err));
+				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
 				req.end();
 			})
-			.then((resolveValue) => {
-				assert(resolveValue.length == mockDecks.length);
-			})
-			// will catch node.js runtime errors
-			//   possibly can catch resolve() error in the assert because:
-			//     assert is a node library
-			//		 failure counts as a node.js runtime error
-			.then(undefined, (rejectValue) => {
-				assert(true == false);
-			});
+			.then((decks) => assert(decks.length == mockDecks.length))
+			.catch((reason) => assert(false, reason.message));
 		});
 	});
 

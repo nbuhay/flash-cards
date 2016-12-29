@@ -1,26 +1,22 @@
-const config = require('../global').config();
-const resCode = require('../global').resCode();
-const testDeck = require('../global').testDeck();
-const testUser = require('../global').testUser();
-const server = require('../bin/www').server();
-var assert = require('chai').assert;
-var http = require('http');
-var mongoose = require('mongoose');
-var mockDecks = require('../global').mockDecks();
-var mockUsers = require('../global').mockUsers();
+const config = require('../../config').config();
+const resCode = require('../../config').resCode();
+const assert = require('chai').assert;
+const http = require('http');
+const mockUsers = require('../../config').mockUsers();
+const mockDecks = require('../../config').mockDecks();
+const testDeck = require('../../config').testDeck();
+const testUser = require('../../config').testUser();
+const mongoose = require('mongoose');
 
-describe('User Model', () => {
+describe('dbAPI/controllers/userCtrl.js', () => {
 
 	before((done) => {
-		console.log('    Before Tests');
-		require('../bin/www');
+		console.log('\tBefore Tests');
 		// db ceremony...
-		// make sure connection is established
-		mongoose.connection.once('connected', () => {
 			var promise = new Promise((resolve, reject) => {
 				// cleanse the db
 				mongoose.connection.db.dropDatabase(() => {
-					console.log('\tMongoose.connection.db.dropDatabase:success');
+					console.log('\tmongoose.connection.db.dropDatabase: success');
 					resolve();
 				});
 			})
@@ -32,10 +28,9 @@ describe('User Model', () => {
 					}
 					// drop the user collection
 					mongoose.connection.collection('users').insert(mockUsers, (err, users) => {
-						if (err) reject('mongoose.connection.collection(\'users\').insert:error: ' + err);
-						console.log('\tMongoose.connection.collection(\'users\').insertedCount:%s', users.insertedCount);
+						if (err) reject('mongoose.connection.collection(\'users\').insert: ' + err);
+						console.log('\tmongoose.connection.collection(\'users\').insertedCount: %s', users.insertedCount);
 						resolve();
-					});
 				});
 			})
 			.then(() => {
@@ -46,20 +41,12 @@ describe('User Model', () => {
 				// drop the deck collection
 				mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
 					if (err) reject('mongoose.connection.collection(\'decks\').insert:error: ' + err);
-					console.log('\tMongoose.connection.collection(\'decks\').insertedCount:%s', decks.insertedCount);
+					console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
 					done();
 				});
 			})
-			.then(undefined, (rejectValue) => {
-				console.log('\tbefore.%s', rejectValue);
-			});
+			.catch((reason) => console.log('\terror:before.%s', reason));
 		});
-	});
-
-	after(() => {		
-		console.log('   After Tests');
-		console.log('\tClosing server...');
-		server.close((err, data) => (err) ? console.log('Error:' + err) : console.log('\tServer Closed'));		
 	});
 
 	describe('GET /api/users', () => {
@@ -83,7 +70,7 @@ describe('User Model', () => {
 						});
 				};
 			var req = http.request(options, callback);
-			req.on('error', (err) => reject({ message: 'reqError: ' + err }));
+			req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
 			req.end();
 			})
 			.then((resolveValue) => assert.lengthOf(resolveValue, mockUsers.length))
@@ -403,7 +390,7 @@ describe('User Model', () => {
 		});
 	});
 
-	describe('DELETE /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
+	describe.skip('DELETE /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
 		it('should delete Deck deck from User user\'s user.decks.learning where deck._id == :deck_id', () => {
 			return new Promise((resolve, reject) => {
 				var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
