@@ -5,7 +5,7 @@ function importTest(name, path) {
   describe(name, () => require(path));
 }
 
-describe('FlashCards Test Runner', () => {
+describe('Runner', () => {
 	before((done) => {
 		console.log('    Before Tests');
 		// start webserver
@@ -24,8 +24,8 @@ describe('FlashCards Test Runner', () => {
 		});
 	});
 
-	importTest('', './controllers/deck');	
-	importTest('', './controllers/user');	
+	importTest('', './dbAPI/controllers/deck');	
+	importTest('', './dbAPI/controllers/user');	
 	
 	after(() => {		
 		console.log('   After Tests');
