@@ -1,11 +1,11 @@
-const config = require('../../config').config();
-const resCode = require('../../config').resCode();
+const config = require('../../../config').config();
+const resCode = require('../../../config').resCode();
 const assert = require('chai').assert;
 const http = require('http');
-const mockUsers = require('../../config').mockUsers();
-const mockDecks = require('../../config').mockDecks();
-const testDeck = require('../../config').testDeck();
-const testUser = require('../../config').testUser();
+const mockUsers = require('../../../config').mockUsers();
+const mockDecks = require('../../../config').mockDecks();
+const testDeck = require('../../../config').testDeck();
+const testUser = require('../../../config').testUser();
 const mongoose = require('mongoose');
 
 describe('dbAPI/controllers/userCtrl.js', () => {
