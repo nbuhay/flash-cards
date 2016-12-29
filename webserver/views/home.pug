@@ -1,9 +1,9 @@
 extends layout
 
-mixin deckDiv(data)
+mixin deckDiv(deck)
 	div(style='border-style: solid')
-		h3= data.name
-		p #{data.description}
+		h3= refDeck
+		p description
 		br
 		input(type="button" class="begin" value="Begin")
 		br
@@ -12,10 +12,10 @@ mixin deckDiv(data)
 		
 block content
 	h1 FlashCard Decks
-	p Good morning #{data.user.userName}!
+	p Good morning #{userName}!
 	div(id='createdDecks')
-		h2 Created	
-		each deck in data.decks.created
+		h2 Learning	
+		each deck in decks.learning
 			+deckDiv(deck)
 	//- div(id='favDecks')
 	//- 	h2 Favorites
@@ -40,5 +40,5 @@ block content
 			'click',
 			buttonId,
 			buttonHref,
-			function(href) { location.href=href; }
+			(href) => { location.href = href; }
 		);

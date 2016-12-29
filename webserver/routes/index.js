@@ -1,6 +1,8 @@
+var resCode = require('../../global').resCode();
 var express = require('express');
 var router = express.Router();
 var homeCtrl = require('../controllers/homeCtrl');
+var renderRes = require('../modules/renderResponse');
 
 /* GET home page. */
 router.get('/', function (req, res) {
@@ -13,11 +15,8 @@ router.get('/signup', function (req, res) {
 	res.render('signup');
 });
 
-router.get('/home', function (req, res) {
-	homeCtrl.loadUserHome(req, res, function (data) {
-			res.status(200);
-			res.render('home', { data: data });
-	});
+router.get('/home', (req, res) => {
+	homeCtrl.loadUserHome(req, res, (user) => renderRes.send(res, resCode['OK'], 'home', user));
 });
 
 module.exports = router;
