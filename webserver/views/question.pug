@@ -28,14 +28,14 @@ block content
 		
 		// randomize order of deck indexes
 		var shuffleDeck = [];
-		while(shuffleDeck.length < decks.length) {
-			var randomNum = Math.ceil(Math.random()*decks.length-1);
-			if(shuffleDeck.indexOf(randomNum) > -1) continue;
+		while (shuffleDeck.length < decks.length) {
+			var randomNum = Math.ceil(Math.random() * decks.length - 1);
+			if (shuffleDeck.indexOf(randomNum) > -1) continue;
 			shuffleDeck[shuffleDeck.length] = randomNum;
 		}
 
 		// map deck cards to their randomized indxes 
-		var randomDeck = shuffleDeck.map(function (randomNum) {
+		var randomDeck = shuffleDeck.map((randomNum) => {
 			return decks[randomNum];
 		});
 
