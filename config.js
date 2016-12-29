@@ -12,7 +12,7 @@ const resCode = {
 	FORBID: 403
 };
 const port = 3000;
-const testDeck = 0;
+const testDeck = 1;
 const testUser = 0;
 
 module.exports.config = () => {

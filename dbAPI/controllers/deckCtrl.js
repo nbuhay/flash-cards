@@ -2,16 +2,20 @@ const resCode = require('../../config').resCode();
 var mongoose = require('mongoose');
 var Deck = require('../models/deck');
 var jsonRes = require('../modules/jsonResponse');
+const errHeader = 'Error:dbAPI:deckCtrl.'
 
 module.exports.findAll = (req, res) => {
-	Deck.find((err, decks) => {
-		if (err) {
-			console.error('Error:dbAPI:deckCtrl.findAll:' + err);
-			jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.findAll:' + err });
-		}
-		jsonRes.send(res, resCode['OK'], decks);
+	return new Promise((resolve, reject) => {
+		Deck.find((err, decks) => {
+			if (err) reject({ message: 'Deck.find: ' + err });
+			resolve(decks);
+		});
+	})
+	.then((decks) => res.status(resCode['OK']).json(decks))
+	.catch((reason) => {
+		res.status(resCode['SERVFAIL']).json({ message: errHeader + 'findAll.' + reason.message })
 	});
-};
+}
 
 module.exports.save = (req, res) => {
 	var deck = new Deck(req.body);
@@ -22,16 +26,7 @@ module.exports.save = (req, res) => {
 	.then(undefined, (reason) => {
 		jsonRes.send(res, resCode['SERVFAIL'], { msg: 'Error:dbAPI:deckCtrl.save:' + reason });
 	});	
-};
-
-module.exports.findOne = (req, res) => {
-	Deck.findOne(
-		{ name: req.params.name },
-		function (err, deck) {
-			if (err) console.error('Error:dbAPI:deckCtrl.findOne:' + err);
-			jsonRes.send(res, resCode['OK'], deck);
-		});
-};
+}
 
 module.exports.findById = (req, res) => {
 	var promise = new Promise((resolve, reject) => {

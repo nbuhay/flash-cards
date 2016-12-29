@@ -23,7 +23,7 @@
 		},
 		{
 			"_id": "000000000000000000000001",
-			"name": "AWS_Certified_Developer",
+			"name": "AWS Certified Developer",
 			"description": "Review material from Udemy",
 			"tags": ["AWS", "cloud"],
 			"cards": [
