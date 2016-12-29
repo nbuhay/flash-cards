@@ -1,20 +1,15 @@
 const resCode = require('../../config').resCode();
-var mongoose = require('mongoose');
-var Deck = require('../models/deck');
-var jsonRes = require('../modules/jsonResponse');
-const errHeader = 'Error:dbAPI:deckCtrl.'
+const mongoose = require('mongoose');
+const Deck = require('../models/deck');
+const jsonRes = require('../modules/jsonResponse');
+const errHeader = 'error:dbAPI:deckCtrl.'
 
 module.exports.findAll = (req, res) => {
-	return new Promise((resolve, reject) => {
-		Deck.find((err, decks) => {
-			if (err) reject({ message: 'Deck.find: ' + err });
-			resolve(decks);
-		});
-	})
-	.then((decks) => res.status(resCode['OK']).json(decks))
-	.catch((reason) => {
-		res.status(resCode['SERVFAIL']).json({ message: errHeader + 'findAll.' + reason.message })
-	});
+	var query = Deck.find({});
+	return query.exec()
+		.then((decks) => res.status(resCode['OK']).json(decks))
+		.catch((reason) => res.status(resCode['SERVFAIL'])
+			.json({ message: errHeader + 'findAll.query: ' + reason.message }));
 }
 
 module.exports.save = (req, res) => {

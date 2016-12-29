@@ -83,3 +83,5 @@ p.then
 [Request Headers - when/not to JSON.parse](http://stackoverflow.com/questions/8081701/i-keep-getting-uncaught-syntaxerror-unexpected-token-o)
 
 [better mocha testing](http://stackoverflow.com/questions/35170626/running-multiple-mocha-test-files-for-mongoose-are-broken)
+
+[mongoose exec example](http://www.summa.com/blog/avoiding-callback-hell-while-using-mongoose)
