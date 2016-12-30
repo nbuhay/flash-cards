@@ -1,36 +1,99 @@
----- Back End
-	--- Routes: intent | REST | URL Parms | URL
-		-- USER
-			+- create user | POST   | none      | /api/user
-			+- delete user | DELETE | _id       | /api/user/_id/:_id
-				User.findOneAndRemove
-			+- edit user   | PUT    | _id       | /api/user/_id/:_id
-			+- get user    | GET    | _id       | /api/user/_id/:_id
-			+- get user    | GET    | userName  | /api/user/name/:userName
-			+- all users   | GET    | none      | /api/users
-			- learning     | POST   | 
-			- rm learning  | DELETE |
-			- updtLearning | PUT    |
-		+-- DECK
-			+- create deck | POST   | none      | /api/deck
-			+- edit deck   | PUT    | _id       | /api/deck/_id/:_id
-			+- delete deck | DELETE | _id       | /api/deck/_id/:_id
-			+- all decks   | GET    | none      | /api/decks
-			+- get a deck  | GET    | _id       | /api/deck/_id/:_id
-			+- get a deck  | GET    | name      | /api/deck/name/:name
-		-- CARD
-			- create card | POST   | deck_id          | /api/deck/:deck_id/card
-			- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
-			- delete card | DELETE | deck_id, card_id | /api/deck/:deck_id/card/:card_id
-			- all cards   | GET    | deck_id          | /api/deck/:deck_id/card
-		-- MOCK Data
-			+- insert all user data
-			+- insert all deck
-			- associations between default decks and users
-			----- create more decks
-	--- Model
-		+-- Cards
-			+- answer and answer as [String], allows multi line responses
+---- Back End Phase II
+/*
+	Mongose Query Structure
+		define query
+		execute query
+		handle callback and errors
+
+	Cleaner Projections
+		mongoose.Model.findById(_id).select({ projection: data});
+
+	Model.save vs Model.create
+		Model.create looks visually cleaner for first-time insertions
+		Set default values model vs putting in controller logic
+		Model.save() can be called w/o any params 
+			i.e.
+				var deck = new Deck(req.body);
+				deck._id = abc;
+				deck.save((err, callback) => {});
+
+	Finding/removing a sub-document
+		Each document has an _id
+		DocumentArrays have a special id method for looking up a document by its _id.
+			var doc = parent.children.id(_id);
+		can similarily remove
+			parent.children.id(_id).remove();
+			//need to save parent to have removal persist
+			parent.save()
+
+	Error Checking Questions
+		were req.params sent?
+		after mongoose query, does an object get returned/exist?
+		what types are req.params expected to be?
+	
+	Difference between error and exception - https://www.joyent.com/node-js/production/design/errors
+		errors are Error class, pased to function/thrown
+			when thrown, is considered an exception
+			throw new Error('something bad'); // exception
+			callback(new Error('something bas')); // regular error
+		suggest try/catch when JSON.parse or other user-input validation
+		not common to catch error from async
+
+		Operational errors
+			run-time problems experienced by correctly written programs
+			not bugs, problems with something else
+				failed to connect to server
+				failed to resolve hostname
+				invalid user input
+				request timeout
+				server returned a 500 response
+				socket hang-up
+				system is out of memory
+			Programmer Errors
+				bugs in program, things that can always be avoided by changing code.
+					tried to read property of "undefined"
+					called an asynchronous function without a callback
+					passed a string where an object was expected
+					passed an object where an IP address string was expected
+
+			This distinction is very important: 
+				operational errors are part of the normal operation of a program
+				Programmer errors are bugs
+*/
+	--- Refactor/Harden Routes: easier to read, promise based, error handling
+		-- dbAPI
+
+			-- USER
+				- create user  | POST   | none      | /api/user
+				- delete user  | DELETE | _id       | /api/user/_id/:_id
+				- edit user    | PUT    | _id       | /api/user/_id/:_id
+				- get user     | GET    | _id       | /api/user/_id/:_id
+				- get user     | GET    | userName  | /api/user/name/:userName
+				- all users    | GET    | none      | /api/users
+				- learning     | POST   |
+				- rm learning  | DELETE |
+				- updtLearning | PUT    |
+			-- DECK
+				- create deck | POST   | none      | /api/deck
+				- edit deck   | PUT    | _id       | /api/deck/_id/:_id
+				- delete deck | DELETE | _id       | /api/deck/_id/:_id
+				- all decks   | GET    | none      | /api/decks
+				- get a deck  | GET    | _id       | /api/deck/_id/:_id
+				- get a deck  | GET    | name      | /api/deck/name/:name
+			-- MOCK Data
+				- insert all user data
+				- insert all deck
+				- associations between default decks and users
+		-- dbAPI
+			-- CARD		
+			!---- MONGOOSE POPULATE 
+				- auto populate subdocs._id with real object:http://mongoosejs.com/docs/populate.html
+			----- How will it integrate with existing routes?
+				- create card | POST   | deck_id          | /api/deck/:deck_id/card
+				- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+				- delete card | DELETE | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+				- all cards   | GET    | deck_id          | /api/deck/:deck_id/card
+
 		-- Deck
 			- Decks being practied by a user need to be stored with that user model
 				+- save to user object
@@ -43,153 +106,78 @@
 				- what becomes of favs?
 					+- rename learning
 					- +1 each time someone chooses to 'learn' the deck
-	--- Mocha
-		-- Better testing with a DB
-			- how to know the state
-			+- create separate test db
-			- how to test users
-			- how to make sure no interactions are messing with eachother
-		-- Assertion library usage
-		-- How to load instance of server for testing vs running main
-	--- Misc
-			-- think/write out routes for interactions with Decks, Users, and Cards
-			-- standard load order for requires
-			-- finalize global.js and load everywhere
-			-- research/implement better API error handling
----- Front End
-	--- Balsamiq mocks
-		- /login
-		- /signup
-		- /home
-		- /deck/form
-		- /deck/form/create
-		- /deck/create
-		- /deck/create/cards
-	--- Controller calls
-		-- signUpCtrl
-		- /signup
-			- GET single user
-				- check exists
-			- PUT new user data
-		-- deckCtrl
-			- /deck/form:import
-				- GET single user
-				- PUT deck _id to user created
-				- Check is JSON
-				- Read in data from JSON
-				- POST deck
-			- /deck/create
-				- GET single user
-				- keep data available as card input happens
-			- /deck/create/cards
-				- keep data from /deck/create
-				- GET single user
-				- POST cards to created deck
-	--- Beautify questions.jade
-			- center vertically
-			- correct/incorrect inline, adjacent
-				- consistent spacing
-			- questions don't redraw
-			- no highlighting when clicking
-	--- Client side computing
-		-- Learning Algorithm
-			- save state on practice feedback:  What could be added?
-				- date last got correct
-				- number of times did not get correct:  show ones with less success more often
-				- success/practice
-				- suggestion when to study next
-					- 1 day
-					- 3 days
-					- 1 week
-					- 2 weeks
-					- 1 month
-					- 2 months
-					- 3 months
-		-- Incorporate into questons.jade
-			- update deck model as questions answered
-				- lastTime true/false -> gotIt/needPractice
-				- timestamp of last time
-				- answerHistory -> record success past 10 times, number or percent
-	--- Future Enhancements
-		-- Edit Questions
-		- Load all Questions
-			- plesant display
-			- fuzzy search
-			- punch in/out editing
-			- send all back to db at one time
-		-- Should be limit on questions allowed
----- Misc
-	----- global.js refactor
-		-- change across all files
-			- access resCode
-			- removal CONST
-			- rename to config.js
-			- mockData.jsons loaded here?
-	--- Error Handling
-		-- use __filename for better error string
-		-- use function name
-		-- built per file
-	--- Testing
+---- Testing Phase II
+		-- Error Handling
+			- use __filename for better error string
+			- use function name
+		-- Chai Integration
+			- learn assert
+			- learn a BDD style
+			- clear definition of BDD
+			- clear definition of TDD
+		-- selineum
 		!----- Testing ceremonies
-			+-- test/deck.js
-				+- drop databse
-				+- insert expected values
-					- objects
-					- associations
-				+- continue onto test
-				+- DB Connectivity specific to testing
-			-- test/user.js
-				- drop databse
-				- insert expected values
-					- objects
-					- associations
-				- continue onto test
-				- DB Connectivity specific to testing
 			-- test/mockData.js
 				- drop databse
 				- insert expected values
 					- objects
 					- associations
 				- continue onto test
-				- DB Connectivity specific to testing				
-		-- How to structure so before, beforeEach, afterEach, and after are used?
-			- is this supposed to happen once before all tests suites?
-			- do I overload each definition per test suite?
-			- how to best load if definitions affect all test suites?
-		-- Chai Integration
-		-- Mongoose promise library to stop warnings during mocha tests
-	--- Project
-		-- proper README.md
-		-- github description
+				- DB Connectivity specific to testing
+---- Front End
+/*
+	res.render data after api calls are done
+	move rendering into its own named function
+		testable
+		rendering done inside callback
+
+	ajax/http.request call for data
+		massage data
+		render data
+
+	output based on responses
+		what are the possible responses from dbAPI?
+		array - what if empty or errort
+			set string message and set it based on response statusCode
+			send to view
+	include div for error (will only display if error message is sent through [Getting MEAN 214])
+*/
+--- New Routes
+	----- what are the routes needed?
+--- Balsamiq Mock 
+	----- what are new pages are needed?
+--- Controller calls
+	----- what are new pages are needed?
+	----- what are new pages are needed?
+--- CSS
+	----- what are new pages are needed?
+---- Misc
+	--- Learning Algorithm
+		- save state on practice feedback:  What could be added?
+			- date last got correct
+			- number of times did not get correct:  show ones with less success more often
+			- success/practice
+			- suggestion when to study next
+				- 1 day
+				- 3 days
+				- 1 week
+				- 2 weeks
+				- 1 month
+				- 2 months
+				- 3 months
+	--- Refactor
+		-- standard load order for requires
+		-- require config.js 
+		-- research/implement better API error handling
+	--- Coding books and continued learning?
+			-4 https://medium.com/@sapegin/what-to-learn-in-2017-if-youre-a-frontend-developer-b6cfef46effd#.exzl2h3md
+			-4 https://medium.freecodecamp.com/5-key-learnings-from-the-post-bootcamp-job-search-9a07468d2331#.4y6kpunud
+	--- Project Documentation
+	-- proper README.md
+		- writeup
+	-- github description
 	--- Tools
 		-- BitBucket auth
 		-- Github auth
-		-- Jenkins RasPi
-		-- Travis for test case status
-	--- Questions
-		-- When/where should res.send(STATUS); be called during mongoose query operations?
-		-- When to use map() over iterating?
-		-- How to asynchronously unit test?
-		-- How does done() really work in Mocha?
-		-- Gracefully handle errors?
-			https://www.joyent.com/node-js/production/design/errors
-				Difference between error and exception
-					errors are Error class, pased to function/thrown
-						when thrown, is considered an exception
-						throw new Error('something bad'); // exception
-						callback(new Error('something bas')); // regular error
-					suggest try/catch when JSON.parse or other user-input validation
-					not common to catch error from async
-
-					Operational errors
-						run-time problems experienced by correctly written programs
-						not bugs, problems with something else
-							failed to connect to server, failed to resolve hostname, invalid user input, request timeout, server returned a 500 response, socket hang-up, system is out of memory
-						Programmer Errors
-							bugs in program, things that can always be avoided by changing code.
-								tried to read property of "undefined"
-								called an asynchronous function without a callback
-								passed a string where an object was expected
-								passed an object where an IP address string was expected
-
-						This distinction is very important: operational errors are part of the normal operation of a program. Programmer errors are bugs.
+		-- Local Builds
+			- Jenkins RasPi

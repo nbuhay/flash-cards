@@ -85,3 +85,5 @@ p.then
 [better mocha testing](http://stackoverflow.com/questions/35170626/running-multiple-mocha-test-files-for-mongoose-are-broken)
 
 [mongoose exec example](http://www.summa.com/blog/avoiding-callback-hell-while-using-mongoose)
+
+[Need to use mongoose id object only when sending req params](http://stackoverflow.com/questions/17223517/mongoose-casterror-cast-to-objectid-failed-for-value-object-object-at-path)
