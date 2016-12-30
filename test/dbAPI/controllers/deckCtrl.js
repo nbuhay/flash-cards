@@ -230,63 +230,80 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 when req.params._id is an invalid Mongo ObjectId', () => {
-			return new Promise((resolve, reject) => {
-				var invalidId = 'invalid';
-				var options = {
-					port: config.app.dbAPI.port,
-					path: '/api/deck/_id/' + invalidId
-				};
-				var callback = (res) => resolve(res.statusCode);
-				var req = http.request(options, callback);
-				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
-				req.end();
-			})
-			.then((statusCode) => {	
-				assert.equal(statusCode, resCode['BADREQ']);
-			})
-			.catch((reason) => assert(false, reason.message));
+		describe('should send a 400 when req.params._id is an invalid Mongo ObjectId:', () => {
+
+			it('num chars in req.params._id is < 24', () => {
+				return new Promise((resolve, reject) => {
+					var invalidId = 'a'.repeat(23);
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deck/_id/' + invalidId
+					};
+					var callback = (res) => resolve(res.statusCode);
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {	
+					assert.equal(statusCode, resCode['BADREQ']);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('num chars in req.params._id is > 24', () => {
+				return new Promise((resolve, reject) => {
+					var invalidId = 'a'.repeat(25);
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deck/_id/' + invalidId
+					};
+					var callback = (res) => resolve(res.statusCode);
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {	
+					assert.equal(statusCode, resCode['BADREQ']);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
 		});
 
 		it('should return Deck deck with deck._id == :_id', () => {
-			return new Promise((resolve, reject) => {
-				var options = {
-					port: config.app.dbAPI.port,
-					path: '/api/deck/_id/' + mockDecks[testDeck]._id
-				};
-				var callback = (res) => {
-					var deck = '';
-					res
-						.on('data', (chunk) => deck += chunk)
-						.on('end', () => resolve(JSON.parse(deck)));
-				};
-				var req = http.request(options, callback);
-				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
-				req.end();
-			})
-			.then((deck) => {
-				assert(deck._id == mockDecks[testDeck]._id);
-			})
-			.catch((reason) => assert(false, reason.message));
-		});
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deck/_id/' + mockDecks[testDeck]._id
+					};
+					var callback = (res) => {
+						var deck = '';
+						res
+							.on('data', (chunk) => deck += chunk)
+							.on('end', () => resolve(JSON.parse(deck)));
+					};
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
+					req.end();
+				})
+				.then((deck) => {
+					assert(deck._id == mockDecks[testDeck]._id);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
 	});
 
 	describe('PUT /api/deck/_id/:_id', () => {
 		it('should update Deck deck in the db where deck._id == :_id', () => {
 			var mockDeck = {
+				creator: mockUsers[testUser]._id,
 				name: 'UpdatedDeck',
 				description: 'PUT /api/deck/_id/:_id',
 				tags: ['mock', 'test', 'data'],
-				cards: [
-					{
-						question: ['PUT test'],
-						answer: ['Ys']
-					},
-					{
-						question: ['GET test'],
-						answer: ['No']
-					}
-				],
+				cards: [{
+
+				}],
 				learning: 0
 			};
 			mockDeck._id = mockDecks[testDeck]._id;
