@@ -25,7 +25,8 @@ describe('Runner', () => {
 	});
 
 	importTest('', './dbAPI/controllers/deck');	
-	importTest('', './dbAPI/controllers/user');	
+	importTest('', './dbAPI/controllers/user');
+	importTest('', './webserver/controllers/deckCtrl');
 	
 	after(() => {		
 		console.log('   After Tests');
