@@ -1,39 +1,68 @@
 var mongoose = require('mongoose');
 
 var userSchema = mongoose.Schema({
-	userName: String,
-	pswd: String,
-	email: {
-		domainId: String,
-		domain: String,
-		extension: String
+	userName: {
+		required: true,
+		type: String,
+		minlength: 2,
+		maxlength: 21
 	},
-	zip: Number,
+	pswd: {
+		required: true,
+		type: String
+	},
+	email: {
+		domainId: {
+			required: true,
+			type: String
+		},
+		domain: {
+			required: true,
+			type: String
+		},
+		extension: {
+			required: true,
+			type: String
+		}
+	},
+	zip: {
+		code: {
+			required: true,
+			type: Number,
+			min: 5,
+			max: 5
+		},
+		plusFour: {
+			type: Number,
+			min: 4,
+			max: 4
+		}
+	},
 	decks: {
-		created: [String],
+		created: [{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Deck'		
+		}],
 		learning: [{
-			refDeck: {
+			deck: {
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'Deck'
 			},
-			name: String,
-			description: String,
-			flashCards: [{
-				question: { 
-					type: [String],
-					required: true
-				},
-				answer: { 
-					type: [String],
-					required: true
-				},
-				gotCorrect: Boolean,
-				lastSeen: Date,
-				lastCorrect: Date,
-				correctStreak: Number		
+			userCards: [{
+				required: true,
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'UserCard'
 			}]
 		}]
 	}
+});
+
+userSchema.virtual('zipPlusFour').get(function () {
+	return this.zip.code + '-' + this.zip.plusFour;
+});
+
+userSchema.virtual('emailAddress').get(function () {
+	return this.email.domainId + '@' + this.email.domain + '.' + this.email.extension;
 });
 
 module.exports = mongoose.model('User', userSchema);

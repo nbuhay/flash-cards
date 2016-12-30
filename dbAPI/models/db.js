@@ -10,9 +10,9 @@ mongoose.connect(mongoDbURI);
 var db = mongoose.connection;
 
 // Log MongoDB connection activity
-db.on('connected', () => console.log('\tMongoose connected to ' + mongoDbURI));
-db.on('error', (err) => console.log('\tMongoose connection error: ' + err));
-db.on('disconnected', () => console.log('\tMongoose disconnected'));
+db.on('connected', () => console.log('\tmongoose connected to ' + mongoDbURI));
+db.on('error', (err) => console.log('\tmongoose connection error: ' + err));
+db.on('disconnected', () => console.log('\tmongoose disconnected'));
 
 // close MongoDB connections
 var gracefulShutdown = function (msg, callback) {
@@ -39,6 +39,7 @@ process.on('SIGTERM', function () {
     });
 });
 
+require('./deckCard');
+require('./userCard');
 require('./deck');
 require('./user');
-require('./card');

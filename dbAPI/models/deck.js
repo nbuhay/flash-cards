@@ -1,20 +1,29 @@
 var mongoose = require('mongoose');
 
 var deckSchema = mongoose.Schema({
-	name: String,
-	description: String,
+	creator: {
+		required: true,
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User'
+	},
+	name: {
+		required: true,
+		type: String
+	},
+	description: {
+		required: true,
+		type: String
+	},
 	tags: [String],
 	cards: [{
-			question: {
-				type: [String],
-				required: true
-			},
-			answer: {
-				type: [String],
-				required: true
-			}
-		}],
-	learning: Number
+		required: true,
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'DeckCard'
+	}],
+	learning: {
+		type: Number,
+		default: 0
+	}
 });
 
 module.exports = mongoose.model('Deck', deckSchema);
