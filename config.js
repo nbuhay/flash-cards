@@ -12,8 +12,13 @@ const resCode = {
 	FORBID: 403
 };
 const port = 3000;
-const testDeck = 1;
+const testDeck = 0;
 const testUser = 0;
+const mongoIdRe = /^[0-9a-fA-F]{24}$/;
+
+module.exports.mongoIdRe = () => {
+	return mongoIdRe;
+}
 
 module.exports.config = () => {
 	var node_env = [process.env.NODE_ENV || 'dev'];
