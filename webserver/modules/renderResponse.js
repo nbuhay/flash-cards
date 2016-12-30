@@ -1,3 +1,3 @@
-module.exports.send = function (res, status, view, data) {
-	res.status(status).render(view, data);
+module.exports.send = (res, status, view, content) => {
+	res.status(status).render(view, content);
 }

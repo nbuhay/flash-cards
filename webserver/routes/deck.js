@@ -33,4 +33,14 @@ router.get('/search', function (req, res) {
   res.send('<h1>Search</h1>')
 });
 
+router.get('/edit', function (req, res) {
+  res.status(200);
+  res.send('<h1>Edit</h1>')
+});
+
+router.get('/delete', function (req, res) {
+  res.status(200);
+  res.send('<h1>Delete</h1>')
+});
+
 module.exports = router;

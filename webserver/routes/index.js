@@ -1,8 +1,8 @@
 var resCode = require('../../global').resCode();
 var express = require('express');
 var router = express.Router();
-var homeCtrl = require('../controllers/homeCtrl');
-var renderRes = require('../modules/renderResponse');
+const indexCtrl = require('../controllers/indexCtrl');
+const renderRes = require('../modules/renderResponse');
 
 /* GET home page. */
 router.get('/', function (req, res) {
@@ -16,7 +16,9 @@ router.get('/signup', function (req, res) {
 });
 
 router.get('/home', (req, res) => {
-	homeCtrl.loadUserHome(req, res, (user) => renderRes.send(res, resCode['OK'], 'home', user));
+	indexCtrl.loadUserHome(req, res, (user) => {
+		renderRes.send(res, resCode['OK'], 'home', user);
+	});
 });
 
 module.exports = router;

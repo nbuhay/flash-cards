@@ -6,16 +6,13 @@ const userId = "000000000000000000000000";
 const errHeader = 'error:webserver:homeCtrl.';
 
 // GET user
-// GET their decks
-// return user and their decks
+// return user to next
 module.exports.loadUserHome = (req, res, next) => {
-	// GET user
 	var options = {
 		port: config.dbPort,
 		path: '/api/user/_id/' + userId
 	};
 	return new Promise((resolve, reject) => {
-			console.log('in promise');
 		var callback = (response) => {
 			var user = '';
 			response
@@ -24,10 +21,8 @@ module.exports.loadUserHome = (req, res, next) => {
 					if (response.statusCode != resCode['OK']) {
 						reject('dbAPIRequest: badStatusCode:' + response.statusCode);
 					}
-					console.log('before resolve');
 					resolve(JSON.parse(user));
 				});
-
 		}
 		var request = http.request(options, callback);
 		request.on('error', (err) => reject('dbAPIRequest: ' + err));
@@ -39,7 +34,8 @@ module.exports.loadUserHome = (req, res, next) => {
 		}
 		next(user);
 	})
-	.then(undefined, (reason) => {
-		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'loadUserHome.' + reason });
+	.catch((reason) => {
+		var content = { message: errHeader + 'loadUserHome.' + reason }
+		jsonRes.send(res, resCode['SERVFAIL'], content);
 	});
 };
