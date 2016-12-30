@@ -35,6 +35,22 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		.catch((reason) => console.log('error:before.%s', reason));
 	});
 
+	beforeEach(() => {
+		return new Promise((resolve, reject) => {
+			// cleanse the db
+			mongoose.connection.db.dropDatabase(() => {
+				resolve();
+			});
+		})
+		.then(() => {
+			// drop the collections
+			mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
+				if (err) reject(err);
+			});
+		})
+		.catch((reason) => console.log('error:before.%s', reason));
+	});
+
 	describe('GET /api/decks', () => {
 
 		it('should not return a 404', () => {
@@ -72,10 +88,118 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
 				req.end();
 			})
-			.then((decks) => assert(decks.length == mockDecks.length))
+			.then((decks) => {
+				assert.equal(decks.length, mockDecks.length);
+				for (var i = 0; i < decks.length; i++) {
+					assert.propertyVal(decks[i], '_id', (mockDecks[i]._id).toString());
+				}
+			})
 			.catch((reason) => assert(false, reason.message));
 		});
 
+	});
+
+	describe('POST /api/deck', () => {
+
+		it('should not return a 404', () => {
+			var mockDeck = {
+				_id: mongoose.Types.ObjectId('000000000000000000000003'),
+				name: 'TestDeck',
+				description: 'POST /api/deck description',
+				tags: ['mock', 'test', 'data'],
+				cards: [
+					{
+						question: ['Is this a test'],
+						answer: ['Yes']
+					},
+					{
+						question: ['R U Sure'],
+						answer: ['Ys']
+					}
+				],
+				learning: 10
+			};
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.dbPort,
+					path: '/api/deck',
+					method: 'POST'
+				};
+				var callback = (res) => {
+					resolve(res.statusCode);
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
+				req.end();
+			})
+			.then((statusCode) => {	
+				assert.notEqual(statusCode, resCode['NOTFOUND'], 'route not found');
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should create new Deck in the db', () => {
+			var mockDeck = {
+				_id: mongoose.Types.ObjectId('000000000000000000000003'),
+				name: 'TestDeck',
+				description: 'POST /api/deck description',
+				tags: ['mock', 'test', 'data'],
+				cards: [
+					{
+						question: ['Is this a test'],
+						answer: ['Yes']
+					},
+					{
+						question: ['R U Sure'],
+						answer: ['Ys']
+					}
+				],
+				learning: 10
+			};
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.port,
+					path: '/api/deck',
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Conteng-Length': Buffer.byteLength(JSON.stringify(mockDeck))
+					}
+				};
+				// requests only get the response, no .on
+				var req = http.request(options, (res) => {
+					try {
+						assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+					} catch (err) {
+						reject(err);
+					}
+					resolve();
+				});
+				req.on('error', (err) => reject({ message: 'reqError:' + err }));
+				req.end(JSON.stringify(mockDeck));
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.port,
+						path: '/api/deck/_id/' + mockDeck._id
+					};
+					var callback = (res) => {
+						var deck = '';
+						res
+							.on('data', (chunk) => deck += chunk)
+							.on('end', () => resolve(JSON.parse(deck)));
+					};
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject({ message: 'reqError:' + err }));
+					req.end();
+				});
+			})
+			.then((deck) => {
+				assert.equal(deck._id, (mockDeck._id).toString());
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
 	});
 
 	describe('GET /api/deck/_id/:_id', () => {
@@ -86,9 +210,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 					port: config.dbPort,
 					path: '/api/deck/_id/' + mockDecks[testDeck]._id
 				};
-				var callback = (res) => {
-					resolve(res.statusCode);
-				};
+				var callback = (res) => resolve(res.statusCode);
 				var req = http.request(options, callback);
 				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
 				req.end();
@@ -119,75 +241,6 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				assert(deck._id == mockDecks[testDeck]._id);
 			})
 			.catch((reason) => assert(false, reason.message));
-		});
-	});
-
-	// Does not use done() callback!
-	// try to return just the promise
-	//   .then and .catch immediately after
-	describe('POST /api/deck', () => {
-		it('should save new Deck to the db', () => {
-			var mockDeck = {
-				_id: mongoose.Types.ObjectId('000000000000000000000003'),
-				name: 'TestDeck',
-				description: 'POST /api/deck description',
-				tags: ['mock', 'test', 'data'],
-				cards: [
-					{
-						question: ['Is this a test'],
-						answer: ['Yes']
-					},
-					{
-						question: ['R U Sure'],
-						answer: ['Ys']
-					}
-				],
-				learning: 10
-			};
-			return new Promise((resolve, reject) => {
-				var options = {
-					port: config.port,
-					path: '/api/deck',
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Conteng-Length': Buffer.byteLength(JSON.stringify(mockDeck))
-					}
-				};
-				// requests only get the response, no .on
-				var req = http.request(options, (res) => {
-					if (res.statusCode != resCode['OK']) {
-						reject('badStatusCode:' + res.statusCode);
-					}
-					resolve();
-				});
-				req.on('error', (err) => reject('reqError:' + err));
-				req.end(JSON.stringify(mockDeck));
-			})
-			.then(() => {
-				return new Promise((resolve, reject) => {
-					var options = {
-						port: config.port,
-						path: '/api/deck/_id/' + mockDeck._id
-					};
-					var callback = (res) => {
-						var deck = '';
-						res
-							.on('data', (chunk) => deck += chunk)
-							.on('end', () => resolve(deck));
-					};
-					var req = http.request(options, callback);
-					req.on('error', (err) => reject('reqError:' + err));
-					req.end();
-				});
-			})
-			.then((resolveValue) => {
-				assert((JSON.parse(resolveValue))._id == mockDeck._id);
-			})
-			.then(undefined, (rejectValue) => {
-				// console.log('promiseRejected:%s', rejectValue);
-				assert(true == false);
-			});
 		});
 	});
 
@@ -263,7 +316,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.port,
-					path: '/api/deck/_id/' + mockDecks[testDeck]._id,
+					path: '/api/deck/_id/000000000000000000000003',
 					method: 'DELETE'
 				};
 				var req = http.request(options, (res) => {
@@ -279,7 +332,8 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.port,
-						path: '/api/deck/_id/' + mockDecks[testDeck]._id
+						path: '/api/deck/_id/000000000000000000000003'
+						// path: '/api/deck/_id/' + mockDecks[testDeck]._id
 					};
 					var callback = (res) => {
 						var deck = '';

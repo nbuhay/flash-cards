@@ -19,7 +19,7 @@ router.delete('/user/_id/:user_id/learning/deck/_id/:deck_id', userCtrl.findById
 router.put('/user/_id/:user_id/learning/deck/_id/:deck_id', userCtrl.findByIdAndUpdateLearning);
 
 router.get('/decks', deckCtrl.findAll);
-router.post('/deck', deckCtrl.save);
+router.post('/deck', deckCtrl.create);
 router.get('/deck/_id/:_id', deckCtrl.findById);
 router.put('/deck/_id/:_id', deckCtrl.findByIdAndUpdate);
 router.delete('/deck/_id/:_id', deckCtrl.findOneAndRemove);
