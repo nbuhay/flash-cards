@@ -221,6 +221,24 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			.catch((reason) => assert(false, reason.message));
 		});
 
+		it('should send a 400 when req.params._id is an invalid Mongo ObjectId', () => {
+			return new Promise((resolve, reject) => {
+				var invalidId = 'invalid';
+				var options = {
+					port: config.dbPort,
+					path: '/api/deck/_id/' + invalidId
+				};
+				var callback = (res) => resolve(res.statusCode);
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
+				req.end();
+			})
+			.then((statusCode) => {	
+				assert.equal(statusCode, resCode['BADREQ']);
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
 		it('should return Deck deck with deck._id == :_id', () => {
 			return new Promise((resolve, reject) => {
 				var options = {

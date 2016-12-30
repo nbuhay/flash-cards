@@ -3,13 +3,14 @@ const mongoose = require('mongoose');
 const Deck = require('../models/deck');
 const jsonRes = require('../modules/jsonResponse');
 const errHeader = 'error:dbAPI:deckCtrl.'
+const mongoIdRe = /^[0-9a-fA-F]{24}$/;
 
 module.exports.findAll = (req, res) => {
 	var query = Deck.find({});
 	return query.exec()
 		.then((decks) => res.status(resCode['OK']).json(decks))
 		.catch((reason) => res.status(resCode['SERVFAIL'])
-			.json({ message: errHeader + 'findAll.query: ' + reason.message }));
+			.json({ message: errHeader + 'findAll: ' + reason.message }));
 }
 
 module.exports.create = (req, res) => {
@@ -20,6 +21,8 @@ module.exports.create = (req, res) => {
 }
 
 module.exports.findById = (req, res) => {
+	if (!mongoIdRe.test(req.params._id))
+		res.status(resCode['BADREQ']).json({ message: errHeader + 'findById: invalid _id' });
 	var query = Deck.findById(req.params._id);
 	return query.exec()
 		.then((deck) => (res.status(resCode['OK']).json(deck)))	
