@@ -9,8 +9,10 @@ module.exports.findAll = (req, res) => {
 	var query = Deck.find({});
 	return query.exec()
 		.then((decks) => res.status(resCode['OK']).json(decks))
-		.catch((reason) => res.status(resCode['SERVFAIL'])
-			.json({ message: errHeader + 'findAll: ' + reason.message }));
+		.catch((reason) => {
+			var content = { message: errHeader + 'findAll: ' + reason.message };
+			jsonRes.send(res, resCode['SERVFAIL'], content);
+		});
 }
 
 module.exports.create = (req, res) => {

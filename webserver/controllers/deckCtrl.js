@@ -9,7 +9,7 @@ const userId = "000000000000000000000000";
 module.exports.loadDeck = (req, res, next) => {
 	return new Promise((resolve, reject) => {
 		var options = {
-			port: config.port,
+			port: config.app.dbAPI.port,
 			path: '/api/user/_id/' + userId
 		};
 		var callback = (response) => {

@@ -53,7 +53,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 		it('should return all Users inserted from mockUsers', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/users'
 				};
 				var callback = (res) => {
@@ -97,7 +97,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			};
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/user',
 					method: 'POST',
 					headers: {
@@ -120,7 +120,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: '/api/user/_id/' + mockUser._id
 					};
 					var req = http.request(options, (res) => {
@@ -151,7 +151,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 	describe('GET /api/user/_id/:_id', () => {
 		it('should return User user with user._id == :_id', (done) => {
 			var options = {
-				port: config.port,
+				port: config.app.dbAPI.port,
 				path: '/api/user/name/' + mockUsers[testUser].userName
 			};
 			var callback = (response) => {
@@ -162,7 +162,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 					})
 					.on('end', () => {
 						var options = {
-							port: config.port,
+							port: config.app.dbAPI.port,
 							path: '/api/user/_id/' + (JSON.parse(user))._id
 						};
 						var callback = (response) => {
@@ -186,7 +186,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 	describe.skip('GET /api/user/name/:userName', () => {
 		it('should GET User user with user.userName == :userName', (done) => {
 			var options = {
-				port: config.port,
+				port: config.app.dbAPI.port,
 				path: '/api/user/name/' + mockUsers[testUser].userName
 			};
 			var resStr = '';
@@ -208,7 +208,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			var newUserName = 'Test';
 			var newZip = 00000;
 			var options = {
-				port: config.port,
+				port: config.app.dbAPI.port,
 				path: '/api/user/name/' + mockUsers[testUser].userName
 			};
 			var callback = (response) => {
@@ -222,7 +222,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 						userJson.userName = newUserName;
 						userJson.zip = newZip;
 						var options = {
-							port: config.port,
+							port: config.app.dbAPI.port,
 							path: '/api/user/_id/' + userJson._id,
 							method: 'PUT',
 							headers: {
@@ -252,7 +252,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: path,
 					method: 'POST',
 					headers: {
@@ -275,7 +275,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: '/api/user/_id/' + mockUsers[testUser]._id
 					};
 					var callback = (res) => {
@@ -302,7 +302,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				// get mock user (needs mongo generated IDs)
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/user/_id/' + mockUsers[testUser]._id
 				};
 				var req = http.request(options, (res) => {
@@ -336,7 +336,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 					// findbyidandupdate edits
 					var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: path,
 						method: 'PUT',
 						headers: {
@@ -361,7 +361,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 				// get mock user (needs mongo generated IDs)
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/user/_id/' + mockUsers[testUser]._id
 				};
 				var req = http.request(options, (res) => {
@@ -395,7 +395,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: path,
 					method: 'DELETE'
 				};
@@ -413,7 +413,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: '/api/user/_id/' + mockUsers[testUser]._id
 					};
 					var req = http.request(options, (res) => {
@@ -446,7 +446,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 	describe.skip('DELETE /api/user/_id/:_id', () => {
 		it('should delete User user with user._id==:_id', (done) => {
 			var options = {
-				port: config.port,
+				port: config.app.dbAPI.port,
 				path: '/api/user/name/' + mockUsers[testUser].userName
 			};
 			var callback = (response) => {
@@ -457,7 +457,7 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 					})
 					.on('end', () => {
 						var options = {
-							port: config.port,
+							port: config.app.dbAPI.port,
 							path: '/api/user/_id/' + (JSON.parse(user))._id,
 							method: 'DELETE'
 						};

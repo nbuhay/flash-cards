@@ -27,7 +27,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			}
 			// drop the collections
 			mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
-				if (err) reject(err);
+				if (err) console.log(err);
 				console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
 				done();
 			});
@@ -56,7 +56,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should not return a 404', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.dbPort,
+					port: config.app.dbAPI.port,
 					path: '/api/decks/'
 				};
 				var callback = (res) => {
@@ -75,7 +75,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should return all Deck documents inserted into the db', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.dbPort,
+					port: config.app.dbAPI.port,
 					path: '/api/decks'
 				};
 				var callback = (res) => {
@@ -121,7 +121,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			};
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.dbPort,
+					port: config.app.dbAPI.port,
 					path: '/api/deck',
 					method: 'POST'
 				};
@@ -158,7 +158,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			};
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/deck',
 					method: 'POST',
 					headers: {
@@ -181,7 +181,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: '/api/deck/_id/' + mockDeck._id
 					};
 					var callback = (res) => {
@@ -207,7 +207,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should not return a 404', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.dbPort,
+					port: config.app.dbAPI.port,
 					path: '/api/deck/_id/' + mockDecks[testDeck]._id
 				};
 				var callback = (res) => resolve(res.statusCode);
@@ -225,7 +225,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var invalidId = 'invalid';
 				var options = {
-					port: config.dbPort,
+					port: config.app.dbAPI.port,
 					path: '/api/deck/_id/' + invalidId
 				};
 				var callback = (res) => resolve(res.statusCode);
@@ -242,7 +242,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should return Deck deck with deck._id == :_id', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/deck/_id/' + mockDecks[testDeck]._id
 				};
 				var callback = (res) => {
@@ -283,7 +283,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			mockDeck._id = mockDecks[testDeck]._id;
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/deck/_id/' + mockDeck._id,
 					method: 'PUT',
 					headers: {
@@ -303,7 +303,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: '/api/deck/_id/' + mockDeck._id
 					};
 					var callback = (res) => {
@@ -333,7 +333,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should delete Deck deck from the db where deck._id == :_id', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
-					port: config.port,
+					port: config.app.dbAPI.port,
 					path: '/api/deck/_id/000000000000000000000003',
 					method: 'DELETE'
 				};
@@ -349,7 +349,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			.then(() => {
 				return new Promise((resolve, reject) => {
 					var options = {
-						port: config.port,
+						port: config.app.dbAPI.port,
 						path: '/api/deck/_id/000000000000000000000003'
 						// path: '/api/deck/_id/' + mockDecks[testDeck]._id
 					};

@@ -1,18 +1,18 @@
-const config = require('../../global.js').config();
-const resCode = require('../../global.js').resCode();
+const config = require('../../config.js').config();
+const resCode = require('../../config.js').resCode();
 const jsonRes = require('../modules/jsonResponse');
 const http = require('http');
 const userId = "000000000000000000000000";
-const errHeader = 'error:webserver:homeCtrl.';
+const errHeader = 'error:webserver:indexCtrl.';
 
 // GET user
 // return user to next
 module.exports.loadUserHome = (req, res, next) => {
-	var options = {
-		port: config.dbPort,
-		path: '/api/user/_id/' + userId
-	};
 	return new Promise((resolve, reject) => {
+		var options = {
+			port: config.app.dbAPI.port,
+			path: '/api/user/_id/' + userId
+		};
 		var callback = (response) => {
 			var user = '';
 			response
