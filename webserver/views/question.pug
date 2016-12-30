@@ -1,12 +1,14 @@
 extends layout
 
 block content
-	for card in decks.created[0].cards
+	for card in flashCards
 		div(class='card' style='display: none; margin: auto; text-align: center;')
 			div(style='display: inline;')
-				h1= card.question
+				for question in card.question
+					h1= question
 			div(style='display: none;')
-				h1= card.answer
+				for answer in card.answer
+					h1= answer
 	div(id='correct' style='height: 100px; width: 100px; background-color: #55AA55; margin: auto; display: none;')
 	div(id='incorrect' style='height: 100px; width: 100px; background-color: #D46A6A; margin: auto; display: none;')
 	script.
@@ -24,19 +26,19 @@ block content
 			},
 			false
 		);
-		var decks = document.getElementsByClassName('card');
+		var cards = document.getElementsByClassName('card');
 		
 		// randomize order of deck indexes
 		var shuffleDeck = [];
-		while (shuffleDeck.length < decks.length) {
-			var randomNum = Math.ceil(Math.random() * decks.length - 1);
+		while (shuffleDeck.length < cards.length) {
+			var randomNum = Math.ceil(Math.random() * cards.length - 1);
 			if (shuffleDeck.indexOf(randomNum) > -1) continue;
 			shuffleDeck[shuffleDeck.length] = randomNum;
 		}
 
 		// map deck cards to their randomized indxes 
 		var randomDeck = shuffleDeck.map((randomNum) => {
-			return decks[randomNum];
+			return cards[randomNum];
 		});
 
 		// display first card

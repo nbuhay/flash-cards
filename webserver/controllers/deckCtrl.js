@@ -1,45 +1,37 @@
+const config = require('../../config.js').config();
+const resCode = require('../../config').resCode();
 var http = require('http');
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var Deck = mongoose.model('Deck');
+const userId = "000000000000000000000000";
 
-module.exports.loadDeck = function (req, res, next) {
-	var options = {
-		port: 3000,
-		path: '/api/user/name/Bu'
-	};
-
-	var user = '';
-
-	var callback = function (response) {
-		response.on('data', function (chunk) {
-			user += chunk;
-		});
-
-		response.on('end', function () {
-			var options = {
-				port: 3000,
-				path: '/api/deck/id/'+(JSON.parse(user)).decks.created[0]
-			};
-
-			var deck = '';
-
-			var callback = function (response) {
-				response.on('data', function (chunk) {
-					deck += chunk;
-				});
-
-				response.on('end', function () {
-					var createdDecks = [];
-					createdDecks.push(JSON.parse(deck));
-					next({
-						user: JSON.parse(user),
-						decks: { created: createdDecks }
-					});
-				});
+module.exports.loadDeck = (req, res, next) => {
+	return new Promise((resolve, reject) => {
+		var options = {
+			port: config.port,
+			path: '/api/user/_id/' + userId
+		};
+		var callback = (response) => {
+			var user = '';
+			response
+				.on('data', (chunk) => user += chunk)
+				.on('end', () => resolve((JSON.parse(user)).decks.learning));
+		};
+		var request = http.request(options, callback);
+		request.on('error', (err) => reject({ message: 'dbAPIRequest: ' + err}))
+		request.end();
+	})
+	.then((decks) => {
+		var i = 0;
+		while (i < decks.length) {
+			if (decks[i].refDeck == req.params.deck_id) {
+				next(decks[i]);
 			}
-			http.request(options, callback).end();
-		});
-	}
-	http.request(options, callback).end();
+			i++;
+		}
+	})
+	.catch((reason) => {
+		res.status(resCode['SERVFAIL']).json({ message: reason.message })
+	});
 };

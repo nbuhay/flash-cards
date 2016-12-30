@@ -1,3 +1,4 @@
+const resCode = require('../../config').resCode();
 var express = require('express');
 var router = express.Router();
 var deckCtrl = require('../controllers/deckCtrl');
@@ -16,10 +17,9 @@ router.get('/create/cards', function(req, res) {
 	res.render('deckCreateCards');
 });
 
-router.get('/learn/:deckId', function(req, res) {
-	deckCtrl.loadDeck(res, req, function (data) {
-		res.status(200);
-		res.render('question', data);
+router.get('/learn/_id/:deck_id', (req, res) => {
+	deckCtrl.loadDeck(req, res, (deck) => {
+		res.status(resCode['OK']).render('question', deck);
 	});
 });
 

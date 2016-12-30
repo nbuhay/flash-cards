@@ -95,6 +95,8 @@ module.exports.saveLearning = (req, res) => {
 				}
 				user.decks.learning.push({
 					refDeck: deck._id,
+					name: deck.name,
+					description: deck.description,
 					flashCards: flashCards
 				});
 				resolve(user)

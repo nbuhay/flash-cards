@@ -16,6 +16,8 @@ var userSchema = mongoose.Schema({
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'Deck'
 			},
+			name: String,
+			description: String,
 			flashCards: [{
 				question: { 
 					type: [String],

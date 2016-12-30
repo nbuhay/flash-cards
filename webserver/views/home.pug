@@ -2,10 +2,10 @@ extends layout
 
 mixin deckDiv(deck)
 	div(style='border-style: solid')
-		h3= refDeck
-		p description
+		h3 #{deck.name}
+		p #{deck.description}
 		br
-		input(type="button" class="begin" value="Begin")
+		input(type="button" onclick='location.href=\'/deck/learn/_id/' + deck.refDeck + '\'' value="Begin")
 		br
 		input(type="button" class="edit" value="Edit")
 		input(type="button" class="delete" value="Delete")
@@ -27,12 +27,10 @@ block content
 	script(src='/scripts/addMultipleListeners.js')
 	script.
 		var buttonId=[
-			'begin',
 			'edit',
 			'delete'
 		];
 		var buttonHref=[
-			'/deck/learn/DECKNAME',
 			'/edit',
 			'/delete'
 		];
