@@ -1,0 +1,39 @@
+{
+	"cards": [
+		{
+			"_id": "000000000000000000000000",
+			"question": ["What tones are in a triad"],
+			"answer": ["Tonic, mediant, dominant"]
+		},
+		{
+			"_id": "000000000000000000000001",
+			"question": ["Who was Chopin"],
+			"answer": ["Solo pianist"]
+		},
+		{
+			"_id": "000000000000000000000002",
+			"question": ["What is your favorite color"],
+			"answer": ["Green"]
+		},
+		{
+			"_id": "000000000000000000000003",
+			"question": ["What options are available for grouped PT audio"],
+			"answer": ["Mix, edit, and mix/edit"]
+		},
+		{
+			"_id": "000000000000000000000004",
+			"question": ["What is voice priority"],
+			"answer": ["When > 32 tracks of audio, voice priority determines which 32 are heard", "The first 32 in the list are heard."]
+		},
+				{
+			"_id": "000000000000000000000005",
+			"question": ["What is the EC2"],
+			"answer": ["Elastic Compute Cloud"]
+		},
+		{
+			"_id": "000000000000000000000006",
+			"question": ["What is Amazon's data warehousing service"],
+			"answer": ["RedShift"]
+		}
+	]
+}

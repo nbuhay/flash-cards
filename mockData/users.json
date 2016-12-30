@@ -9,8 +9,18 @@
 				"domain": "flash",
 				"extension": "com"
 			},
-			"zip": 55555,
-			"decks": {}
+			"zip": {
+				"code": 55555,
+				"plusFour": 4444
+			},
+			"decks": {
+				"created": [
+					"000000000000000000000000",
+					"000000000000000000000001",
+					"000000000000000000000002"
+				],
+				"learning": []
+			}
 		},
 		{
 			"_id": "000000000000000000000001",
@@ -21,7 +31,9 @@
 				"domain": "yah",
 				"extension": "com"
 			},
-			"zip": 44444,
+			"zip": {
+				"code": 44444
+			},
 			"decks": {}
 		},
 		{
@@ -33,7 +45,10 @@
 				"domain": "jd",
 				"extension": "com"
 			},
-			"zip": 11111,
+			"zip": {
+				"code": 11111,
+				"plusFour": 3333
+			},
 			"decks": {}
 		}
 	]

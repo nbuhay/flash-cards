@@ -1,17 +1,16 @@
-var CONST = require('../../global.js');
-const config = require('../../global').config();
-const resCode = require('../../global').resCode();
-var User = require('../models/user');
-var Deck = require('../models/deck');
-var jsonRes = require('../modules/jsonResponse');
+const config = require('../../config').config();
+const resCode = require('../../config').resCode();
+const User = require('../models/user');
+const Deck = require('../models/deck');
+const jsonRes = require('../modules/jsonResponse');
 const errHeader = 'error:dbAPI:userCtrl.';
 
 module.exports.findAll = (req, res) => {
 	User.find((err, users) => {
 		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), {'msg': err});
+			jsonRes.send(res, resCode['SERVFAIL'], {'msg': err});
 		}
-		jsonRes.send(res, CONST.RES('OK'), users);
+		jsonRes.send(res, resCode['OK'], users);
 	});
 };
 
@@ -21,9 +20,9 @@ module.exports.findById = (req, res) => {
 	};
 	User.findById(options, (err, user) => {
 		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg:  err });
+			jsonRes.send(res, resCode['SERVFAIL'], { msg:  err });
 		}
-		jsonRes.send(res, CONST.RES('OK'), user);
+		jsonRes.send(res, resCode['OK'], user);
 	});
 };
 
@@ -44,9 +43,9 @@ module.exports.save = (req, res) => {
 module.exports.findByIdAndUpdate = (req, res) => {
 	User.findByIdAndUpdate(req.params._id, req.body, (err, user) => {
 		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: err });
+			jsonRes.send(res, resCode['SERVFAIL'], { msg: err });
 		}
-		jsonRes.send(res, CONST.RES('OK'), {msg: 'Update Succesful'});
+		jsonRes.send(res, resCode['OK'], {msg: 'Update Succesful'});
 	});
 };
 
@@ -63,9 +62,9 @@ module.exports.findOneAndRemove = (req, res) => {
 	};
 	User.findOneAndRemove(options, (err, user) => {
 		if (err) {
-			jsonRes.send(res, CONST.RES('SERVFAIL'), { msg: 'findOneAndRemove.findOneAndRemove.error: ' + err} );
+			jsonRes.send(res, resCode['SERVFAIL'], { msg: 'findOneAndRemove.findOneAndRemove.error: ' + err} );
 		}
-		jsonRes.send(res, CONST.RES('OK'), { msg: 'user.' + user._id + ' sucessfully deleted!'});
+		jsonRes.send(res, resCode['OK'], { msg: 'user.' + user._id + ' sucessfully deleted!'});
 	});
 };
 

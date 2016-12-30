@@ -1,9 +1,8 @@
 const resCode = require('../../config').resCode();
 const mongoIdRe = require('../../config').mongoIdRe();
-const mongoose = require('mongoose');
 const Deck = require('../models/deck');
 const jsonRes = require('../modules/jsonResponse');
-const errHeader = 'error:dbAPI:deckCtrl.'
+const errHeader = 'error:dbAPI:deckCtrl.';
 
 module.exports.findAll = (req, res) => {
 	var query = Deck.find({});

@@ -21,17 +21,15 @@ module.exports.loadUserHome = (req, res, next) => {
 					if (response.statusCode != resCode['OK']) {
 						reject('dbAPIRequest: badStatusCode:' + response.statusCode);
 					}
-					resolve(JSON.parse(user));
-				});
+					(user = JSON.parse(user)) ? 
+						resolve(user) : reject('dbAPIRequest: returned null user');
+			});
 		}
 		var request = http.request(options, callback);
 		request.on('error', (err) => reject('dbAPIRequest: ' + err));
 		request.end();		
 	})
 	.then((user) => {
-		if (!user) {
-			reject('dbAPIRequest: returned null user');
-		}
 		next(user);
 	})
 	.catch((reason) => {

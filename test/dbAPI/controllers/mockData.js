@@ -1,6 +1,5 @@
 var http = require('http');
 var assert = require('assert');
-var CONST = require('../global');
 var mockDecks = ('../../mockData/decks').decks;
 var mockUsers = ('../../mockData/users').users;
 var Deck = require('../dbAPI/models/deck');

@@ -1,19 +1,20 @@
-var http = require('http');
-var CONST = require('../../global');
-var mongoose = require('mongoose');
-var mockDecks = require('../../mockData/decks').decks;
-var mockUsers = require('../../mockData/users').users;
-var Deck = require('../models/deck');
-var User = require('../models/user');
-var jsonRes = require('../modules/jsonResponse');
+const config = require('../../config').config();
+const resCode = require('../../config').resCode();
+const http = require('http');
+const mockUsers = require('../../config').mockUsers();
+const mockDecks = require('../../config').mockDecks();
+const testDeck = require('../../config').testDeck();
+const testUser = require('../../config').testUser();
+const mongoose = require('mongoose');
+const jsonRes = require('../modules/jsonResponse');
 
 var DECK_REQ_OPTS = {
-	port: CONST.PORT(),
-	path: '/api/deck/name/' + mockDecks[CONST.TEST_DECK()].name
+	port: config.db.port,
+	path: '/api/deck/name/' + mockDecks[testDeck].name
 };
 
 var USER_REQ_OPTS = {
-	port: CONST.PORT(),
+	port: config.db.port,
 	path: '/api/user',
 	method: 'POST'
 };
@@ -75,7 +76,7 @@ module.exports.insert = function (req, res) {
 		console.warn('Decks dropped');
 
 		// Create dummy data
-		var defaultDeck = new Deck(mockDecks[CONST.TEST_DECK()]);
+		var defaultDeck = new Deck(mockDecks[testDeck]);
 
 		// Save deck to mongoDb
 		defaultDeck.save(function (err) {

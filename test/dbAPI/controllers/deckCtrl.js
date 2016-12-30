@@ -2,8 +2,8 @@ const config = require('../../../config').config();
 const resCode = require('../../../config').resCode();
 const assert = require('chai').assert;
 const http = require('http');
-const mockUsers = require('../../../config').mockUsers();
-const mockDecks = require('../../../config').mockDecks();
+var mockUsers = require('../../../config').mockUsers();
+var mockDecks = require('../../../config').mockDecks();
 const testDeck = require('../../../config').testDeck();
 const testUser = require('../../../config').testUser();
 const mongoose = require('mongoose');
@@ -13,26 +13,40 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 	before((done) => {
 		console.log('\tBefore Tests');
 		// db ceremony...
-		var promise = new Promise((resolve, reject) => {
-			// cleanse the db
-			mongoose.connection.db.dropDatabase(() => {
-				console.log('\tmongoose.connection.db.dropDatabase: success');
-				resolve();
-			});
-		})
-		.then(() => {
-			// mockDecks[i]._id casted to Mongo ObjectId type
-			for (var i = 0; i < mockDecks.length; i++) {
-				mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
-			}
-			// drop the collections
-			mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
-				if (err) console.log(err);
-				console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
-				done();
-			});
-		})
-		.catch((reason) => console.log('error:before.%s', reason));
+			var promise = new Promise((resolve, reject) => {
+				// cleanse the db
+				mongoose.connection.db.dropDatabase(() => {
+					console.log('\tmongoose.connection.db.dropDatabase: success');
+					resolve();
+				});
+			})
+			.then(() => {
+				return new Promise((resolve, reject) => {
+					// mockUsers[i]._id casted to Mongo ObjectId type
+					for (var i = 0; i < mockUsers.length; i++) {
+						mockUsers[i]._id = mongoose.Types.ObjectId(mockUsers[i]._id);
+					}
+					// insert the user collection
+					mongoose.connection.collection('users').insert(mockUsers, (err, users) => {
+						if (err) reject('mongoose.connection.collection(\'users\').insert: ' + err);
+						console.log('\tmongoose.connection.collection(\'users\').insertedCount: %s', users.insertedCount);
+						resolve();
+				});
+			})
+			.then(() => {
+				// mockDecks[i]._id casted to Mongo ObjectId type
+				for (var i = 0; i < mockDecks.length; i++) {
+					mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
+				}
+				// insert the deck collection
+				mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
+					if (err) reject('mongoose.connection.collection(\'decks\').insert:error: ' + err);
+					console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
+					done();
+				});
+			})
+			.catch((reason) => console.log('\terror:before.%s', reason));
+		});
 	});
 
 	beforeEach(() => {
@@ -43,10 +57,19 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			});
 		})
 		.then(() => {
-			// drop the collections
-			mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
-				if (err) reject(err);
-			});
+			return new Promise((resolve, reject) => {
+				// insert the deck collections
+				mongoose.connection.collection('decks').insert(mockDecks, (err) => {
+					if (err) reject(err);
+					resolve();
+				});
+			})
+		})
+		.then(() => {
+			// insert the user collections
+				mongoose.connection.collection('users').insert(mockUsers, (err) => {
+					if (err) reject(err);
+				});
 		})
 		.catch((reason) => console.log('error:before.%s', reason));
 	});
@@ -104,20 +127,13 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should not return a 404', () => {
 			var mockDeck = {
 				_id: mongoose.Types.ObjectId('000000000000000000000003'),
+				creator: mockUsers[testUser]._id,
 				name: 'TestDeck',
 				description: 'POST /api/deck description',
 				tags: ['mock', 'test', 'data'],
-				cards: [
-					{
-						question: ['Is this a test'],
-						answer: ['Yes']
-					},
-					{
-						question: ['R U Sure'],
-						answer: ['Ys']
-					}
-				],
-				learning: 10
+				cards: [{
+				}],
+				learning: 0
 			};
 			return new Promise((resolve, reject) => {
 				var options = {
@@ -141,20 +157,13 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		it('should create new Deck in the db', () => {
 			var mockDeck = {
 				_id: mongoose.Types.ObjectId('000000000000000000000003'),
+				creator: mockUsers[testUser]._id,
 				name: 'TestDeck',
 				description: 'POST /api/deck description',
 				tags: ['mock', 'test', 'data'],
-				cards: [
-					{
-						question: ['Is this a test'],
-						answer: ['Yes']
-					},
-					{
-						question: ['R U Sure'],
-						answer: ['Ys']
-					}
-				],
-				learning: 10
+				cards: [{
+				}],
+				learning: 0
 			};
 			return new Promise((resolve, reject) => {
 				var options = {

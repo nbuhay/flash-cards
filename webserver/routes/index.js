@@ -1,4 +1,4 @@
-var resCode = require('../../global').resCode();
+var resCode = require('../../config').resCode();
 var express = require('express');
 var router = express.Router();
 const indexCtrl = require('../controllers/indexCtrl');
