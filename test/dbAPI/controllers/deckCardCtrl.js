@@ -117,14 +117,95 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 
 		});
 
-		// it('should not return a 404', () => {
-		// });
+		it('should have a res content-type header of application/json', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCards'
+				};
+				var callback = (res) => {
+					resolve(res.headers['content-type']);
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((contentType) => {
+				assert.match(contentType, /^application\/json.*$/, 'content-type was ' + contentType);
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
 
-		// it('should return a JSON object', () => {
-		// });
+		it('should return an array of JSON objects', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCards'
+				};
+				var callback = (res) => {
+					deckCards = '';
+					res
+						.on('data', (chunk) => deckCards += chunk)
+						.on('end', () => resolve(JSON.parse(deckCards)));
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((parsedDeckCards) => {
+				assert.isArray(parsedDeckCards);
+				parsedDeckCards.forEach((deckCard) => assert.isObject(deckCard));
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
 
-		// it('should return all DeckCards in the db', () => {
-		// });
+		it('should return the same number of DeckCards inserted into the db', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCards'
+				};
+				var callback = (res) => {
+					var deckCards = '';
+					res
+						.on('data', (chunk) => deckCards += chunk)
+						.on('end', () => {
+							resolve(JSON.parse(deckCards));
+						});
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((deckCards) => assert.lengthOf(deckCards, mockDeckCards.length))
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should return the DeckCards inserted into the db, based on _id', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCards'
+				};
+				var callback = (res) => {
+					var deckCards = '';
+					res
+						.on('data', (chunk) => deckCards += chunk)
+						.on('end', () => {
+							resolve(JSON.parse(deckCards));
+						});
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((deckCards) => {
+				for (var i = 0; i < deckCards.length; i++) {
+					assert.propertyVal(deckCards[i], '_id', mockDeckCards[i]._id.toString());
+				}
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
 
 	});
 
