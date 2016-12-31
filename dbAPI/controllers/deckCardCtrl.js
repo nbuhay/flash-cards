@@ -14,6 +14,4 @@ function findAll(req, res) {
 		});
 }
 
-
-
 module.exports = { findAll };

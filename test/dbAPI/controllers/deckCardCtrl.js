@@ -98,13 +98,13 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		.catch((reason) => console.log('error:before.%s', reason));
 	});
 
-	describe('GET /api/deckCards', () => {
+	describe('GET /api/deckCard', () => {
 
 		it('should not return a 404', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCards'
+					path: '/api/deckCard'
 				};
 				var req = http.request(options, (res) => resolve(res.statusCode));
 				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
@@ -121,7 +121,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCards'
+					path: '/api/deckCard'
 				};
 				var callback = (res) => {
 					resolve(res.headers['content-type']);
@@ -140,7 +140,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCards'
+					path: '/api/deckCard'
 				};
 				var callback = (res) => {
 					deckCards = '';
@@ -163,7 +163,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCards'
+					path: '/api/deckCard'
 				};
 				var callback = (res) => {
 					var deckCards = '';
@@ -185,7 +185,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCards'
+					path: '/api/deckCard'
 				};
 				var callback = (res) => {
 					var deckCards = '';
