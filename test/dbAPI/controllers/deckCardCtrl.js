@@ -5,6 +5,7 @@ const http = require('http');
 var mockDeckCards = require('../../../config').mockDeckCards();
 var mockDecks = require('../../../config').mockDecks();
 var mockUsers = require('../../../config').mockUsers();
+const testDeckCard = require('../../../config').testDeckCard();
 const testDeck = require('../../../config').testDeck();
 const testUser = require('../../../config').testUser();
 const mongoose = require('mongoose');
@@ -98,13 +99,13 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		.catch((reason) => console.log('error:before.%s', reason));
 	});
 
-	describe('GET /api/deckCard', () => {
+	describe('GET /api/deckCard/all', () => {
 
 		it('should not return a 404', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCard'
+					path: '/api/deckCard/all'
 				};
 				var req = http.request(options, (res) => resolve(res.statusCode));
 				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
@@ -121,7 +122,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCard'
+					path: '/api/deckCard/all'
 				};
 				var callback = (res) => {
 					resolve(res.headers['content-type']);
@@ -140,7 +141,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCard'
+					path: '/api/deckCard/all'
 				};
 				var callback = (res) => {
 					deckCards = '';
@@ -163,7 +164,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCard'
+					path: '/api/deckCard/all'
 				};
 				var callback = (res) => {
 					var deckCards = '';
@@ -185,7 +186,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deckCard'
+					path: '/api/deckCard/all'
 				};
 				var callback = (res) => {
 					var deckCards = '';
@@ -203,6 +204,135 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				for (var i = 0; i < deckCards.length; i++) {
 					assert.propertyVal(deckCards[i], '_id', mockDeckCards[i]._id.toString());
 				}
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+	});
+
+	describe('GET /api/deckCard/:_id', () => {
+
+		it('should not return a 404', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCard/:_id'
+				};
+				var req = http.request(options, (res) => resolve(res.statusCode));
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((statusCode) => {
+				assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 404 when req is missing :_id', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCard/'
+				};
+				var req = http.request(options, (res) => resolve(res.statusCode));
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((statusCode) => {
+				assert.equal(statusCode, resCode['NOTFOUND'], 'req missing param _id');
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 400 when :_id is an invalid Mongo ObjectId', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + 'a'.repeat(23)
+				};
+				var req = http.request(options, (res) => resolve(res.statusCode));
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((statusCode) => {
+				assert.equal(statusCode, resCode['BADREQ']);
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should have a res content-type header of application/json', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCard/:_id'
+				};
+				var callback = (res) => {
+					resolve(res.headers['content-type']);
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((contentType) => {
+				assert.match(contentType, /^application\/json.*$/, 'content-type was ' + contentType);
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should return a 404 if the deckCard is null', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCard/' + 'a'.repeat(24)
+				};
+				var req = http.request(options, (res) => resolve(res.statusCode));	
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((statusCode) => {
+				assert.equal(statusCode, resCode['NOTFOUND']);
+			})
+			.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should return a single JSON object', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCard/' + mockDeckCards[testDeckCard]._id
+				};
+				var callback = (res) => {
+					var deckCard = '';
+					res
+						.on('data', (chunk) => deckCard += chunk)
+						.on('end', () => resolve(JSON.parse(deckCard)));
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((deckCard) => assert.isObject(deckCard))
+			.catch((reason) => assert(false, reason.message));
+		});
+		
+		it('should return the same DeckCard inserted into the db, based on _id', () => {
+			return new Promise((resolve, reject) => {
+				var options = {
+					port: config.app.dbAPI.port,
+					path: '/api/deckCard/' + mockDeckCards[testDeckCard]._id
+				};
+				var callback = (res) => {
+					var deckCard = '';
+					res
+						.on('data', (chunk) => deckCard += chunk)
+						.on('end', () => resolve(JSON.parse(deckCard)));
+				};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIReq:error: ' + err }));
+				req.end();
+			})
+			.then((deckCard) => {
+				assert.propertyVal(deckCard, '_id', mockDeckCards[testDeckCard]._id.toString());
 			})
 			.catch((reason) => assert(false, reason.message));
 		});
