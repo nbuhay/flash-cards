@@ -22,7 +22,7 @@ module.exports.config = () => {
 	return env[node_env];
 }
 
-module.exports.mockDecks = () => {
+module.exports.mockDeckCards = () => {
 	return mockDeckCards;
 }
 

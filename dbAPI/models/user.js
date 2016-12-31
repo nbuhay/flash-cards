@@ -57,11 +57,11 @@ var userSchema = mongoose.Schema({
 	}
 });
 
-userSchema.virtual('zipPlusFour').get(function () {
+userSchema.virtual('zipPlusFour').get(function() {
 	return this.zip.code + '-' + this.zip.plusFour;
 });
 
-userSchema.virtual('emailAddress').get(function () {
+userSchema.virtual('emailAddress').get(function() {
 	return this.email.domainId + '@' + this.email.domain + '.' + this.email.extension;
 });
 

@@ -1,8 +1,11 @@
 var express = require('express');
 var router = express.Router();
 var mockDataCtrl = require('../controllers/mockDataCtrl');
-var userCtrl = require('../controllers/userCtrl');
+var deckCardCtrl = require('../controllers/deckCardCtrl');
 var deckCtrl = require('../controllers/deckCtrl');
+var userCtrl = require('../controllers/userCtrl');
+
+router.get('/deckCards', deckCardCtrl.findAll);
 
 router.get('/mockData', mockDataCtrl.insert);
 router.get('/mockData/users', mockDataCtrl.insertUsers);

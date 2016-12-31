@@ -24,7 +24,8 @@ describe('Runner', () => {
 		});
 	});
 
-	importTest('', './dbAPI/controllers/deckCtrl');	
+	importTest('', './dbAPI/controllers/deckCardCtrl');
+	importTest('', './dbAPI/controllers/deckCtrl');
 	// importTest('', './dbAPI/controllers/userCtrl');
 	// importTest('', './webserver/controllers/deckCtrl');
 	// importTest('', './webserver/controllers/indexCtrl');
