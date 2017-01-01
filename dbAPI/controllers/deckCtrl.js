@@ -25,7 +25,16 @@ module.exports.findById = (req, res) => {
 	if (!mongoIdRe.test(req.params._id))
 		res.status(resCode['BADREQ']).json({ message: errHeader + 'findById: invalid _id' });
 	var query = Deck.findById(req.params._id);
-	return query.exec()
+	var options = [
+		{
+			path: 'creator',
+			select: 'userName email',
+		},
+		{
+			path: 'cards'
+		}
+	];
+	return query.populate(options).exec()
 		.then((deck) => (res.status(resCode['OK']).json(deck)))
 		.catch((reason) => res.status(resCode['SERVFAIL'])
 			.json({ message: errHeader + 'findById: ' + reason.message }));
