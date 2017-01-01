@@ -15,6 +15,7 @@ function findAll(req, res) {
 		});
 }
 
+// can the sync bits be wrapped in a promise?
 function findById(req, res) {
 	if (!mongoIdRe.test(req.params._id)) {
 		var content = { message: errHeader + 'findById: req missing param _id' };

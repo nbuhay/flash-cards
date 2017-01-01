@@ -74,13 +74,13 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		.catch((reason) => console.log('error:before.%s', reason));
 	});
 
-	describe('GET /api/decks', () => {
+	describe('GET /api/deck/all', () => {
 
-		it('should not return a 404', () => {
+		it('should exist', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/decks/'
+					path: '/api/deck/all'
 				};
 				var callback = (res) => {
 					resolve(res.statusCode);
@@ -99,7 +99,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/decks'
+					path: '/api/deck/all'
 				};
 				var callback = (res) => {
 					var decks = '';
@@ -124,7 +124,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 
 	describe('POST /api/deck', () => {
 
-		it('should not return a 404', () => {
+		it('should exist', () => {
 			var mockDeck = {
 				_id: mongoose.Types.ObjectId('000000000000000000000003'),
 				creator: mockUsers[testUser]._id,
@@ -161,8 +161,11 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				name: 'TestDeck',
 				description: 'POST /api/deck description',
 				tags: ['mock', 'test', 'data'],
-				cards: [{
-				}],
+				cards: [
+					mongoose.Types.ObjectId('000000000000000000000000'),
+    			mongoose.Types.ObjectId('000000000000000000000001'),
+    			mongoose.Types.ObjectId('000000000000000000000002')
+				],
 				learning: 0
 			};
 			return new Promise((resolve, reject) => {
@@ -172,7 +175,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						'Conteng-Length': Buffer.byteLength(JSON.stringify(mockDeck))
+						'Content-Length': Buffer.byteLength(JSON.stringify(mockDeck))
 					}
 				};
 				// requests only get the response, no .on
@@ -191,7 +194,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deck/_id/' + mockDeck._id
+						path: '/api/deck/' + mockDeck._id
 					};
 					var callback = (res) => {
 						var deck = '';
@@ -211,13 +214,13 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		});
 	});
 
-	describe('GET /api/deck/_id/:_id', () => {
+	describe('GET /api/deck/:_id', () => {
 
 		it('should not return a 404', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deck/_id/' + mockDecks[testDeck]._id
+					path: '/api/deck/' + mockDecks[testDeck]._id
 				};
 				var callback = (res) => resolve(res.statusCode);
 				var req = http.request(options, callback);
@@ -237,7 +240,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 					var invalidId = 'a'.repeat(23);
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deck/_id/' + invalidId
+						path: '/api/deck/' + invalidId
 					};
 					var callback = (res) => resolve(res.statusCode);
 					var req = http.request(options, callback);
@@ -255,7 +258,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 					var invalidId = 'a'.repeat(25);
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deck/_id/' + invalidId
+						path: '/api/deck/' + invalidId
 					};
 					var callback = (res) => resolve(res.statusCode);
 					var req = http.request(options, callback);
@@ -274,7 +277,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deck/_id/' + mockDecks[testDeck]._id
+						path: '/api/deck/' + mockDecks[testDeck]._id
 					};
 					var callback = (res) => {
 						var deck = '';
@@ -294,23 +297,25 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 
 	});
 
-	describe('PUT /api/deck/_id/:_id', () => {
+	describe('PUT /api/deck/:_id', () => {
 		it('should update Deck deck in the db where deck._id == :_id', () => {
 			var mockDeck = {
 				creator: mockUsers[testUser]._id,
 				name: 'UpdatedDeck',
-				description: 'PUT /api/deck/_id/:_id',
+				description: 'PUT /api/deck:_id',
 				tags: ['mock', 'test', 'data'],
-				cards: [{
-
-				}],
+				cards: [
+					mongoose.Types.ObjectId('000000000000000000000000'),
+    			mongoose.Types.ObjectId('000000000000000000000001'),
+    			mongoose.Types.ObjectId('000000000000000000000002')
+				],
 				learning: 0
 			};
 			mockDeck._id = mockDecks[testDeck]._id;
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deck/_id/' + mockDeck._id,
+					path: '/api/deck/' + mockDeck._id,
 					method: 'PUT',
 					headers: {
 						'Content-Type': 'application/json',
@@ -330,7 +335,7 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deck/_id/' + mockDeck._id
+						path: '/api/deck/' + mockDeck._id
 					};
 					var callback = (res) => {
 						var deck = '';
@@ -355,12 +360,12 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 		});
 	});
 
-	describe('DELETE /api/deck/_id/:_id', () => {
+	describe('DELETE /api/deck/:_id', () => {
 		it('should delete Deck deck from the db where deck._id == :_id', () => {
 			return new Promise((resolve, reject) => {
 				var options = {
 					port: config.app.dbAPI.port,
-					path: '/api/deck/_id/000000000000000000000003',
+					path: '/api/deck/000000000000000000000003',
 					method: 'DELETE'
 				};
 				var req = http.request(options, (res) => {
@@ -376,8 +381,8 @@ describe('dbAPI/controllers/deckCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deck/_id/000000000000000000000003'
-						// path: '/api/deck/_id/' + mockDecks[testDeck]._id
+						path: '/api/deck/000000000000000000000003'
+						// path: '/api/' + mockDecks[testDeck]._id
 					};
 					var callback = (res) => {
 						var deck = '';
