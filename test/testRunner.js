@@ -1,27 +1,44 @@
+const assert = require('assert');
 const server = require('../bin/www').server();
 const mongoose = require('mongoose');
+const errHeader = 'error:testRunner.';
 
 function importTest(name, path) {
   describe(name, () => require(path));
 }
 
-describe('Runner', () => {
+describe('Mocha Test Runner', () => {
 	before((done) => {
-		console.log('    Before Tests');
+		
+		console.log('   Bootstraping Test Env');
+		console.log('\tstarting up the server...');
 		// start webserver
 		require('../bin/www');
+		console.log('\tserver is up and running');
 		// db ceremony...
 		// make sure connection is established
 		mongoose.connection.once('connected', () => {
-			var promise = new Promise((resolve, reject) => {
+			return new Promise((resolve, reject) => {
 				// cleanse the db
 				mongoose.connection.db.dropDatabase(() => {
 					console.log('\tmongoose.connection.db.dropDatabase: success');
 					done();
 				});
 			})
-			.catch((reason) => console.log('error:before.%s', reason));
+			.catch((reason) => console.log('%sbefore: %s', errHeader, reason));
 		});
+	});
+
+	describe('Testing Env Canaries', () => {
+
+		it('should ensure Chai Assertion Libraries are installed', () =>{
+			assert.ok(require('chai'));
+		});
+
+		it('should ensure Chai Assert Library is available', () =>{
+			assert.ok(require('chai').assert);
+		});
+
 	});
 
 	importTest('', './dbAPI/controllers/deckCardCtrl');
@@ -32,7 +49,10 @@ describe('Runner', () => {
 	
 	after(() => {		
 		console.log('   After Tests');
-		console.log('\tClosing server...');
-		server.close((err, data) => (err) ? console.log('Error:' + err) : console.log('\tServer Closed'));		
+		console.log('\tattempting server shutdown...');
+		server.close((err, data) => {
+			(err) ? console.log('%safter: %s', errHeader, err)
+			: console.log('\tserver shutdown successfully');
+		});
 	});
 });
