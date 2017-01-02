@@ -1,7 +1,7 @@
 const assert = require('assert');
 const server = require('../bin/www').server();
 const mongoose = require('mongoose');
-const errHeader = 'error:testRunner.';
+const errHeader = require('../config').errHeader(__filename);
 
 function importTest(name, path) {
   describe(name, () => require(path));
