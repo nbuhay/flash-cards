@@ -2,11 +2,12 @@ const resCode = require('../../config').resCode();
 const mongoIdRe = require('../../config').mongoIdRe();
 const DeckCard = require('../models/deckCard');
 const jsonRes = require('../modules/jsonResponse');
-const errHeader = 'error:dbAPI:deckCardCtrl.';
+const errHeader = require('../../modules/errorHeader')(__filename);
 
 function findAll(req, res) {
 	var conditions = {};
-	var query = DeckCard.find(conditions);
+	var query = QueryFactory('find', conditions);
+	// console.log(query);
 	return query.exec()
 		.then((deckCards) => jsonRes.send(res, resCode['OK'], deckCards))
 		.catch((reason) => {
@@ -21,7 +22,7 @@ function findById(req, res) {
 		var content = { message: errHeader + 'findById: req missing param _id' };
 		jsonRes.send(res, resCode['BADREQ'], content);
 	} else {
-		var query = DeckCard.findById(req.params._id);
+		var query = QueryFactory('findById', req.params._id);
 		return query.exec()
 			.then((deckCard) => {
 				if (!deckCard) {
@@ -37,7 +38,15 @@ function findById(req, res) {
 	}
 }
 
+function QueryFactory(type, conditions) {
+	return {
+		find: DeckCard.find(conditions),
+		findById: DeckCard.findById(conditions)
+	}[type];
+}
+
 module.exports = { 
 	findAll,
-	findById
+	findById,
+	QueryFactory
 };

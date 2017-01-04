@@ -1,7 +1,7 @@
 const assert = require('assert');
 const server = require('../bin/www').server();
 const mongoose = require('mongoose');
-const errHeader = require('../config').errHeader(__filename);
+const errHeader = require('../modules/errorHeader')(__filename);
 
 function importTest(name, path) {
   describe(name, () => require(path));
@@ -35,14 +35,16 @@ describe('Mocha Test Runner', () => {
 			assert.ok(require('chai'));
 		});
 
-		it('should ensure Chai Assert Library is available', () =>{
+		it('should ensure Chai Assert Library is available', () => {
 			assert.ok(require('chai').assert);
 		});
 
 	});
 
 	importTest('', './modules/errorHeader');
-	// importTest('', './dbAPI/controllers/deckCardCtrl');
+	importTest('', './dbAPI/unit/controllers/deckCardCtrl');
+	importTest('', './dbAPI/integration/controllers/deckCardCtrl');
+	importTest('', './dbAPI/controllers/deckCardCtrl');
 	// importTest('', './dbAPI/controllers/deckCtrl');
 	// importTest('', './dbAPI/controllers/userCtrl');
 	// importTest('', './webserver/controllers/deckCtrl');
