@@ -1,15 +1,10 @@
 const mongoose = require('mongoose');
+const assert = require('chai').assert;
 const sinon = require('sinon');
-
-const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
-const assert = chai.assert;
-
-const jsonRes = require('../../../../dbAPI/modules/jsonResponse');
-const resCode = require('../../../../config').resCode();
-const DeckCard = require('../../../../dbAPI/models/deckCard');
-const deckCardCtrl = require('../../../../dbAPI/controllers/deckCardCtrl');
+const resCode = require('config').resCode();
+const jsonRes = require('dbAPI/modules/jsonResponse');
+const DeckCard = require('dbAPI/models/deckCard');
+const deckCardCtrl = require('dbAPI/controllers/deckCardCtrl');
 
 var sandbox;
 
@@ -27,6 +22,24 @@ describe('deckCardCtrl.js', () => {
 
 		it('function named findAll should exist', () => {
 			assert.isFunction(deckCardCtrl.findAll);
+		});
+
+		it('should call Deck.find with the empty list as the only arg', () => {
+			const mockReq = { req: {} };
+			const mockRes = { res: {} };
+			const conditions = {};
+			const jsonResStub = sandbox.stub(jsonRes);
+			const mockExec = sandbox.stub().resolves();
+			const deckCardStub = sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
+
+			return deckCardCtrl.findAll(mockReq, mockRes)
+				.then(() => {
+					assert.equal(deckCardStub.called, true, 'should be called once');
+					assert.equal(deckCardStub.calledTwice, false, 'shouldn\t be called twice');
+					assert(deckCardStub.calledWith(conditions), 
+						'passed args not expected');
+				})
+				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should call jsonRes.send with a 200 when DeckCard.find resolves', () => {

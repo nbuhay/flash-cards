@@ -1,8 +1,8 @@
-const resCode = require('../../config').resCode();
-const mongoIdRe = require('../../config').mongoIdRe();
-const DeckCard = require('../models/deckCard');
-const jsonRes = require('../modules/jsonResponse');
-const errHeader = require('../../modules/errorHeader')(__filename);
+const resCode = require('config').resCode();
+const mongoIdRe = require('config').mongoIdRe();
+const DeckCard = require('dbAPI/models/deckCard');
+const jsonRes = require('dbAPI/modules/jsonResponse');
+const errHeader = require('modules/errorHeader')(__filename);
 
 function QueryFactory(type, conditions) {
 	return {
@@ -21,7 +21,7 @@ function findAll(req, res) {
 	var conditions = {};
 	var query = QueryFactory('find', conditions);
 	return query.exec()
-		.then((deckCards) => {			
+		.then((deckCards) => {
 			ResFactory('jsonRes', res, resCode['OK'], deckCards);
 		})
 		.catch((reason) => {
@@ -52,9 +52,8 @@ function findById(req, res) {
 	}
 }
 
-module.exports = { 
+module.exports = {
 	QueryFactory,
-	ResFactory,
 	findAll,
 	findById
 };
