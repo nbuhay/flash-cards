@@ -22,13 +22,9 @@ function findAll(req, res) {
 	var query = QueryFactory('find', conditions);
 	return query.exec()
 		.then((deckCards) => {			
-			// console.log('here in resolve');
-			// console.log(ResFactory('jsonRes', res, resCode['OK'], deckCards))
 			ResFactory('jsonRes', res, resCode['OK'], deckCards);
 		})
 		.catch((reason) => {
-			console.log('here in deckCardCtrl catch');
-			console.log(reason.message);
 			var content = { message: errHeader + 'findAll: ' + reason.message };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		});
