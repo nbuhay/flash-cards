@@ -7,11 +7,12 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 
-const requireSubvert = require('require-subvert')(__dirname);
-
 const jsonRes = require('../../../../dbAPI/modules/jsonResponse');
 const resCode = require('../../../../config').resCode();
 const DeckCard = require('../../../../dbAPI/models/deckCard');
+
+const deckCardCtrl = require('../../../../dbAPI/controllers/deckCardCtrl');
+
 
 var sandbox;
 
@@ -34,7 +35,7 @@ describe('deckCardCtrl.js', () => {
 		it.only('should call jsonRes when DeckCard.find resolves', () => {
 			const mockReq = { req: {} };
 			const mockRes = { res: {} };
-			const mockExec = sinon.stub().resolves();
+			const mockExec = sandbox.stub().rejects('throwing mock exception...');
 			
 			// sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
 			// const QueryFactoryStub = (type) => {
@@ -53,11 +54,18 @@ describe('deckCardCtrl.js', () => {
 			// const jsonResStub = (res, resCode, content) => {
 			// 	return resCode
 			// };
-			const jsonResStub = sandbox.spy();
-			requireSubvert.subvert('../../../../dbAPI/modules/jsonResponse', jsonResStub);
-			bar = requireSubvert.require('../../../../dbAPI/controllers/deckCardCtrl');
+			const jsonResStub = 
+				sandbox.stub(jsonRes, 'send', () => { console.log('okay in jsonRes') });
+			// requireSubvert.subvert('../../../../dbAPI/modules/jsonResponse', jsonResStub);
+			// bar = requireSubvert.require('../../../../dbAPI/controllers/deckCardCtrl');
 			// console.log(bar.ResFactory('jsonRes', undefined, 3434343, undefined));
 			// console.log(bar.ResFactory('jsonRes', undefined, 'this freaking works.', undefined));
+			const ResFactoryStub = (type, res, resCode, content) => {
+				return {
+					jsonRes: mockJsonRes()
+				}[type];
+			};
+
 			sandbox.stub(DeckCard, 'find').returns({
 				exec: mockExec
 			});
@@ -66,6 +74,7 @@ describe('deckCardCtrl.js', () => {
 					find: DeckCard.find,
 				}[type];
 			};
+
 			// sandbox.stub(jsonRes, 'send', ResFactoryStub);
 			// console.log(jsonRes.send(undefined, 43232, undefined));
 			// sandbox.stub(deckCardCtrl, 'ResFactory', ResFactoryStub);
@@ -73,23 +82,19 @@ describe('deckCardCtrl.js', () => {
 			// console.log('right after stub: ' + deckCardCtrl.ResFactory(undefined, 400, undefined));
 			// assert(deckCardCtrl.findAll(mockReq, mockRes), resCode['SERVFAIL']);
 
-			sandbox.stub(bar, 'QueryFactory', queryFactoryStub);
+			sandbox.stub(deckCardCtrl, 'QueryFactory', queryFactoryStub);
 
-			return bar.findAll(mockReq, mockRes)
+			return deckCardCtrl.findAll(mockReq, mockRes)
 				.then(() => {
 					// console.log(jsonResStub.calledTwice);
 					// console.log(jsonResStub)
-					assert.equal(jsonResStub.called, true);
-					assert.equal(jsonResStub.calledTwice, false);
-					assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
+					assert.equal(jsonResStub.called, true, 'should be called once');
+					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
+					assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
 						'passed args not expected');
-					requireSubvert.cleanUp();
+					// requireSubvert.cleanUp();
 				})
-				.catch((reason) => { 
-					assert(false, reason.message);
-					requireSubvert.cleanUp();
-
-				});
+				.catch((reason) => assert(false, reason.message));
 		});
 
 	});

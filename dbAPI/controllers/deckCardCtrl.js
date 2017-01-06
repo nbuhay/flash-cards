@@ -13,7 +13,7 @@ function QueryFactory(type, conditions) {
 
 function ResFactory(type, res, resCode, content) {
 	return {
-		jsonRes: jsonRes(res, resCode, content)
+		jsonRes: jsonRes.send(res, resCode, content)
 	}[type];
 }
 
