@@ -4,15 +4,33 @@ const DeckCard = require('../models/deckCard');
 const jsonRes = require('../modules/jsonResponse');
 const errHeader = require('../../modules/errorHeader')(__filename);
 
+function QueryFactory(type, conditions) {
+	return {
+		find: DeckCard.find(conditions),
+		findById: DeckCard.findById(conditions)
+	}[type];
+}
+
+function ResFactory(type, res, resCode, content) {
+	return {
+		jsonRes: jsonRes(res, resCode, content)
+	}[type];
+}
+
 function findAll(req, res) {
 	var conditions = {};
 	var query = QueryFactory('find', conditions);
-	// console.log(query);
 	return query.exec()
-		.then((deckCards) => jsonRes.send(res, resCode['OK'], deckCards))
+		.then((deckCards) => {			
+			// console.log('here in resolve');
+			// console.log(ResFactory('jsonRes', res, resCode['OK'], deckCards))
+			ResFactory('jsonRes', res, resCode['OK'], deckCards);
+		})
 		.catch((reason) => {
+			console.log('here in deckCardCtrl catch');
+			console.log(reason.message);
 			var content = { message: errHeader + 'findAll: ' + reason.message };
-			jsonRes.send(res, resCode['SERVFAIL'], content);
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		});
 }
 
@@ -38,15 +56,9 @@ function findById(req, res) {
 	}
 }
 
-function QueryFactory(type, conditions) {
-	return {
-		find: DeckCard.find(conditions),
-		findById: DeckCard.findById(conditions)
-	}[type];
-}
-
 module.exports = { 
+	QueryFactory,
+	ResFactory,
 	findAll,
-	findById,
-	QueryFactory
+	findById
 };

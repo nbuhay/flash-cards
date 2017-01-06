@@ -1,3 +1,4 @@
-module.exports.send = function (res, status, content) {
+module.exports = (res, status, content) => {
+	console.log('in jsonRes.send...');
 	res.status(status).json(content);
 }

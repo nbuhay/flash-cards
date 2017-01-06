@@ -1,3 +1,4 @@
+process.env.NODE_ENV='test';
 const assert = require('assert');
 const server = require('../bin/www').server();
 const mongoose = require('mongoose');
