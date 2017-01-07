@@ -6,7 +6,6 @@ node_js:
 services:
   - mongodb
 env:
-  - NODE_ENV=test
-  - NODE_PATH=./
+  - NODE_ENV=test NODE_PATH='./'
 script:
   - npm test

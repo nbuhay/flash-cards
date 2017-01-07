@@ -1,8 +1,8 @@
 const resCode = require('config').resCode();
 const mongoIdRe = require('config').mongoIdRe();
-const DeckCard = require('dbAPI/models/deckCard');
 const jsonRes = require('dbAPI/modules/jsonResponse');
 const errHeader = require('modules/errorHeader')(__filename);
+const DeckCard = require('dbAPI/models/deckCard');
 
 function QueryFactory(type, conditions) {
 	return {
@@ -30,30 +30,35 @@ function findAll(req, res) {
 		});
 }
 
-// can the sync bits be wrapped in a promise?
 function findById(req, res) {
-	if (!mongoIdRe.test(req.params._id)) {
-		var content = { message: errHeader + 'findById: req missing param _id' };
-		jsonRes.send(res, resCode['BADREQ'], content);
-	} else {
-		var query = QueryFactory('findById', req.params._id);
-		return query.exec()
-			.then((deckCard) => {
-				if (!deckCard) {
-					var content = { message: errHeader + 'findById: deckCard does not exist' };
-					jsonRes.send(res, resCode['NOTFOUND'], content);
-				}
-				jsonRes.send(res, resCode['OK'], deckCard);
-			})
-			.catch((reason) => {
-				var content = { message: errHeader + 'findById: ' + reason.message };
-				jsonRes.send(res, resCode['SERVFAIL'], content);
-			});
-	}
+	return new Promise((resolve, reject) => {
+		if (!mongoIdRe.test(req.params._id)) {
+			reject({ message: 'req invalid param _id' });
+		} else {
+			resolve();
+		}
+	})
+	.then(() => { return QueryFactory('findById', req.params._id).exec(); })
+	.then((deckCard) => {
+		if (!deckCard) {
+			var content = { message: errHeader + 'findById: deckCard does not exist' };
+			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+		} else {
+			ResFactory('jsonRes', res, resCode['OK'], deckCard);			
+		}
+	})
+	.catch((reason) => {
+		if (reason == undefined) {
+			var content = { message: errHeader + 'findById: undefined reason, check query' };
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			var content = { message: errHeader + 'findAll: ' + reason.message };
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		}
+	});
 }
 
 module.exports = {
-	QueryFactory,
 	findAll,
 	findById
 };

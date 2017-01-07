@@ -5,7 +5,7 @@ function errorHeader(filepath) {
 		throw new TypeError('expected filename but got empty string', __filename);
 	} else if (!/^.*\\.*$/.test(filepath)) {
 		throw new TypeError(
-			'expected valid filepath with at least one backslash but got: ' 
+			'expected valid filepath with at least one backslash or forward slash but got: ' 
 			+ filepath, __filename)
 	}
 
