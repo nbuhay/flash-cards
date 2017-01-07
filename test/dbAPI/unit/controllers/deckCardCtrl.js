@@ -172,9 +172,169 @@ describe('deckCardCtrl.js', () => {
 						assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
 							'passed args not expected');			
 				})
-				.catch((reason) => assert(false, reason.message))
+				.catch((reason) => assert(false, reason.message));
 		});
 
 	});
 
-});			
+	describe('#create', () => {
+
+		it('function named create should exist', () => {
+			assert.isFunction(deckCardCtrl.create);
+		});
+
+		it('should send a 400 when req.body is undefined', () => {
+			const mockReq = { req: {} };
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				})
+		});
+
+		it('should send a 400 when req.body is null', () => {
+			const mockReq = { body: null };
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				})
+		});
+
+		it('should send a 400 when req.body is not valid JSON', () => {
+			const invalidJson = 'notJsonFormat';
+			const mockReq = {
+				body: invalidJson
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 when req.body does not have the property question', () => {
+			const invalidDeckCard = '{ \"noQuestion\": true }';
+			const mockReq = {
+				body: invalidDeckCard
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 when req.body does not have the property answer', () => {
+			const invalidDeckCard = '{ \"question\": true, \"noAnswer\": true }';
+			const mockReq = {
+				body: invalidDeckCard
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 if typeof req.body.question is not \'string\'', () => {
+			const invalidDeckCard = '{ \"question\": true, \"answer\": \"true\" }';
+			const mockReq = {
+				body: invalidDeckCard
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 if typeof req.body.answer is not \'string\'', () => {
+			const invalidDeckCard = '{ \"question\": \"true\", \"answer\": true }';
+			const mockReq = {
+				body: invalidDeckCard
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 500 if DeckCard.create throws an exception', () => {
+			const validDeckCard = '{ \"question\": \"Valid?\", \"answer\": \"Yes.\" }';
+			const mockReq = {
+				body: validDeckCard
+			};
+			const mockRes = { res: {} };
+			const createStub = sandbox.stub().rejects();
+			const deckCardStub = sandbox.stub(DeckCard, 'create', createStub);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 200 when DeckCard.create resolves', () => {
+			const validDeckCard = 
+			'{ \"question\": \"Valid?\", \"answer\": \"Yes.\" }';
+			const mockReq = {
+				body: validDeckCard
+			};
+			const mockRes = { res: {} };
+			const createStub = sandbox.stub().resolves();
+			const deckCardStub = sandbox.stub(DeckCard, 'create', createStub);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
+							'passed args not expected');			
+				});
+		});
+
+	});
+
+});

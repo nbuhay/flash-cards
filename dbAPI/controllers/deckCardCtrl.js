@@ -7,7 +7,7 @@ const DeckCard = require('dbAPI/models/deckCard');
 function QueryFactory(type, conditions) {
 	return {
 		find: DeckCard.find(conditions),
-		findById: DeckCard.findById(conditions)
+		findById: DeckCard.findById(conditions),
 	}[type];
 }
 
@@ -48,7 +48,7 @@ function findById(req, res) {
 		}
 	})
 	.catch((reason) => {
-		if (reason == undefined) {
+		if (reason === undefined) {
 			var content = { message: errHeader + 'findById: undefined reason, check query' };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
@@ -58,7 +58,39 @@ function findById(req, res) {
 	});
 }
 
+function create(req, res) {
+	return new Promise((resolve, reject) => {
+		if (req.body === undefined) {
+			reject({ message: 'no req body' });
+		}
+		var jsonReqBody = JSON.parse(req.body);
+		if (!jsonReqBody.hasOwnProperty('question') || !jsonReqBody.hasOwnProperty('answer')) {
+			reject({ message: 'invalid DeckCard' });
+		} else if(!(typeof jsonReqBody.question === 'string')) {
+			reject({ message: 'invalid question field'});
+		} else if (!(typeof jsonReqBody.answer === 'string')) {
+			reject({ message: 'invalid answer field'});
+		} else {
+			resolve(jsonReqBody);
+		}
+	})
+	.then((validReqBody) => DeckCard.create(validReqBody))
+	.then((createdDeckCard) =>{
+		ResFactory('jsonRes', res, resCode['OK'], createdDeckCard);
+	})
+	.catch((reason) => {
+		if (reason === undefined) {
+			var content = { message: errHeader + 'findById: undefined reason, check create' };
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			var content = { message: errHeader + 'findById: ' + reason.message };
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		}
+	});
+}
+
 module.exports = {
 	findAll,
-	findById
+	findById,
+	create
 };
