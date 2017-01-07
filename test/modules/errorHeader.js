@@ -1,7 +1,7 @@
 const errorHeader = require('../../modules/errorHeader');
 const assert = require('chai').assert;
 
-describe('/module', () => {
+describe('errorHeader.js', () => {
 
 	describe('#errorHeader', () => {
 
@@ -26,10 +26,10 @@ describe('/module', () => {
 			assert.throws(() => errorHeader(emptyString), TypeError, expectedErrMsg);
 		});
 
-		it('should only accept filepaths with at least one backslash as the arg', () => {
-			var invalidFilepath = 'noBackslash';
+		it('should reject filepaths with no backslash or forward slash', () => {
+			var invalidFilepath = 'noSlashes';
 			var expectedErrMsg = 
-				'expected valid filepath with at least one backslash but got: ' 
+				'expected valid filepath with at least one backslash or forward slash but got: ' 
 				+ invalidFilepath;
 
 			assert.throws(() => errorHeader(invalidFilepath), TypeError, expectedErrMsg);

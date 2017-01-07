@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const assert = require('chai').assert;
 const sinon = require('sinon');
+require('sinon-as-promised');
 const resCode = require('config').resCode();
 const jsonRes = require('dbAPI/modules/jsonResponse');
 const DeckCard = require('dbAPI/models/deckCard');
@@ -8,7 +9,7 @@ const deckCardCtrl = require('dbAPI/controllers/deckCardCtrl');
 
 var sandbox;
 
-describe.only('deckCardCtrl.js', () => {
+describe('deckCardCtrl.js', () => {
 
 	beforeEach(function() {
 		sandbox = sinon.sandbox.create();

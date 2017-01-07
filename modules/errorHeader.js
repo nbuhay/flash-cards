@@ -3,10 +3,10 @@ function errorHeader(filepath) {
 		throw new TypeError('expected a string, got ' + typeof filepath, __filename);
 	} else if (filepath.length === 0) {
 		throw new TypeError('expected filename but got empty string', __filename);
-	} else if (!/^.*\\.*$/.test(filepath)) {
+	} else if (!/^.*\\.*$/.test(filepath) && !/^.*\/.*$/.test(filepath)) {
 		throw new TypeError(
 			'expected valid filepath with at least one backslash or forward slash but got: ' 
-			+ filepath, __filename)
+			+ filepath, __filename);
 	}
 
 	var appName = '';

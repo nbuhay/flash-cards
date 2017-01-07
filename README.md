@@ -91,3 +91,13 @@ p.then
 [Unit testing mongoose models](https://codeutopia.net/blog/2016/06/10/mongoose-models-and-unit-tests-the-definitive-guide/)
 
 [Dependency Injection](https://blog.risingstack.com/dependency-injection-in-node-js/)
+
+REQUIRED ENVS TO RUN
+
+NODE_PATH=./
+NODE_ENV=test || dev || prod
+
+[Very important chai-as-promised doc](https://github.com/domenic/chai-as-promised)
+[Stub out function and subsuquent calls with Sinon](http://stackoverflow.com/questions/27847377/using-sinon-to-stub-chained-mongoose-calls)
+
+[Require Subvert - possible solution to testing jsonRes module](https://www.npmjs.com/package/require-subvert)

@@ -42,10 +42,25 @@ describe('Mocha Test Runner', () => {
 
 	});
 
-	importTest('', './modules/errorHeader');
-	importTest('', './dbAPI/unit/controllers/deckCardCtrl');
-	importTest('', './dbAPI/integration/controllers/deckCardCtrl');
-	importTest('', './dbAPI/controllers/deckCardCtrl');
+	describe('Unit Tests', () => {
+
+		describe('./modules/', () => {
+			importTest('', './modules/errorHeader');
+		});
+
+		describe('./dbAPI/controllers/', () => {
+			importTest('', './dbAPI/unit/controllers/deckCardCtrl');
+		});
+
+	});
+
+	describe('Integration Tests', () => {
+
+		describe('dbAPI Routes', () => {
+			importTest('', './dbAPI/integration/controllers/deckCardCtrl');
+		});
+
+	});
 	// importTest('', './dbAPI/controllers/deckCtrl');
 	// importTest('', './dbAPI/controllers/userCtrl');
 	// importTest('', './webserver/controllers/deckCtrl');
