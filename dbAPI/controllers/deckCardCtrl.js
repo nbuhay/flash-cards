@@ -8,6 +8,7 @@ function QueryFactory(type, conditions) {
 	return {
 		find: DeckCard.find(conditions),
 		findById: DeckCard.findById(conditions),
+		findOneAndRemove: DeckCard.findOneAndRemove(conditions)
 	}[type];
 }
 
@@ -60,7 +61,7 @@ function findById(req, res) {
 
 function create(req, res) {
 	return new Promise((resolve, reject) => {
-		if(req.headers['content-type'] === undefined) {
+		if (req.headers['content-type'] === undefined) {
 			reject({ message: 'missing header content-type' });
 		} else if (req.headers['content-type'] != 'application/json') {
 			var content =  'content-type should be application/json, got ' + req.headers['content-type'];
@@ -109,8 +110,35 @@ function create(req, res) {
 	});
 }
 
+function findOneAndRemove(req, res) {
+	return new Promise((resolve, reject) => {
+		if (!(mongoIdRe.test(req.params._id))) {
+			reject({ message: 'req invalid param _id' });
+		}
+		resolve(req.params._id)
+	})
+	.then((valid_id) => QueryFactory('findOneAndRemove', valid_id).exec())
+	.then((removedDeckCard) => {
+		if (removedDeckCard === undefined) {
+			ResFactory('jsonRes', res, resCode['NOTFOUND'], removedDeckCard);
+		} else {
+			ResFactory('jsonRes', res, resCode['OK'], removedDeckCard);
+		}
+	})
+	.catch((reason) => {
+		if (reason === undefined) {
+			var content = { message: errHeader + 'findOneAndRemove: undefined reason, check create' };
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			var content = { message: errHeader + 'findOneAndRemove: ' + reason.message };
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		}
+	});
+}
+
 module.exports = {
 	findAll,
 	findById,
-	create
+	create,
+	findOneAndRemove
 };

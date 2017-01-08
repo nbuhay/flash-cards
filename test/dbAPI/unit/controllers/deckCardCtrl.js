@@ -441,4 +441,99 @@ describe('deckCardCtrl.js', () => {
 
 	});
 
+	describe('#findOneAndRemove', () => {
+
+		it('function named delete should exist', () => {
+			assert.isFunction(deckCardCtrl.findOneAndRemove);
+		});
+
+		it('should send a 400 if req.params._id is not a valid Mongo ObjectID', () => {
+			const invalidMongoId = 'a'.repeat('23');
+			const mockReq = {
+				params: {
+					_id: invalidMongoId
+				}
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');		
+				})
+		});
+
+		it('should send a 500 if DeckCard.findOneAndRemove throws an exception', () => {
+			const validMongoId = 'a'.repeat('24');
+			const mockReq = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const mockRes = { res: {} };
+			const mockExec = sandbox.stub().rejects();
+			const deckCardStub = 
+				sandbox.stub(DeckCard, 'findOneAndRemove').returns({ exec: mockExec });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
+							'passed args not expected');		
+				});
+		});
+
+		it('should send a 404 if DeckCard :_id is not found in the DeckCard collection', () => {
+			const validMongoId = 'a'.repeat('24');
+			const mockReq = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const mockRes = { res: {} };
+
+			const mockExec = sandbox.stub().resolves(undefined);
+			const deckCardStub = 
+				sandbox.stub(DeckCard, 'findOneAndRemove').returns({ exec: mockExec });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['NOTFOUND']), 
+							'passed args not expected');		
+				});
+		});
+	
+		it('should send a 200 if DeckCard :_id is deleted from the DeckCard collection', () => {
+			const validMongoId = 'a'.repeat('24');
+			const mockReq = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const mockRes = { res: {} };
+			const mockReturnedDeckCard = { question: ['true'], answer: ['true'] };
+			const mockExec = sandbox.stub().resolves(mockReturnedDeckCard);
+			const deckCardStub = 
+				sandbox.stub(DeckCard, 'findOneAndRemove').returns({ exec: mockExec });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
+							'passed args not expected');		
+				});
+		});
+
+	});
+
 });
