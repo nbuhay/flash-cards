@@ -183,8 +183,8 @@ describe('deckCardCtrl.js', () => {
 			assert.isFunction(deckCardCtrl.create);
 		});
 
-		it('should send a 400 when req.body is undefined', () => {
-			const mockReq = { req: {} };
+		it('should send a 400 if header \'content-type\' is undefined', () => {
+			const mockReq = { headers: [] };
 			const mockRes = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
@@ -194,11 +194,52 @@ describe('deckCardCtrl.js', () => {
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
 						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
 							'passed args not expected');			
-				})
+				});
+		});
+
+		it('should send a 400 if header \'content-type\' doesn\'t equal \'application/json\'', () => {
+			const mockReq = { 
+				headers: {
+					'content-type': 'text'
+				}
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 when req.body is undefined', () => {
+			const mockReq = { 
+				headers: {
+					'content-type': 'application/json'
+				}
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
 		});
 
 		it('should send a 400 when req.body is null', () => {
-			const mockReq = { body: null };
+			const mockReq = { 
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: null
+			};
 			const mockRes = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
@@ -208,12 +249,15 @@ describe('deckCardCtrl.js', () => {
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
 						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
 							'passed args not expected');			
-				})
+				});
 		});
 
 		it('should send a 400 when req.body is not valid JSON', () => {
 			const invalidJson = 'notJsonFormat';
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: invalidJson
 			};
 			const mockRes = { res: {} };
@@ -229,8 +273,11 @@ describe('deckCardCtrl.js', () => {
 		});
 
 		it('should send a 400 when req.body does not have the property question', () => {
-			const invalidDeckCard = '{ \"noQuestion\": true }';
+			const invalidDeckCard = { noQuestion: true };
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: invalidDeckCard
 			};
 			const mockRes = { res: {} };
@@ -246,8 +293,14 @@ describe('deckCardCtrl.js', () => {
 		});
 
 		it('should send a 400 when req.body does not have the property answer', () => {
-			const invalidDeckCard = '{ \"question\": true, \"noAnswer\": true }';
+			const invalidDeckCard = { 
+				question: true,
+				noAnswer: true
+			};
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: invalidDeckCard
 			};
 			const mockRes = { res: {} };
@@ -262,9 +315,12 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 if typeof req.body.question is not \'string\'', () => {
-			const invalidDeckCard = '{ \"question\": true, \"answer\": \"true\" }';
+		it('should send a 400 if req.body.question is not an array', () => {
+			const invalidDeckCard = { question: true, answer: true };
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: invalidDeckCard
 			};
 			const mockRes = { res: {} };
@@ -279,9 +335,52 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 if typeof req.body.answer is not \'string\'', () => {
-			const invalidDeckCard = '{ \"question\": \"true\", \"answer\": true }';
+		it('should send a 400 if req.body.answer is not an array', () => {
+			const invalidDeckCard = { question: [], answer: true };
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: invalidDeckCard
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 if req.body.question is not an array of only strings', () => {
+			const invalidDeckCard = { question: [true], answer: [] };
+			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: invalidDeckCard
+			};
+			const mockRes = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.create(mockReq, mockRes)
+				.then(() => {
+						assert.equal(jsonResStub.called, true, 'should be called once');
+						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+							'passed args not expected');			
+				});
+		});
+
+		it('should send a 400 if req.body.answer is not an array of only strings', () => {
+			const invalidDeckCard = { question: ['true'], answer: [true] };
+			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: invalidDeckCard
 			};
 			const mockRes = { res: {} };
@@ -297,8 +396,11 @@ describe('deckCardCtrl.js', () => {
 		});
 
 		it('should send a 500 if DeckCard.create throws an exception', () => {
-			const validDeckCard = '{ \"question\": \"Valid?\", \"answer\": \"Yes.\" }';
+			const validDeckCard = { question: ['true'], answer: ['true'] };
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: validDeckCard
 			};
 			const mockRes = { res: {} };
@@ -316,9 +418,11 @@ describe('deckCardCtrl.js', () => {
 		});
 
 		it('should send a 200 when DeckCard.create resolves', () => {
-			const validDeckCard = 
-			'{ \"question\": \"Valid?\", \"answer\": \"Yes.\" }';
+			const validDeckCard = { question: ['true'], answer: ['true'] };
 			const mockReq = {
+				headers: {
+					'content-type': 'application/json'
+				},
 				body: validDeckCard
 			};
 			const mockRes = { res: {} };

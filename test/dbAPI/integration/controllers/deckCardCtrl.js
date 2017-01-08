@@ -349,6 +349,60 @@ describe('deckCtrl.js', () => {
 			});
 
 		});
+	
+		describe('POST', () => {
+
+			it('should not return a 404', () => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/',
+						method: 'POST'
+					};
+					var req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'create: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {
+					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+			
+			it('should send the new deckCard when its saved to the db', () => {
+				const mockDeckCard = {
+					_id: 'a'.repeat(24),
+					question: ['Valid question'],
+					answer:	['Valid answer']
+				};
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/',
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockDeckCard))
+						}
+					};
+					const req = http.request(options, (res) => {
+						var deckCard = '';
+						res
+							.on('data', (chunk) => deckCard += chunk)
+							.on('end', () => {
+								resolve(JSON.parse(deckCard));
+							})
+					});
+					req.on('error', (err) => reject({ message: errHeader + 'create.reqError: ' + err }));
+					req.end(JSON.stringify(mockDeckCard));
+				})
+				.then((createdDeckCard) => {
+					assert.equal(createdDeckCard._id, mockDeckCard._id);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
 
 	});
 

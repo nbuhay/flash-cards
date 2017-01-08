@@ -53,26 +53,3 @@ module.exports.testUser = () => {
 module.exports.mongoIdRe = () => {
 	return mongoIdRe;
 }
-
-module.exports.errHeader = (filepath) => {
-	var errHeader = 'error:';
-	var app = '';
-	var filename = '.';
-
-	if (/^.*test.*$/.test(filepath)) {
-		app = 'test';
-	} else if (/^.*dbAPI.*$/.test(filepath)) {
-		app = 'dbapi';
-	} else if (/^.*webserver.*$/.test(filename)) {
-		app = 'webserver';
-	} else {
-		app = 'unknown.';
-	}
-
-	filename += filepath.slice(filepath.lastIndexOf('\\') + 1, -3);	
-	filename += '.';
-	errHeader += app;
-	errHeader	+= filename;
-
-	return errHeader;
-}

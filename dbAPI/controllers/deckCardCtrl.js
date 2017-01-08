@@ -60,17 +60,37 @@ function findById(req, res) {
 
 function create(req, res) {
 	return new Promise((resolve, reject) => {
-		if (req.body === undefined) {
-			reject({ message: 'no req body' });
+		if(req.headers['content-type'] === undefined) {
+			reject({ message: 'missing header content-type' });
+		} else if (req.headers['content-type'] != 'application/json') {
+			var content =  'content-type should be application/json, got ' + req.headers['content-type'];
+			 reject({ message: content});
 		}
-		var jsonReqBody = JSON.parse(req.body);
+
+		var jsonReqBody;
+		if (req.body === undefined || !(typeof req.body === 'object')) {
+			reject({ message: 'invalid req body' });
+		} else {
+			jsonReqBody = req.body
+		}
+
 		if (!jsonReqBody.hasOwnProperty('question') || !jsonReqBody.hasOwnProperty('answer')) {
 			reject({ message: 'invalid DeckCard' });
-		} else if(!(typeof jsonReqBody.question === 'string')) {
+		} else if (!(Array.isArray(jsonReqBody.question))) {
 			reject({ message: 'invalid question field'});
-		} else if (!(typeof jsonReqBody.answer === 'string')) {
+		} else if (!(Array.isArray(jsonReqBody.answer))) {
 			reject({ message: 'invalid answer field'});
 		} else {
+			for (var i = 0; i < jsonReqBody.question.length; i++) {
+				if (!(typeof jsonReqBody.question[i] === 'string')) {
+					reject({ message: 'question field must be an array of only strings'});
+				}
+			}
+			for (var i = 0; i < jsonReqBody.answer.length; i++) {
+				if (!(typeof jsonReqBody.answer[i] === 'string')) {
+					reject({ message: 'answer field must be an array of only strings'});
+				}
+			}
 			resolve(jsonReqBody);
 		}
 	})
@@ -80,10 +100,10 @@ function create(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findById: undefined reason, check create' };
+			var content = { message: errHeader + 'create: undefined reason, check create' };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'findById: ' + reason.message };
+			var content = { message: errHeader + 'create: ' + reason.message };
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
