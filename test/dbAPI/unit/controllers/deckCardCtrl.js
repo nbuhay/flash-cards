@@ -441,10 +441,10 @@ describe('deckCardCtrl.js', () => {
 
 	});
 
-	describe('#findOneAndRemove', () => {
+	describe('#findByIdAndRemove', () => {
 
 		it('function named delete should exist', () => {
-			assert.isFunction(deckCardCtrl.findOneAndRemove);
+			assert.isFunction(deckCardCtrl.findByIdAndRemove);
 		});
 
 		it('should send a 400 if req.params._id is not a valid Mongo ObjectID', () => {
@@ -457,7 +457,7 @@ describe('deckCardCtrl.js', () => {
 			const mockRes = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
@@ -466,7 +466,7 @@ describe('deckCardCtrl.js', () => {
 				})
 		});
 
-		it('should send a 500 if DeckCard.findOneAndRemove throws an exception', () => {
+		it('should send a 500 if DeckCard.findByIdAndRemove throws an exception', () => {
 			const validMongoId = 'a'.repeat('24');
 			const mockReq = {
 				params: {
@@ -476,10 +476,10 @@ describe('deckCardCtrl.js', () => {
 			const mockRes = { res: {} };
 			const mockExec = sandbox.stub().rejects();
 			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findOneAndRemove').returns({ exec: mockExec });
+				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: mockExec });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
@@ -497,12 +497,12 @@ describe('deckCardCtrl.js', () => {
 			};
 			const mockRes = { res: {} };
 
-			const mockExec = sandbox.stub().resolves(undefined);
+			const mockExec = sandbox.stub().resolves(null);
 			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findOneAndRemove').returns({ exec: mockExec });
+				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: mockExec });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
@@ -522,10 +522,10 @@ describe('deckCardCtrl.js', () => {
 			const mockReturnedDeckCard = { question: ['true'], answer: ['true'] };
 			const mockExec = sandbox.stub().resolves(mockReturnedDeckCard);
 			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findOneAndRemove').returns({ exec: mockExec });
+				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: mockExec });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.findOneAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');

@@ -8,7 +8,7 @@ function QueryFactory(type, conditions) {
 	return {
 		find: DeckCard.find(conditions),
 		findById: DeckCard.findById(conditions),
-		findOneAndRemove: DeckCard.findOneAndRemove(conditions)
+		findByIdAndRemove: DeckCard.findByIdAndRemove(conditions)
 	}[type];
 }
 
@@ -110,27 +110,28 @@ function create(req, res) {
 	});
 }
 
-function findOneAndRemove(req, res) {
+function findByIdAndRemove(req, res) {
 	return new Promise((resolve, reject) => {
 		if (!(mongoIdRe.test(req.params._id))) {
 			reject({ message: 'req invalid param _id' });
 		}
-		resolve(req.params._id)
+		resolve(req.params._id);
 	})
-	.then((valid_id) => QueryFactory('findOneAndRemove', valid_id).exec())
+	.then((valid_id) => QueryFactory('findByIdAndRemove', valid_id).exec())
 	.then((removedDeckCard) => {
-		if (removedDeckCard === undefined) {
-			ResFactory('jsonRes', res, resCode['NOTFOUND'], removedDeckCard);
+		if (removedDeckCard === null) {
+			var content = { message: 'DeckCard with passed _id does not exist in db' };
+			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 		} else {
 			ResFactory('jsonRes', res, resCode['OK'], removedDeckCard);
 		}
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findOneAndRemove: undefined reason, check create' };
+			var content = { message: errHeader + 'findByIdAndRemove: undefined reason, check create' };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'findOneAndRemove: ' + reason.message };
+			var content = { message: errHeader + 'findByIdAndRemove: ' + reason.message };
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
@@ -140,5 +141,5 @@ module.exports = {
 	findAll,
 	findById,
 	create,
-	findOneAndRemove
+	findByIdAndRemove
 };

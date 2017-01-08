@@ -9,5 +9,6 @@ router.route('/all')
 
 router.route('/:_id')
 	.get(deckCardCtrl.findById)
+	.delete(deckCardCtrl.findByIdAndRemove);
 
 module.exports = router;
