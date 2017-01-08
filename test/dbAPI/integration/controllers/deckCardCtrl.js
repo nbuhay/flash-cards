@@ -110,7 +110,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 		
 		describe('POST', () => {
 
-			it('should not return a 404', () => {
+			it('should not return a 404 when calling this POST route', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
@@ -168,7 +168,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 		describe('GET', () => {
 			
-			it('should not return a 404', () => {
+			it('should not return a 404 when calling this GET route', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
@@ -411,7 +411,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 		describe('DELETE', () => {
 
-			it('should not return a 404', () => {
+			it('should not return a 404 when calling this DELETE route', () => {
 				return new Promise((resolve, reject) => {
 					const options = {
 						port: config.app.dbAPI.port,
