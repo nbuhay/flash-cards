@@ -98,10 +98,13 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 			})
 		})
 		.then(() => {
-			// insert the user collection
+			return new Promise ((resolve, reject) => {
+				// insert the user collection
 				mongoose.connection.collection('users').insert(mockUsers, (err) => {
 					if (err) reject(err);
+					resolve();
 				});
+			});
 		})
 		.catch((reason) => console.log('error:before.%s', reason));
 	});
