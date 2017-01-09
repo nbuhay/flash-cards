@@ -412,88 +412,6 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 		});
 
-		describe('DELETE', () => {
-
-			it('should not return a 404 when calling this DELETE route', () => {
-				return new Promise((resolve, reject) => {
-					const options = {
-						port: config.app.dbAPI.port,
-						path: '/api/deckCard/:_id',
-						method: 'DELETE'
-					};
-					const req = http.request(options, (res) => resolve(res.statusCode));
-					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-					req.end();
-				})
-				.then((statusCode) => {
-					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
-				})
-				.catch((reason) => assert(false, reason.message));
-			});
-
-			it('should send a 404 when no document with :_id is found', () => {
-					return new Promise((resolve, reject) => {
-						const validMongoId = 'a'.repeat('24');
-						const options = {
-							port: config.app.dbAPI.port,
-							path: '/api/deckCard/' + validMongoId,
-							method: 'DELETE'
-						};
-						const req = http.request(options, (res) => resolve(res.statusCode));
-						req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-						req.end();
-					})
-					.then((statusCode) => {
-						assert.equal(statusCode, resCode['NOTFOUND']);
-					})
-					.catch((reason) => assert(false, reason.message));
-				});
-
-			it('should send a 200 when an existing DeckCard is deleted from the db', () => {
-				return new Promise((resolve, reject) => {
-					const validMongoId = mockDeckCards[testDeckCard]._id.toString();
-					const options = {
-						port: config.app.dbAPI.port,
-						path: '/api/deckCard/' + validMongoId,
-						method: 'DELETE'
-					};
-					const req = http.request(options, (res) => resolve(res.statusCode));
-					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-					req.end();
-				})
-				.then((statusCode) => {
-					assert.equal(statusCode, resCode['OK']);
-				})
-				.catch((reason) => assert(false, reason.message));
-			});
-
-			it('should return the deleted DeckCard when it is deleted from the db', () => {
-				const validMongoId = mockDeckCards[testDeckCard]._id.toString();
-				return new Promise((resolve, reject) => {
-					const options = {
-						port: config.app.dbAPI.port,
-						path: '/api/deckCard/' + validMongoId,
-						method: 'DELETE'
-					};
-					const req = http.request(options, (res) => {
-						var deckCard = '';
-						res
-							.on('data', (chunk) => deckCard += chunk)
-							.on('end', () => {
-								resolve(JSON.parse(deckCard));
-							});
-					});
-					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-					req.end();
-				})
-				.then((deletedDeckCard) => {
-					assert.equal(deletedDeckCard._id, validMongoId);
-				})
-				.catch((reason) => assert(false, reason.message));
-			});
-
-		});
-
 		describe('PUT', () => {
 
 			it('should not return a 404 when calling this PUT route', () => {
@@ -638,6 +556,88 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 					for (var i = 0; i < updatedDeckCard.answer.length; i++) {
 						assert.equal(updatedDeckCard.answer[i], mockDeckCards[testDeckCard].answer[i], 'answer should match');
 					}
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
+
+		describe('DELETE', () => {
+
+			it('should not return a 404 when calling this DELETE route', () => {
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/:_id',
+						method: 'DELETE'
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {
+					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should send a 404 when no document with :_id is found', () => {
+					return new Promise((resolve, reject) => {
+						const validMongoId = 'a'.repeat('24');
+						const options = {
+							port: config.app.dbAPI.port,
+							path: '/api/deckCard/' + validMongoId,
+							method: 'DELETE'
+						};
+						const req = http.request(options, (res) => resolve(res.statusCode));
+						req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+						req.end();
+					})
+					.then((statusCode) => {
+						assert.equal(statusCode, resCode['NOTFOUND']);
+					})
+					.catch((reason) => assert(false, reason.message));
+				});
+
+			it('should send a 200 when an existing DeckCard is deleted from the db', () => {
+				return new Promise((resolve, reject) => {
+					const validMongoId = mockDeckCards[testDeckCard]._id.toString();
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + validMongoId,
+						method: 'DELETE'
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {
+					assert.equal(statusCode, resCode['OK']);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should return the deleted DeckCard when it is deleted from the db', () => {
+				const validMongoId = mockDeckCards[testDeckCard]._id.toString();
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + validMongoId,
+						method: 'DELETE'
+					};
+					const req = http.request(options, (res) => {
+						var deckCard = '';
+						res
+							.on('data', (chunk) => deckCard += chunk)
+							.on('end', () => {
+								resolve(JSON.parse(deckCard));
+							});
+					});
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((deletedDeckCard) => {
+					assert.equal(deletedDeckCard._id, validMongoId);
 				})
 				.catch((reason) => assert(false, reason.message));
 			});
