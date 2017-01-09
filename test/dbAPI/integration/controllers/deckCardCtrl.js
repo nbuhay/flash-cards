@@ -490,6 +490,156 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 			});
 
 		});
+
+		describe('PUT', () => {
+
+			it('should not return a 404 when calling this PUT route', () => {
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/:_id',
+						method: 'PUT'
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {
+					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should send a 404 when no document with :_id is found in the db', () => {
+				return new Promise((resolve, reject) => {
+					const mockDeckCard = {
+						_id: 'a'.repeat(24),
+						question: ['Valid question'],
+						answer:	['Valid answer']
+					};
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + mockDeckCard._id,
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockDeckCard))
+						}
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end(JSON.stringify(mockDeckCard));
+				})
+				.then((statusCode) => {
+					assert.equal(statusCode, resCode['NOTFOUND'], 'should not be found in db');
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should send a 200 when document with :_id is found and updated', () => {
+				return new Promise((resolve, reject) => {
+					const mockDeckCard = {
+						_id: mockDeckCards[testDeckCard]._id,
+						question: ['Valid question'],
+						answer:	['Valid answer']
+					};
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + mockDeckCard._id,
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockDeckCard))
+						}
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end(JSON.stringify(mockDeckCard));
+				})
+				.then((statusCode) => {
+					assert.equal(statusCode, resCode['OK'], 'should be found in the db');
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should return the updated document when :_id is found and updated', () => {
+				const mockDeckCard = {
+					_id: mockDeckCards[testDeckCard]._id,
+					question: ['Valid question'],
+					answer:	['Valid answer']
+				};
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + mockDeckCard._id,
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockDeckCard))
+						}
+					};
+					const req = http.request(options, (res) =>{
+					 var updatedDeckCard = '';
+					 res
+					 	.on('data', (chunk) => updatedDeckCard += chunk)
+					 	.on('end', () => resolve(JSON.parse(updatedDeckCard)));
+					 });
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end(JSON.stringify(mockDeckCard));
+				})
+				.then((updatedDeckCard) => {
+					assert.equal(updatedDeckCard._id, mockDeckCard._id, 'should be found in the db');
+					assert.equal(updatedDeckCard.question.length, mockDeckCard.question.length);
+					for (var i = 0; i < updatedDeckCard.question.length; i++) {
+						assert.equal(updatedDeckCard.question[i], mockDeckCard.question[i], 'question should match');
+					}
+					assert.equal(updatedDeckCard.answer.length, mockDeckCard.answer.length);
+					for (var i = 0; i < updatedDeckCard.answer.length; i++) {
+						assert.equal(updatedDeckCard.answer[i], mockDeckCard.answer[i], 'answer should match');
+					}
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should only update question when question is the only provided field', () => {
+				const mockDeckCard = {
+					_id: mockDeckCards[testDeckCard]._id,
+					question: ['Valid question']
+				};
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + mockDeckCard._id,
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockDeckCard))
+						}
+					};
+					const req = http.request(options, (res) =>{
+					 var updatedDeckCard = '';
+					 res
+					 	.on('data', (chunk) => updatedDeckCard += chunk)
+					 	.on('end', () => resolve(JSON.parse(updatedDeckCard)));
+					 });
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end(JSON.stringify(mockDeckCard));
+				})
+				.then((updatedDeckCard) => {
+					assert.equal(updatedDeckCard._id, mockDeckCard._id, 'should be found in the db');
+					assert.equal(updatedDeckCard.question.length, mockDeckCard.question.length);
+					for (var i = 0; i < updatedDeckCard.question.length; i++) {
+						assert.equal(updatedDeckCard.question[i], mockDeckCard.question[i], 'question should match');
+					}
+					assert.equal(updatedDeckCard.answer.length, mockDeckCards[testDeckCard].answer.length);
+					for (var i = 0; i < updatedDeckCard.answer.length; i++) {
+						assert.equal(updatedDeckCard.answer[i], mockDeckCards[testDeckCard].answer[i], 'answer should match');
+					}
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
 	
 	});
 
