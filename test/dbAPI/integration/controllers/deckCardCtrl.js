@@ -539,7 +539,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 			it('should send a 200 when document with :_id is found and updated', () => {
 				return new Promise((resolve, reject) => {
 					const mockDeckCard = {
-						_id: mockDeckCards[testDeckCard]._id,
+						_id: mockDeckCards[testDeckCard]._id.toString(),
 						question: ['Valid question'],
 						answer:	['Valid answer']
 					};
@@ -564,7 +564,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 			it('should return the updated document when :_id is found and updated', () => {
 				const mockDeckCard = {
-					_id: mockDeckCards[testDeckCard]._id,
+					_id: mockDeckCards[testDeckCard]._id.toString(),
 					question: ['Valid question'],
 					answer:	['Valid answer']
 				};
@@ -603,7 +603,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 			it('should only update question when question is the only provided field', () => {
 				const mockDeckCard = {
-					_id: mockDeckCards[testDeckCard]._id,
+					_id: mockDeckCards[testDeckCard]._id.toString(),
 					question: ['Valid question']
 				};
 				return new Promise((resolve, reject) => {
