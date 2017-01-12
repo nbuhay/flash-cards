@@ -13,100 +13,17 @@ const mockUsers = require('config').mockUsers();
 const testDeckCard = require('config').testDeckCard();
 const testDeck = require('config').testDeck();
 const testUser = require('config').testUser();
+const dbBootstrap = require('test/dbBootstrap');
 const errHeader = require('modules/errorHeader')(__filename);
 
 describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 	before(() => {
-		console.log('\tBefore Tests');
-		// db ceremony...
-			return new Promise((resolve, reject) => {
-				// cleanse the db
-				mongoose.connection.db.dropDatabase(() => {
-					console.log('\tmongoose.connection.db.dropDatabase: success');
-					resolve();
-				});
-			})
-			.then(() => {
-				return new Promise((resolve, reject) => {
-					// mockDeckCards[i]._id casted to Mongo ObjectId type
-					for (var i = 0; i < mockDeckCards.length; i++) {
-						mockDeckCards[i]._id = mongoose.Types.ObjectId(mockDeckCards[i]._id);
-					}
-					// insert the deckCard collection
-					mongoose.connection.collection('deckcards').insert(mockDeckCards, (err, users) => {
-						if (err) reject('mongoose.connection.collection(\'deckcards\').insert: ' + err);
-						console.log('\tmongoose.connection.collection(\'deckcards\').insertedCount: %s', users.insertedCount);
-						resolve();
-					});
-				});
-			})
-			.then(() => {
-				return new Promise((resolve, reject) => {
-					// mockUsers[i]._id casted to Mongo ObjectId type
-					for (var i = 0; i < mockUsers.length; i++) {
-						mockUsers[i]._id = mongoose.Types.ObjectId(mockUsers[i]._id);
-					}
-					// insert the user collection
-					mongoose.connection.collection('users').insert(mockUsers, (err, users) => {
-						if (err) reject('mongoose.connection.collection(\'users\').insert: ' + err);
-						console.log('\tmongoose.connection.collection(\'users\').insertedCount: %s', users.insertedCount);
-						resolve();
-					});
-				});
-			})
-			.then(() => {
-				return new Promise((resolve, reject) => {
-					// mockDecks[i]._id casted to Mongo ObjectId type
-					for (var i = 0; i < mockDecks.length; i++) {
-						mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
-					}
-					// insert the deck collection
-					mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
-						if (err) reject('mongoose.connection.collection(\'decks\').insert:error: ' + err);
-						console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
-						resolve();
-					});
-				});
-			})
-			.catch((reason) => console.log('\t%sbefore.%s', errorHeader, reason));
-		});
+		return dbBootstrap.before();
+	});
 
 	beforeEach(() => {
-		return new Promise((resolve, reject) => {
-			// cleanse the db
-			mongoose.connection.db.dropDatabase(() => {
-				resolve();
-			});
-		})
-		.then(() => {
-			return new Promise((resolve, reject) => {
-				// insert the deckCard collection
-				mongoose.connection.collection('deckcards').insert(mockDeckCards, (err) => {
-					if (err) reject(err);
-					resolve();
-				});
-			})
-		})
-		.then(() => {
-			return new Promise((resolve, reject) => {
-				// insert the deck collection
-				mongoose.connection.collection('decks').insert(mockDecks, (err) => {
-					if (err) reject(err);
-					resolve();
-				});
-			})
-		})
-		.then(() => {
-			return new Promise ((resolve, reject) => {
-				// insert the user collection
-				mongoose.connection.collection('users').insert(mockUsers, (err) => {
-					if (err) reject(err);
-					resolve();
-				});
-			});
-		})
-		.catch((reason) => console.log('error:before.%s', reason));
+		return dbBootstrap.beforeEach();
 	});
 
 	describe('/api/deckCard', () => {
@@ -412,6 +329,88 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 		});
 
+		describe('DELETE', () => {
+
+			it('should not return a 404 when calling this DELETE route', () => {
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/:_id',
+						method: 'DELETE'
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {
+					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should send a 404 when no document with :_id is found', () => {
+					return new Promise((resolve, reject) => {
+						const validMongoId = 'a'.repeat('24');
+						const options = {
+							port: config.app.dbAPI.port,
+							path: '/api/deckCard/' + validMongoId,
+							method: 'DELETE'
+						};
+						const req = http.request(options, (res) => resolve(res.statusCode));
+						req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+						req.end();
+					})
+					.then((statusCode) => {
+						assert.equal(statusCode, resCode['NOTFOUND']);
+					})
+					.catch((reason) => assert(false, reason.message));
+				});
+
+			it('should send a 200 when an existing DeckCard is deleted from the db', () => {
+				return new Promise((resolve, reject) => {
+					const validMongoId = mockDeckCards[testDeckCard]._id.toString();
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + validMongoId,
+						method: 'DELETE'
+					};
+					const req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((statusCode) => {
+					assert.equal(statusCode, resCode['OK']);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should return the deleted DeckCard when it is deleted from the db', () => {
+				const validMongoId = mockDeckCards[testDeckCard]._id.toString();
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/deckCard/' + validMongoId,
+						method: 'DELETE'
+					};
+					const req = http.request(options, (res) => {
+						var deckCard = '';
+						res
+							.on('data', (chunk) => deckCard += chunk)
+							.on('end', () => {
+								resolve(JSON.parse(deckCard));
+							});
+					});
+					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
+					req.end();
+				})
+				.then((deletedDeckCard) => {
+					assert.equal(deletedDeckCard._id, validMongoId);
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
+
 		describe('PUT', () => {
 
 			it('should not return a 404 when calling this PUT route', () => {
@@ -458,12 +457,12 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 			});
 
 			it('should send a 200 when document with :_id is found and updated', () => {
+				const mockDeckCard = {
+					_id: mockDeckCards[testDeckCard]._id.toString(),
+					question: ['Valid question'],
+					answer:	['Valid answer']
+				};
 				return new Promise((resolve, reject) => {
-					const mockDeckCard = {
-						_id: mockDeckCards[testDeckCard]._id.toString(),
-						question: ['Valid question'],
-						answer:	['Valid answer']
-					};
 					const options = {
 						port: config.app.dbAPI.port,
 						path: '/api/deckCard/' + mockDeckCard._id,
@@ -556,88 +555,6 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 					for (var i = 0; i < updatedDeckCard.answer.length; i++) {
 						assert.equal(updatedDeckCard.answer[i], mockDeckCards[testDeckCard].answer[i], 'answer should match');
 					}
-				})
-				.catch((reason) => assert(false, reason.message));
-			});
-
-		});
-
-		describe('DELETE', () => {
-
-			it('should not return a 404 when calling this DELETE route', () => {
-				return new Promise((resolve, reject) => {
-					const options = {
-						port: config.app.dbAPI.port,
-						path: '/api/deckCard/:_id',
-						method: 'DELETE'
-					};
-					const req = http.request(options, (res) => resolve(res.statusCode));
-					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-					req.end();
-				})
-				.then((statusCode) => {
-					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
-				})
-				.catch((reason) => assert(false, reason.message));
-			});
-
-			it('should send a 404 when no document with :_id is found', () => {
-					return new Promise((resolve, reject) => {
-						const validMongoId = 'a'.repeat('24');
-						const options = {
-							port: config.app.dbAPI.port,
-							path: '/api/deckCard/' + validMongoId,
-							method: 'DELETE'
-						};
-						const req = http.request(options, (res) => resolve(res.statusCode));
-						req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-						req.end();
-					})
-					.then((statusCode) => {
-						assert.equal(statusCode, resCode['NOTFOUND']);
-					})
-					.catch((reason) => assert(false, reason.message));
-				});
-
-			it('should send a 200 when an existing DeckCard is deleted from the db', () => {
-				return new Promise((resolve, reject) => {
-					const validMongoId = mockDeckCards[testDeckCard]._id.toString();
-					const options = {
-						port: config.app.dbAPI.port,
-						path: '/api/deckCard/' + validMongoId,
-						method: 'DELETE'
-					};
-					const req = http.request(options, (res) => resolve(res.statusCode));
-					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-					req.end();
-				})
-				.then((statusCode) => {
-					assert.equal(statusCode, resCode['OK']);
-				})
-				.catch((reason) => assert(false, reason.message));
-			});
-
-			it('should return the deleted DeckCard when it is deleted from the db', () => {
-				const validMongoId = mockDeckCards[testDeckCard]._id.toString();
-				return new Promise((resolve, reject) => {
-					const options = {
-						port: config.app.dbAPI.port,
-						path: '/api/deckCard/' + validMongoId,
-						method: 'DELETE'
-					};
-					const req = http.request(options, (res) => {
-						var deckCard = '';
-						res
-							.on('data', (chunk) => deckCard += chunk)
-							.on('end', () => {
-								resolve(JSON.parse(deckCard));
-							});
-					});
-					req.on('error', (err) => reject({ message: errHeader + 'reqError: ' + err }));
-					req.end();
-				})
-				.then((deletedDeckCard) => {
-					assert.equal(deletedDeckCard._id, validMongoId);
 				})
 				.catch((reason) => assert(false, reason.message));
 			});
