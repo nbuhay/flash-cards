@@ -24,7 +24,7 @@ describe('./dbAPI/controllers/deckCardCtrl.js', () => {
 
 	beforeEach(() => {
 		return dbBootstrap.beforeEach();
-	});
+	});	
 
 	describe('/api/deckCard', () => {
 		

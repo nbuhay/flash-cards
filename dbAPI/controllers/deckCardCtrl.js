@@ -1,6 +1,8 @@
 const resCode = require('config').resCode();
 const mongoIdRe = require('config').mongoIdRe();
 const jsonRes = require('dbAPI/modules/jsonResponse');
+const validateJsonReq = require('modules/validateJsonReq');
+const validateStringArray = require('modules/validateStringArray');
 const errHeader = require('modules/errorHeader')(__filename);
 const DeckCard = require('dbAPI/models/deckCard');
 
@@ -19,33 +21,8 @@ function ResFactory(type, res, resCode, content) {
 	}[type];
 }
 
-function validateReq(req, reject) {
-	if (req.headers['content-type'] === undefined) {
-		reject({ message: 'missing header content-type' });
-	} else if (req.headers['content-type'] != 'application/json') {
-		var content =  'content-type should be application/json, got ' + req.headers['content-type'];
-		 reject({ message: content});
-	} else if (req.body === undefined || req.body === null) {
-		reject({ message: 'invalid req body' });
-	} else {
-		return req.body
-	}
-}
-
-function validateStringArray(stringArray, reject) {
-	if (!(Array.isArray(stringArray))) {
-		reject({ message: 'invalid field, expected [\'string\']'});
-	} else {
-		for (var i = 0; i < stringArray.length; i++) {
-			if (!(typeof stringArray[i] === 'string')) {
-				reject({ message: 'must be an array of only strings'});
-			}
-		}
-	}
-}
-
 function validateCreate(req, resolve, reject) {
-	const jsonReqBody = validateReq(req, reject);
+	const jsonReqBody = validateJsonReq(req, reject);
 	if (!jsonReqBody.hasOwnProperty('question') || !jsonReqBody.hasOwnProperty('answer')) {
 		reject({ message: 'invalid DeckCard' });
 	} else {
@@ -56,7 +33,7 @@ function validateCreate(req, resolve, reject) {
 }
 
 function validateUpdate(req, resolve, reject) {
-	const jsonReqBody = validateReq(req, reject);
+	const jsonReqBody = validateJsonReq(req, reject);
 	if (!jsonReqBody.hasOwnProperty('question') && !jsonReqBody.hasOwnProperty('answer')) {
 		reject({ message: 'invalid DeckCard' });
 	}else if (jsonReqBody.question && jsonReqBody.answer === undefined) {
