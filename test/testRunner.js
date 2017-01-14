@@ -44,7 +44,7 @@ describe('Mocha Test Runner', () => {
 
 	describe('Unit Tests', () => {
 
-		describe('./modules/', () => {
+		describe.only('./modules/', () => {
 			importTest('', './modules/errorHeader');
 			importTest('', './modules/jsonRequest');
 			importTest('', './modules/jsonResponse');
