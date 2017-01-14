@@ -106,7 +106,7 @@ describe('jsonRequest.js', () => {
 			const stringArrayStub = ['', 'abcd'];
 			
 			return jsonReq.validateStringArray(stringArrayStub)
-				.should.eventually.equal(stringArrayStub)
+				.should.eventually.equal(stringArrayStub);
 		});
 
 	});

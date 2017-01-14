@@ -183,34 +183,34 @@ describe('deckCardCtrl.js', () => {
 			assert.isFunction(deckCardCtrl.create);
 		});
 
-		it('should send a 400 if header \'content-type\' is undefined', () => {
-			const mockReq = { headers: [] };
-			const mockRes = { res: {} };
+		it('should send a 400 if header content-type is undefined', () => {
+			const reqStub = { headers: [] };
+			const resStub = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resStub)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+						assert(jsonResStub.calledWith(resStub, resCode['BADREQ']), 
 							'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 if header \'content-type\' doesn\'t equal \'application/json\'', () => {
-			const mockReq = { 
+		it('should send a 400 if header content-type doesn\'t equal application/json', () => {
+			const reqStub = { 
 				headers: {
 					'content-type': 'text'
 				}
 			};
-			const mockRes = { res: {} };
+			const resStub = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resStub)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+						assert(jsonResStub.calledWith(resStub, resCode['BADREQ']), 
 							'passed args not expected');			
 				});
 		});
@@ -397,22 +397,22 @@ describe('deckCardCtrl.js', () => {
 
 		it('should send a 500 if DeckCard.create throws an exception', () => {
 			const validDeckCard = { question: ['true'], answer: ['true'] };
-			const mockReq = {
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
 				body: validDeckCard
 			};
-			const mockRes = { res: {} };
+			const resStub = { res: {} };
 			const createStub = sandbox.stub().rejects();
 			const deckCardStub = sandbox.stub(DeckCard, 'create', createStub);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resStub)
 				.then(() => {
 						assert.equal(jsonResStub.called, true, 'should be called once');
 						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
+						assert(jsonResStub.calledWith(resStub, resCode['SERVFAIL']), 
 							'passed args not expected');			
 				});
 		});

@@ -3,7 +3,6 @@ const mongoIdRe = require('config').mongoIdRe();
 const DeckCard = require('dbAPI/models/deckCard');
 const jsonRes = require('dbAPI/modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
-const validateStringArray = require('modules/validateStringArray');
 const errHeader = require('modules/errorHeader')(__filename);
 
 function QueryFactory(type, conditions, options) {
@@ -21,30 +20,53 @@ function ResFactory(type, res, resCode, content) {
 	}[type];
 }
 
-function validateCreate(req, resolve, reject) {
-	const jsonReqBody = validateJsonReq(req, reject);
-	if (!jsonReqBody.hasOwnProperty('question') || !jsonReqBody.hasOwnProperty('answer')) {
-		reject({ message: 'invalid DeckCard' });
-	} else {
-		validateStringArray(jsonReqBody.answer, reject);
-		validateStringArray(jsonReqBody.question, reject);
-	}
-	resolve(jsonReqBody);
+function validateStringArray(stringArray) {
+	return new Promise((resolve, reject) => {
+		if (!(Array.isArray(stringArray))) {
+			reject({ message: 'invalid field: expected array, got ' + typeof stringArray });
+		} else {
+			for (var i = 0; i < stringArray.length; i++) {
+				if (!(typeof stringArray[i] === 'string')) {
+					reject({ message: 'must be an array of only strings' });
+				}
+			}
+			resolve();
+		}
+	})
+	.catch((reason) => { throw Error(reason.message); });
 }
 
-function validateUpdate(req, resolve, reject) {
-	const jsonReqBody = validateJsonReq(req, reject);
-	if (!jsonReqBody.hasOwnProperty('question') && !jsonReqBody.hasOwnProperty('answer')) {
-		reject({ message: 'invalid DeckCard' });
-	}else if (jsonReqBody.question && jsonReqBody.answer === undefined) {
-		validateStringArray(jsonReqBody.question, reject);
-	} else if (jsonReqBody.answer && jsonReqBody.question === undefined) {
-		validateStringArray(jsonReqBody.answer, reject);
-	} else {
-		validateStringArray(jsonReqBody.answer, reject);
-		validateStringArray(jsonReqBody.question, reject);
-	}
-	resolve(jsonReqBody);
+function validateCreate(validReqBody) {
+	return new Promise((resolve, reject) => {
+		if (!validReqBody.hasOwnProperty('question') || !validReqBody.hasOwnProperty('answer')) {
+			reject({ message: 'invalid DeckCard' });
+		}
+		resolve();
+	})
+	.then(() => validateStringArray(validReqBody.answer))
+	.then(() => validateStringArray(validReqBody.question))
+	.then(() => { return validReqBody; })
+	.catch((reason) => { throw Error(reason.message); });
+}
+
+function validateUpdate(validReqBody) {
+	return new Promise((resolve, reject) => {
+		if (!validReqBody.hasOwnProperty('question') && !validReqBody.hasOwnProperty('answer')) {
+			reject({ message: 'invalid DeckCard' });
+		} 
+		resolve();
+	})
+	.then(() => {
+		if (validReqBody.question && validReqBody.answer === undefined) {
+			return validateStringArray(validReqBody.question);
+		} else if (validReqBody.answer && validReqBody.question === undefined) {
+			return validateStringArray(validReqBody.answer);
+		} else {
+			return validateStringArray(validReqBody.answer)
+				.then(validateStringArray(validReqBody.question));
+		}
+	})
+	.catch((reason) => { throw Error(reason.message); });
 }
 
 function findAll(req, res) {
@@ -89,8 +111,9 @@ function findById(req, res) {
 }
 
 function create(req, res) {
-	return new Promise((resolve, reject) => validateCreate(req, resolve, reject))
-	.then((validReqBody) => DeckCard.create(validReqBody))
+	return jsonReq.validateBody(req)
+	.then((validReqBody) => validateCreate(validReqBody))
+	.then((validDeckCard) => DeckCard.create(validDeckCard))
 	.then((createdDeckCard) =>{
 		ResFactory('jsonRes', res, resCode['OK'], createdDeckCard);
 	})
@@ -137,10 +160,11 @@ function findByIdAndUpdate(req, res) {
 	return new Promise((resolve, reject) => {
 		if (!mongoIdRe.test(req.params._id)) {
 			reject({ message: 'req invalid param _id' });
-		} else {
-			validateUpdate(req, resolve, reject);
 		}
+		resolve();
 	})
+	.then(() => jsonReq.validateBody(req))
+	.then((validReqBody) => validateUpdate(validReqBody))
 	.then(() => {
 		const conditions = {
 			_id: req.params._id,

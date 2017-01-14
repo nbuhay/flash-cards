@@ -14,6 +14,7 @@ function validateBody(req) {
 	.catch((reason) => { throw Error(reason.message); });
 }
 
+// deprecate. is more appropriate per model
 function validateStringArray(stringArray) {
 	return new Promise((resolve, reject) => {
 		if (!(Array.isArray(stringArray))) {
@@ -29,6 +30,8 @@ function validateStringArray(stringArray) {
 	})
 	.catch((reason) => { throw Error(reason.message); });
 }
+
+// need vaoidate mongoId?
 
 module.exports = { 
 	validateBody,
