@@ -2,6 +2,8 @@ const resCode = require('config').resCode();
 const mongoIdRe = require('config').mongoIdRe();
 const Deck = require('dbAPI/models/deck');
 const jsonRes = require('modules/jsonResponse');
+const jsonReq = require('modules/jsonRequest');
+const validateStringArray = require('modules/validateStringArray');
 const errHeader = require('modules/errorHeader')(__filename);
 
 function QueryFactory(type, conditions, options) {
@@ -35,10 +37,13 @@ function findAll(req, res) {
 }
 
 function create(req, res) {
-	return Deck.create(req.body)
-		.then((deck) => res.status(resCode['OK']).json(deck))
-		.catch((reason) => res.status(resCode['SERVFAIL'])
-			.json({ message: errHeader + 'create: ' + reason.message }));
+	return new Promise((resolve, reject) => {})
+	.then(() => Deck.create(req.body))
+	.then((deck) => res.status(resCode['OK']).json(deck))
+	.catch((reason) => {
+		var content = { message: errHeader + 'create: ' + reason.message };
+		ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+	});
 }
 
 function findById(req, res) {

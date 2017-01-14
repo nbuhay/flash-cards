@@ -16,7 +16,7 @@ const testUser = require('config').testUser();
 const dbBootstrap = require('test/dbBootstrap');
 const errHeader = require('modules/errorHeader')(__filename);
 
-describe('./dbAPI/controllers/deckCardCtrl.js', () => {
+describe('deckCardCtrl.js', () => {
 
 	before(() => {
 		return dbBootstrap.before();

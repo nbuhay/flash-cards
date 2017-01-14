@@ -10,7 +10,7 @@ const deckCtrl = require('dbAPI/controllers/deckCtrl');
 
 var sandbox;
 
-describe.only('deckCtrl.js', () => {
+describe('deckCtrl.js', () => {
 
 	beforeEach(function() {
 		sandbox = sinon.sandbox.create();
@@ -80,6 +80,12 @@ describe.only('deckCtrl.js', () => {
 
 	});
 
+	describe('#create', () => {
+
+		// need unit tests for validate functions first
+		// then write these unit tests to ensure it calls the validate functions
+
+	});
 	// describe('#create');
 	// describe('#findById');
 	// describe('#findByIdAndUpdate');

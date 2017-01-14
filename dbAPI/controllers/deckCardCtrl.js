@@ -1,10 +1,10 @@
 const resCode = require('config').resCode();
 const mongoIdRe = require('config').mongoIdRe();
+const DeckCard = require('dbAPI/models/deckCard');
 const jsonRes = require('dbAPI/modules/jsonResponse');
-const validateJsonReq = require('modules/validateJsonReq');
+const jsonReq = require('modules/jsonRequest');
 const validateStringArray = require('modules/validateStringArray');
 const errHeader = require('modules/errorHeader')(__filename);
-const DeckCard = require('dbAPI/models/deckCard');
 
 function QueryFactory(type, conditions, options) {
 	return {

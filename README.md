@@ -101,3 +101,5 @@ NODE_ENV=test || dev || prod
 [Stub out function and subsuquent calls with Sinon](http://stackoverflow.com/questions/27847377/using-sinon-to-stub-chained-mongoose-calls)
 
 [Require Subvert - possible solution to testing jsonRes module](https://www.npmjs.com/package/require-subvert)
+
+[NodeJS Things to Know](https://edgecoders.com/how-well-do-you-know-node-js-36b1473c01c8#.92m4l5dy5)
