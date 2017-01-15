@@ -1,32 +1,71 @@
-const config = require('../../config').config();
-const resCode = require('../../config').resCode();
-const User = require('../models/user');
-const Deck = require('../models/deck');
-const jsonRes = require('../modules/jsonResponse');
-const errHeader = 'error:dbAPI:userCtrl.';
+const config = require('config').config();
+const resCode = require('config').resCode();
+const User = require('dbAPI/models/user');
+const Deck = require('dbAPI/models/deck');
+const jsonRes = require('modules/jsonResponse');
+const jsonReq = require('modules/jsonRequest');
+const errHeader = require('modules/errorHeader')(__filename);
+const mongoose = require('mongoose');
 
-module.exports.findAll = (req, res) => {
-	User.find((err, users) => {
-		if (err) {
-			jsonRes.send(res, resCode['SERVFAIL'], {'msg': err});
-		}
-		jsonRes.send(res, resCode['OK'], users);
-	});
-};
+function QueryFactory(type, conditions, options) {
+	return {
+		find: User.find(conditions),
+		findById: User.findById(conditions),
+		findByIdAndRemove: User.findByIdAndRemove(conditions),
+		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options)
+	}[type];
+}
 
-module.exports.findById = (req, res) => {
-	var options = {
-		_id: req.params._id
-	};
-	User.findById(options, (err, user) => {
-		if (err) {
-			jsonRes.send(res, resCode['SERVFAIL'], { msg:  err });
-		}
-		jsonRes.send(res, resCode['OK'], user);
-	});
-};
+function ResFactory(type, res, resCode, content) {
+	return {
+		jsonRes: jsonRes.send(res, resCode, content)
+	}[type];
+}
 
-module.exports.save = (req, res) => {
+function findAll(req, res) {
+	const conditions = {};
+	return QueryFactory('find', conditions).exec()
+		.then((users) => {
+			ResFactory('jsonRes', res, resCode['OK'], users);
+		})
+		.catch((reason) => {
+			if (reason === undefined) {
+				var content = { message: errHeader + 'findAll: undefined reason, check query' };
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				var content = { message: errHeader + 'findAll: ' + reason.message };
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			}
+		});
+}
+
+function findById(req, res) {
+	return jsonReq.validateMongoId(req.params._id)
+		.then(() => {
+			const _id = mongoose.Types.ObjectId(req.params._id);
+			return QueryFactory('findById', _id).exec();
+		})
+		.then((user) => {
+			if (!user) {
+				var content = { message: errHeader + 'findById: user does not exist' };
+				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+			} else {
+				ResFactory('jsonRes', res, resCode['OK'], user);			
+			}
+		})
+		.catch((reason) => {
+			var content = { message: errHeader + 'findById: ' };
+			if (reason === undefined) {
+				content.message += 'undefined reason, check query';
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				content.message += reason.message;
+				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			}
+		});
+}
+
+function save(req, res) {
 	var promise = new Promise((resolve, reject) => {
 		var user = new User(req.body);
 		user.save((err, user) => {
@@ -40,7 +79,7 @@ module.exports.save = (req, res) => {
 	});
 };
 
-module.exports.findByIdAndUpdate = (req, res) => {
+function findByIdAndUpdate(req, res) {
 	User.findByIdAndUpdate(req.params._id, req.body, (err, user) => {
 		if (err) {
 			jsonRes.send(res, resCode['SERVFAIL'], { msg: err });
@@ -49,14 +88,14 @@ module.exports.findByIdAndUpdate = (req, res) => {
 	});
 };
 
-module.exports.findByName = (req, res) => {
+function findByName(req, res) {
 	User.findOne({'userName': req.params.userName}, (err, user) => {
 		if (err) console.log("Error");
 		jsonRes.send(res, 200, user);
 	});
 };
 
-module.exports.findOneAndRemove = (req, res) => {
+function findOneAndRemove(req, res) {
 	var options = {
 		_id: req.params._id
 	};
@@ -68,7 +107,7 @@ module.exports.findOneAndRemove = (req, res) => {
 	});
 };
 
-module.exports.saveLearning = (req, res) => {
+function saveLearning(req, res) {
 	var promise = new Promise((resolve, reject) => {
 		// get the user object
 		// save deck to user
@@ -114,7 +153,7 @@ module.exports.saveLearning = (req, res) => {
 	.then(undefined, (rejectValue) => jsonRes.send(res, resCode['SERVFAIL'], { message: 'saveLearning.' + rejectValue }));
 };
 
-module.exports.findByIdAndRemoveLearning = (req, res) => {
+function findByIdAndRemoveLearning(req, res) {
 	var promise = new Promise((resolve, reject) => {
 		User.findById(req.params.user_id, { 'learning' : 'decks.learning' }, (err, learning) => {
 			if (err) reject('User.findById:error: ' + err);
@@ -152,7 +191,7 @@ module.exports.findByIdAndRemoveLearning = (req, res) => {
 	});
 };
 
-module.exports.findByIdAndUpdateLearning = (req, res) => {
+function findByIdAndUpdateLearning(req, res) {
 	var updates = req.body;
 	return new Promise((resolve, reject) => {
 		User.findById(req.params.user_id, (err, user) => {
@@ -176,3 +215,15 @@ module.exports.findByIdAndUpdateLearning = (req, res) => {
 		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'findByIdAndUpdateLearning.' + reason });
 	});
 };
+
+module.exports = {
+	findAll,
+	findById,
+	save,
+	findByIdAndUpdate,
+	findByName,
+	findOneAndRemove,
+	saveLearning,
+	findByIdAndRemoveLearning,
+	findByIdAndUpdateLearning
+}
