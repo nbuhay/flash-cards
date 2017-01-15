@@ -1,7 +1,6 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const jsonReq = require('modules/jsonRequest');
-
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 chai.should();
@@ -61,6 +60,27 @@ describe('jsonRequest.js', () => {
 			};
 
 			return jsonReq.validateBody(reqStub).should.eventually.equal(reqStub.body);
+		});
+
+	});
+
+	describe('#validateMongoId', () => {
+
+		it('function validateMongoId should exist', () => {
+			expect(jsonReq.validateMongoId).to.exist;
+		});
+
+		it('should reject if mongoId is not a valid MongoId', () => {
+			const invalidMongoId = 'a'.repeat(23);
+
+			return jsonReq.validateMongoId(invalidMongoId).should.be.rejectedWith(Error,
+				'invalid MongoId');
+		});
+
+		it('should resolve if mongoId is a valid MongoId', () => {
+			const validMongoId = 'a'.repeat(24);
+
+			return jsonReq.validateMongoId(validMongoId).should.be.fulfilled;
 		});
 
 	});

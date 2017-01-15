@@ -1,15 +1,27 @@
+const mongoIdRe = require('config').mongoIdRe();
+
 function validateBody(req) {
 	return new Promise((resolve, reject) => {
 		if (req.headers['content-type'] === undefined) {
 			reject({ message: 'missing header content-type' });
 		} else if (req.headers['content-type'] != 'application/json') {
 			var content = 'content-type should be application/json, got ' + req.headers['content-type'];
-			 reject({ message: content});
+			 reject({ message: content });
 		} else if (req.body === undefined || req.body === null) {
 			reject({ message: 'invalid req body' });
 		} else {
 			resolve(req.body);
 		}
+	})
+	.catch((reason) => { throw Error(reason.message); });
+}
+
+function validateMongoId(mongoId) {
+	return new Promise((resolve, reject) => {
+		if (!(mongoIdRe.test(mongoId))) {
+			reject({ message: 'invalid MongoId' });
+		}
+		resolve();
 	})
 	.catch((reason) => { throw Error(reason.message); });
 }
@@ -31,9 +43,8 @@ function validateStringArray(stringArray) {
 	.catch((reason) => { throw Error(reason.message); });
 }
 
-// need vaoidate mongoId?
-
 module.exports = { 
 	validateBody,
+	validateMongoId,
 	validateStringArray
 };
