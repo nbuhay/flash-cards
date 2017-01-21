@@ -9,7 +9,9 @@ var userSchema = mongoose.Schema({
 	},
 	pswd: {
 		required: true,
-		type: String
+		type: String,
+		minlength: 8,
+		maxlength: 256
 	},
 	email: {
 		domainId: {
@@ -23,19 +25,6 @@ var userSchema = mongoose.Schema({
 		extension: {
 			required: true,
 			type: String
-		}
-	},
-	zip: {
-		code: {
-			required: true,
-			type: Number,
-			min: 5,
-			max: 5
-		},
-		plusFour: {
-			type: Number,
-			min: 4,
-			max: 4
 		}
 	},
 	decks: {
@@ -55,10 +44,6 @@ var userSchema = mongoose.Schema({
 			}]
 		}]
 	}
-});
-
-userSchema.virtual('zipPlusFour').get(function() {
-	return this.zip.code + '-' + this.zip.plusFour;
 });
 
 userSchema.virtual('emailAddress').get(function() {

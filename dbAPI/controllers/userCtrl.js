@@ -1,4 +1,6 @@
 const config = require('config').config();
+const usernameSettings = require('config').usernameSettings();
+const pswdSettings = require('config').pswdSettings();
 const resCode = require('config').resCode();
 const User = require('dbAPI/models/user');
 const Deck = require('dbAPI/models/deck');
@@ -6,13 +8,15 @@ const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 function QueryFactory(type, conditions, options) {
 	return {
 		find: User.find(conditions),
 		findById: User.findById(conditions),
 		findByIdAndRemove: User.findByIdAndRemove(conditions),
-		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options)
+		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
+		findOne: User.findOne(conditions.conditions, conditions.projection, options)
 	}[type];
 }
 
@@ -20,6 +24,95 @@ function ResFactory(type, res, resCode, content) {
 	return {
 		jsonRes: jsonRes.send(res, resCode, content)
 	}[type];
+}
+
+function validateCreate(body) {
+	return new Promise((resolve, reject) => {
+		if (!body.hasOwnProperty('username') 
+			|| body.username.length < usernameSettings.length.min
+			|| body.username.length > usernameSettings.length.max) {
+				reject({ message: 'invalid username' });
+		} else if (!body.hasOwnProperty('pswd')
+			|| body.pswd.length < pswdSettings.length.min
+			|| body.pswd.length > pswdSettings.length.max) {
+			reject({ message: 'invalid pswd'} );
+		} else if (!body.hasOwnProperty('email')
+			|| !body.email.hasOwnProperty('domainId')
+			|| !body.email.hasOwnProperty('domain')
+			|| !body.email.hasOwnProperty('extension')
+			|| !validator.isEmail(body.email.domainId + '@' + body.email.domain + '.' + body.email.extension)) {
+			reject({ message: 'invalid email'} );
+		} else {
+			resolve(body);
+		}
+	})
+	.catch((reason) => { throw Error(reason.message); });
+}
+
+function validateFindOne(body) {
+	return new Promise((resolve, reject) => {
+		if (!body.hasOwnProperty('queryParms') 
+			|| body.queryParms === undefined
+			|| body.queryParms === null) {
+				reject({message: 'invalid queryParms'});
+		} else if (!body.queryParms.hasOwnProperty('conditions')
+			|| body.queryParms.conditions === undefined
+			|| body.queryParms.conditions === null) {
+			reject({message: 'invalid queryParms.conditions'});
+		} else if (body.queryParms.hasOwnProperty('projection') 
+			&& body.queryParms.hasOwnProperty('options')) {
+				if (body.queryParms.projection === undefined 
+					|| body.queryParms.projection === null) {
+					reject({message: 'invalid queryParms.projection'});
+				} else if (body.queryParms.options === undefined 
+					|| body.queryParms.options === null) {
+					reject({message: 'invalid queryParms.options'});
+				} else {
+					resolve({
+						queryParms: {
+							conditions: body.queryParms.conditions,
+							projection: body.queryParms.projection
+						},
+						options: body.queryParms.options
+					})
+				}
+		} else if (body.queryParms.hasOwnProperty('projection')) {
+			if (body.queryParms.projection === undefined
+				|| body.queryParms.projection === null) {
+				reject({message: 'invalid queryParms.projection'});
+			} else {
+				resolve({
+					queryParms: {
+						conditions: body.queryParms.conditions,
+						projection: body.queryParms.projection
+					},
+					options: undefined
+				});
+			}
+		} else if (body.queryParms.hasOwnProperty('options')){
+			if (body.queryParms.options === undefined 
+				|| body.queryParms.options === null) {
+				reject({message: 'invalid queryParms.options'});
+			} else {
+				resolve({
+					queryParms: {
+						conditions: body.queryParms.conditions,
+						projection: undefined
+					},
+					options: body.queryParms.options
+				});
+			}
+		} else {
+			resolve({
+				queryParms: {
+					conditions: body.queryParms.conditions,
+					projection: undefined
+				},
+				options: undefined
+			});
+		}
+	})
+	.catch((reason) => { throw Error(reason.message); });
 }
 
 function findAll(req, res) {
@@ -48,9 +141,13 @@ function findById(req, res) {
 		.then((user) => {
 			if (!user) {
 				var content = { message: errHeader + 'findById: user does not exist' };
-				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+				ResFactory('jsonRes', res, resCode['NOTFOUND'], req.stringify);
 			} else {
-				ResFactory('jsonRes', res, resCode['OK'], user);			
+				if (req.method === 'HEAD') {
+					ResFactory('jsonRes', res, resCode['OK']);			
+				} else {
+					ResFactory('jsonRes', res, resCode['OK'], user);			
+				}
 			}
 		})
 		.catch((reason) => {
@@ -65,33 +162,53 @@ function findById(req, res) {
 		});
 }
 
-function save(req, res) {
-	var promise = new Promise((resolve, reject) => {
-		var user = new User(req.body);
-		user.save((err, user) => {
-			if (err) reject('user.save: ' + err);
-			resolve(user);
+function findOne(req, res) {
+	return jsonReq.validateBody(req)
+		.then((validReqBody) => validateFindOne(validReqBody))
+		.then((validFindOne) => {
+			return QueryFactory('findOne', validFindOne.queryParms, validFindOne.options)
+				.exec()
+		})
+		.then((user) => {
+			if (!user) {
+				var content = { message: errHeader + 'findOne: no matching user found' };
+				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+			} else {
+				ResFactory('jsonRes', res, resCode['OK'], user);
+			}
+		})
+		.catch((reason) => {
+			var content = { message: errHeader + 'findOne: ' };
+			if (reason === undefined) {
+				content.message += 'undefined reason, check query';
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				content.message += reason.message;
+				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			}
 		});
-	})
-	.then((user) => jsonRes.send(res, resCode['OK'], user))
-	.then(undefined, (reason) => {
-		jsonRes(res, resCode['SERVFAIL'], { message: errHeader + 'save.' + reason })
-	});
-};
+}
 
+function create(req, res) {
+	return jsonReq.validateBody(req)
+	.then((validReqBody) => validateCreate(validReqBody))
+	.catch((reason) => {
+		var content = { message: errHeader + 'create: ' };
+		if (reason === undefined) {
+			content.message += 'undefined reason, check query';
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			content.message += reason.message;
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		}
+	});
+}
 function findByIdAndUpdate(req, res) {
 	User.findByIdAndUpdate(req.params._id, req.body, (err, user) => {
 		if (err) {
 			jsonRes.send(res, resCode['SERVFAIL'], { msg: err });
 		}
 		jsonRes.send(res, resCode['OK'], {msg: 'Update Succesful'});
-	});
-};
-
-function findByName(req, res) {
-	User.findOne({'userName': req.params.userName}, (err, user) => {
-		if (err) console.log("Error");
-		jsonRes.send(res, 200, user);
 	});
 };
 
@@ -219,9 +336,9 @@ function findByIdAndUpdateLearning(req, res) {
 module.exports = {
 	findAll,
 	findById,
-	save,
+	findOne,
+	create,
 	findByIdAndUpdate,
-	findByName,
 	findOneAndRemove,
 	saveLearning,
 	findByIdAndRemoveLearning,

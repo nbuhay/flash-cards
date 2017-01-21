@@ -3,15 +3,11 @@
 		{
 			"_id": "000000000000000000000000",
 			"userName": "Bu",
-			"pswd": "abc123",
+			"pswd": "abc123abc123",
 			"email": {
 				"domainId": "nichobu",
 				"domain": "flash",
 				"extension": "com"
-			},
-			"zip": {
-				"code": 55555,
-				"plusFour": 4444
 			},
 			"decks": {
 				"created": [
@@ -25,29 +21,22 @@
 		{
 			"_id": "000000000000000000000001",
 			"userName": "Ant",
-			"pswd": "Merman",
+			"pswd": "MermanMerman",
 			"email": {
 				"domainId": "celwyn",
 				"domain": "yah",
 				"extension": "com"
-			},
-			"zip": {
-				"code": 44444
 			},
 			"decks": {}
 		},
 		{
 			"_id": "000000000000000000000002",
 			"userName": "Jane",
-			"pswd": "Doe",
+			"pswd": "DoeDoeDoe",
 			"email": {
 				"domainId": "jd",
 				"domain": "jd",
 				"extension": "com"
-			},
-			"zip": {
-				"code": 11111,
-				"plusFour": 3333
 			},
 			"decks": {}
 		}

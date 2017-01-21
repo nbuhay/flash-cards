@@ -1,7 +1,7 @@
-const env = require('./env.json');
-const mockDeckCards = require('./mockData/deckCards').cards;
-const mockDecks = require('./mockData/decks').decks;
-const mockUsers = require('./mockData/users').users;
+const env = require('env.json');
+const mockDeckCards = require('mockData/deckCards').cards;
+const mockDecks = require('mockData/decks').decks;
+const mockUsers = require('mockData/users').users;
 const resCode = {
 	OK: 200,
 	SERVFAIL: 500,
@@ -16,6 +16,18 @@ const testDeckCard = 0;
 const testDeck = 0;
 const testUser = 0;
 const mongoIdRe = /^[0-9a-fA-F]{24}$/;
+const usernameSettings = {
+	length: {
+		min: 2,
+		max: 21
+	}
+};
+const pswdSettings = {
+	length: {
+		min: 8,
+		max: 256
+	}
+};
 
 module.exports.config = () => {
 	var node_env = [process.env.NODE_ENV || 'dev'];
@@ -52,4 +64,12 @@ module.exports.testUser = () => {
 
 module.exports.mongoIdRe = () => {
 	return mongoIdRe;
+}
+
+module.exports.usernameSettings = () => {
+	return usernameSettings;
+}
+
+module.exports.pswdSettings = () => {
+	return pswdSettings;
 }

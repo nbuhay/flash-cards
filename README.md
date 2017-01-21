@@ -79,6 +79,9 @@ p.then
 [NODE_ENV for dev/prod](http://himanshu.gilani.info/blog/2012/09/26/bootstraping-a-node-dot-js-app-for-dev-slash-prod-environment/)
 
 [Node Debugger](https://github.com/node-inspector/node-inspector)
+[Actually Useful Instructions](http://kurtle.io/2015/11/01/how-to-set-up-node-inspector.html)
+
+	node-inspector & nodemond --debug
 
 [Request Headers - when/not to JSON.parse](http://stackoverflow.com/questions/8081701/i-keep-getting-uncaught-syntaxerror-unexpected-token-o)
 
