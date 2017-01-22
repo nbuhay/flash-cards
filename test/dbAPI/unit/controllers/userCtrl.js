@@ -205,7 +205,7 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe.only('#findOne', () => {
+	describe('#findOne', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'findOne: ';
@@ -685,7 +685,6 @@ describe('userCtrl.js', () => {
 			const execStub = sandbox.stub().resolves(userDataFromDb);
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'no matching user found';
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
@@ -697,9 +696,35 @@ describe('userCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
+		it('should send a 200 and null if User.find resolves and req.method is HEAD', () =>{
+			const reqStub = {
+				method: 'HEAD'
+			};
+			const resDummy = { res: {} };
+			const reqBodyStub = {
+				queryParms: {
+					conditions: { conditions: {} }
+				}
+			};
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const userDataFromDb = { userData: {} };
+			const execStub = sandbox.stub().resolves(userDataFromDb);
+			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.findOne(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledOnce.should.be.true;
+					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], null)
+						.should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
 	});
 
-	describe('#create', () => {
+	describe.only('#create', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'create: ';
@@ -1072,7 +1097,7 @@ describe('userCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it.skip('should send a 400 if email already exists in the db', () => {
+		it('should send a 400 if email already exists in the db', () => {
 			const validUsername = 'a'.repeat(usernameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'valid';
@@ -1093,87 +1118,154 @@ describe('userCtrl.js', () => {
 				}
 			};
 			const resDummy = { res: {} };
-			const httpRequestStub = sinon.stub(http, 'request');
+			const httpRequestStub = sandbox.stub(http, 'request');
 			const expectedReqResult = { statusCode: resCode['OK'] };
-			const responseStub = new PassThrough();
-			const requestStub = new PassThrough();
-			// const httpReqOptions = {
-			// 	port: config.app.dbAPI.port,
-			// 	path: '/api'
-			// }
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			responseStub.write(JSON.stringify(expectedReqResult));
-			// literally passing response to callback
- 			//   callsArgWith says execute the index=1 param as callback 
- 			//   AND pass 'response' as the argument to that callback
-			httpRequestStub.callsArgWith(1, responseStub).returns(requestStub);
+			httpRequestStub.callsArgWith(1, expectedReqResult);
 			errorHeader.message += 'user with email already exists';
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					httpRequestStub.calledOnce.should.be.true;
-					httpRequestStub.calledTwice.should.be.false;
-					// httpRequestStub should be called with what args?
-					//   options
-					//   callback...
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
-					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+					expect(httpRequestStub.calledOnce, 'req calledOnce').to.be.true;
+					expect(httpRequestStub.calledTwice, 'req not calledTwice').to.be.false;
+					expect(jsonResStub.calledOnce, 'res calledOnce').to.be.true;
+					expect(jsonResStub.calledTwice, 'res not calledTwice').to.be.false;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+							'res calledWithExactly').to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-// get: function(callback) {
-// 		var req = http.request({
-// 			hostname: 'jsonplaceholder.typicode.com',
-// 			path: '/posts/1'
-// 		}, function(response) {
-// 			var data = '';
-// 			response.on('data', function(chunk) {
-// 				data += chunk;
-// 			});
- 
-// 			response.on('end', function() {
-// 				callback(null, JSON.parse(data));
-// 			});
-// 		});
- 
-// 		req.end();
-// 	}
+		it('should send a 500 when findOne api resCode is neither 200 or 404', () => {
+			const validUsername = 'a'.repeat(usernameSettings.length.min);
+			const validPswd = 'a'.repeat(pswdSettings.length.min);
+			const domainId = 'valid';
+			const domain = 'valid';
+			const extension = 'com';
+			const reqStub = {
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: {
+					username: validUsername,
+					pswd: validPswd,
+					email: {
+						domainId: domainId,
+						domain: domain,
+						extension: extension
+					}
+				}
+			};
+			const resDummy = { res: {} };
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const invalidResCode = 0;
+			const expectedReqResult = { statusCode: invalidResCode };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+			errorHeader.message += 'something went wrong with HEAD /api/user/findOne';
 
-// it('should convert get result to object', function(done) {
-// 	var expected = { hello: 'world' };
-// 	var response = new PassThrough();
-// 	response.write(JSON.stringify(expected));
-// 	response.end();
- 
-// 	var request = new PassThrough();
- 
+			return userCtrl.create(reqStub, resDummy)
+				.then(() => {
+					expect(httpRequestStub.calledOnce, 'req calledOnce').to.be.true;
+					expect(httpRequestStub.calledTwice, 'req not calledTwice').to.be.false;
+					expect(jsonResStub.calledOnce, 'res calledOnce').to.be.true;
+					expect(jsonResStub.calledTwice, 'res not calledTwice').to.be.false;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+							'res calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
 
-// 	this.request.callsArgWith(1, response).returns(request);
- 
-// 	api.get(function(err, result) {
-// 		assert.deepEqual(result, expected);
-// 		done();
-// 	});
-// });
-		// check user email doesn't already exist - 400 if exists
-			// method search by email
-				// Model.findOne function
-				// http://mongoosejs.com/docs/api.html#model_Model.findOne
-			// stub out http.request... or is it http.requestClient
-			// https://codeutopia.net/blog/2015/01/30/how-to-unit-test-nodejs-http-requests/
-		// 500 if create rejects
-		// 200 if created
-		// head option to check if exists before actually trying to save
-		// domainId: {
-		// domain: {
-		// extension: {
+		it('should send a 500 if User.create throws an error', () =>  {
+			const validUsername = 'a'.repeat(usernameSettings.length.min);
+			const validPswd = 'a'.repeat(pswdSettings.length.min);
+			const domainId = 'valid';
+			const domain = 'valid';
+			const extension = 'com';
+			const reqStub = {
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: {
+					username: validUsername,
+					pswd: validPswd,
+					email: {
+						domainId: domainId,
+						domain: domain,
+						extension: extension
+					}
+				}
+			};
+			const resDummy = { res: {} };
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['NOTFOUND'] };
+			const execStub = sandbox.stub().rejects();
+			const userStub = sandbox.stub(User, 'create', () => { return { exec: execStub }; });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+			errorHeader.message += 'undefined reason, check query';
+
+			return userCtrl.create(reqStub, resDummy)
+				.then(() => {
+					expect(httpRequestStub.calledOnce, 'req calledOnce').to.be.true;
+					expect(httpRequestStub.calledTwice, 'req not calledTwice').to.be.false;
+					expect(jsonResStub.calledOnce, 'res calledOnce').to.be.true;
+					expect(jsonResStub.calledTwice, 'res not calledTwice').to.be.false;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
+							'res calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 200 when user is saved to the db', () => {
+			const validUsername = 'a'.repeat(usernameSettings.length.min);
+			const validPswd = 'a'.repeat(pswdSettings.length.min);
+			const domainId = 'valid';
+			const domain = 'valid';
+			const extension = 'com';
+			const reqStub = {
+				headers: {
+					'content-type': 'application/json'
+				},
+				body: {
+					username: validUsername,
+					pswd: validPswd,
+					email: {
+						domainId: domainId,
+						domain: domain,
+						extension: extension
+					}
+				}
+			};
+			const resDummy = { res: {} };
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['NOTFOUND'] };
+			const execStub = sandbox.stub().resolves();
+			const userStub = sandbox.stub(User, 'create', () => { return { exec: execStub }; });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const content = 'user creation successful';
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCtrl.create(reqStub, resDummy)
+				.then(() => {
+					expect(httpRequestStub.calledOnce, 'req calledOnce').to.be.true;
+					expect(httpRequestStub.calledTwice, 'req not calledTwice').to.be.false;
+					expect(jsonResStub.calledOnce, 'res calledOnce').to.be.true;
+					expect(jsonResStub.calledTwice, 'res not calledTwice').to.be.false;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['OK'], content),
+							'res calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
 
 	});
-
 
 });

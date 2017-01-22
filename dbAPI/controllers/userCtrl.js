@@ -9,6 +9,7 @@ const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
 const mongoose = require('mongoose');
 const validator = require('validator');
+const http = require('http');
 
 function QueryFactory(type, conditions, options) {
 	return {
@@ -16,7 +17,8 @@ function QueryFactory(type, conditions, options) {
 		findById: User.findById(conditions),
 		findByIdAndRemove: User.findByIdAndRemove(conditions),
 		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
-		findOne: User.findOne(conditions.conditions, conditions.projection, options)
+		findOne: User.findOne(conditions.conditions, conditions.projection, options),
+		create: User.create(conditions)
 	}[type];
 }
 
@@ -35,13 +37,13 @@ function validateCreate(body) {
 		} else if (!body.hasOwnProperty('pswd')
 			|| body.pswd.length < pswdSettings.length.min
 			|| body.pswd.length > pswdSettings.length.max) {
-			reject({ message: 'invalid pswd'} );
+			reject({ message: 'invalid pswd' });
 		} else if (!body.hasOwnProperty('email')
 			|| !body.email.hasOwnProperty('domainId')
 			|| !body.email.hasOwnProperty('domain')
 			|| !body.email.hasOwnProperty('extension')
 			|| !validator.isEmail(body.email.domainId + '@' + body.email.domain + '.' + body.email.extension)) {
-			reject({ message: 'invalid email'} );
+			reject({ message: 'invalid email' });
 		} else {
 			resolve(body);
 		}
@@ -174,7 +176,11 @@ function findOne(req, res) {
 				var content = { message: errHeader + 'findOne: no matching user found' };
 				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 			} else {
-				ResFactory('jsonRes', res, resCode['OK'], user);
+				if (req.method !== 'HEAD') {
+					ResFactory('jsonRes', res, resCode['OK'], user);
+				} else {
+					ResFactory('jsonRes', res, resCode['OK'], null);
+				}
 			}
 		})
 		.catch((reason) => {
@@ -192,6 +198,42 @@ function findOne(req, res) {
 function create(req, res) {
 	return jsonReq.validateBody(req)
 	.then((validReqBody) => validateCreate(validReqBody))
+	.then((validCreate) => {
+		return new Promise((resolve, reject) => {
+			const findOneReqBody = {
+				queryParms: {
+					conditions: {
+						email: validCreate.email
+					}
+				}
+			};
+			const options = {
+				port: config.app.dbAPI.port,
+				path: '/api/user/findOne',
+				method: 'HEAD'
+			};
+			const callback = (response) => {
+				if (response.statusCode === resCode['NOTFOUND']) {
+					resolve();
+				} else if (response.statusCode === resCode['OK']) {
+					reject({ message: 'user with email already exists' });
+				} else {
+					reject({ message: 'something went wrong with HEAD /api/user/findOne' });
+				}
+			};
+			const request = http.request(options, callback);
+			request.on('error', (err) => {
+				reject({ message: err });
+			});
+			request.end(JSON.stringify(findOneReqBody));
+		})
+		.catch((reason) => { throw Error(reason.message); });
+	})
+	.then(() => QueryFactory('create', req.body).exec())
+	.then(() => {
+		var content = 'user creation successful';
+		ResFactory('jsonRes', res, resCode['OK'], content);
+	})
 	.catch((reason) => {
 		var content = { message: errHeader + 'create: ' };
 		if (reason === undefined) {
@@ -203,6 +245,7 @@ function create(req, res) {
 		}
 	});
 }
+
 function findByIdAndUpdate(req, res) {
 	User.findByIdAndUpdate(req.params._id, req.body, (err, user) => {
 		if (err) {
@@ -210,7 +253,7 @@ function findByIdAndUpdate(req, res) {
 		}
 		jsonRes.send(res, resCode['OK'], {msg: 'Update Succesful'});
 	});
-};
+}
 
 function findOneAndRemove(req, res) {
 	var options = {
@@ -222,7 +265,7 @@ function findOneAndRemove(req, res) {
 		}
 		jsonRes.send(res, resCode['OK'], { msg: 'user.' + user._id + ' sucessfully deleted!'});
 	});
-};
+}
 
 function saveLearning(req, res) {
 	var promise = new Promise((resolve, reject) => {
@@ -268,7 +311,7 @@ function saveLearning(req, res) {
 	})
 	.then((updatedUser) => jsonRes.send(res, resCode['OK'], updatedUser))
 	.then(undefined, (rejectValue) => jsonRes.send(res, resCode['SERVFAIL'], { message: 'saveLearning.' + rejectValue }));
-};
+}
 
 function findByIdAndRemoveLearning(req, res) {
 	var promise = new Promise((resolve, reject) => {
