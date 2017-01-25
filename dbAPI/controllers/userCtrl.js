@@ -255,15 +255,28 @@ function findByIdAndUpdate(req, res) {
 	});
 }
 
-function findOneAndRemove(req, res) {
-	var options = {
-		_id: req.params._id
-	};
-	User.findOneAndRemove(options, (err, user) => {
-		if (err) {
-			jsonRes.send(res, resCode['SERVFAIL'], { msg: 'findOneAndRemove.findOneAndRemove.error: ' + err} );
+function findByIdAndRemove(req, res) {
+	return jsonReq.validateMongoId(req.params._id)
+	.then(() => QueryFactory('findByIdAndRemove', req.params._id).exec())
+	.then((deletedUser) => {
+		if (deletedUser === null) {
+			var content = { 
+				message: errHeader + 'findByIdAndRemove: no matching user found'
+			};
+			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+		} else {
+			ResFactory('jsonRes', res, resCode['OK'], deletedUser);
 		}
-		jsonRes.send(res, resCode['OK'], { msg: 'user.' + user._id + ' sucessfully deleted!'});
+	})
+	.catch((reason) => {
+		var content = { message: errHeader + 'findByIdAndRemove: ' };
+		if (reason === undefined) {
+			content.message += 'undefined reason, check query';
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			content.message += reason.message;
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		}
 	});
 }
 
@@ -382,7 +395,7 @@ module.exports = {
 	findOne,
 	create,
 	findByIdAndUpdate,
-	findOneAndRemove,
+	findByIdAndRemove,
 	saveLearning,
 	findByIdAndRemoveLearning,
 	findByIdAndUpdateLearning

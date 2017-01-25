@@ -6,6 +6,7 @@ const assert = require('chai').assert;
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 chai.should();
+const should = require('chai').should();
 const expect = require('chai').expect;
 const userCtrl = require('dbAPI/controllers/userCtrl');
 const sinon = require('sinon');
@@ -724,7 +725,7 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe.only('#create', () => {
+	describe('#create', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'create: ';
@@ -1265,6 +1266,163 @@ describe('userCtrl.js', () => {
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
+
+	});
+
+	describe.only('#findByIdAndRemove', () => {
+
+		beforeEach(() => {
+			errorHeader.message += 'findByIdAndRemove: ';
+		});
+
+		it('function findByIdAndRemove should exist', () => {
+			should.exist(userCtrl.findByIdAndRemove);
+		});
+
+		it('should call jsonReq.validMongoId and pass it the User _id', () => {
+			const dummyId = 'a';
+			const reqDummy = { 
+				params: {
+					_id: dummyId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+
+			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					jsonReqStub.calledOnce.should.be.true;
+					jsonReqStub.calledTwice.should.be.not.be.true;
+					expect(jsonReqStub.calledWithExactly(reqDummy.params._id), 'calledWithExactly')
+						.to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it.only('should send a 400 when _id is an invalid MongoId', () => {
+			const dummyId = 'a';
+			const reqDummy = { 
+				params: {
+					_id: dummyId
+				}
+			};
+			const resDummy = { res: {} };
+			const rejectReason = 'invalid MongoId';
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').rejects(rejectReason);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += rejectReason;
+
+			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					jsonResStub.calledOnce.should.be.true;
+					jsonResStub.calledTwice.should.be.not.be.true;
+					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should call User.findByIdAndRemove with the _id as the only arg', () => {
+			const dummyId = 'a';
+			const reqDummy = {
+				params: {
+					_id: dummyId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const execStub = sandbox.stub().resolves();
+			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
+				() => { return { exec: execStub }});
+
+			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					userStub.calledOnce.should.be.true;
+					userStub.calledTwice.should.not.be.true;
+					expect(userStub.calledWithExactly(reqDummy.params._id), 'calledWithExactly')
+						.to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 500 if User.findOneAndRemove rejects', () => {
+			const dummyId = 'a';
+			const reqDummy = {
+				params: {
+					_id: dummyId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const execStub = sandbox.stub().rejects();
+			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
+				() => { return { exec: execStub }});
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 'undefined reason, check query'; 
+
+			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					jsonResStub.calledOnce.should.be.true;
+					jsonResStub.calledTwice.should.not.be.true;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
+							'calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 404 if User.findOneAndRemove returns null', () => {
+			const dummyId = 'a';
+			const reqDummy = {
+				params: {
+					_id: dummyId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const userDoesNotExist = null;
+			const execStub = sandbox.stub().resolves(userDoesNotExist);
+			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
+				() => { return { exec: execStub }});
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 'no matching user found'; 
+
+			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					jsonResStub.calledOnce.should.be.true;
+					jsonResStub.calledTwice.should.not.be.true;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
+							'calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 200 if User.findOneAndRemove sucessfully deletes user', () => {
+			const dummyId = 'a';
+			const reqDummy = {
+				params: {
+					_id: dummyId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const userDataFromDb = {};
+			const execStub = sandbox.stub().resolves(userDataFromDb);
+			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
+				() => { return { exec: execStub }});
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					jsonResStub.calledOnce.should.be.true;
+					jsonResStub.calledTwice.should.not.be.true;
+					expect(jsonResStub
+						.calledWithExactly(resDummy, resCode['OK'], userDataFromDb),
+							'calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});		
 
 	});
 
