@@ -6,7 +6,8 @@
   "main": "./bin/www",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "istanbul cover node_modules/mocha/bin/_mocha --colors -- -R spec"
+    "test": "istanbul cover node_modules/mocha/bin/_mocha --colors -- -R spec",
+    "debug": "mocha --debug-brk"
   },
   "dependencies": {
     "body-parser": "~1.15.2",
