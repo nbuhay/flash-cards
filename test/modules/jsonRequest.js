@@ -1,11 +1,14 @@
+const str = require('appStrings').modules.jsonRequest;
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const jsonReq = require('modules/jsonRequest');
+const invalidMongoId = require('config').invalidMongoId();
+const validMongoId = require('config').validMongoId();
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 chai.should();
 
-describe('jsonRequest.js', () => {
+describe.only('jsonRequest.js', () => {
 
 	describe('#validateBody', () => {
 
@@ -15,7 +18,7 @@ describe('jsonRequest.js', () => {
 			};
 
 			return jsonReq.validateBody(reqStub)
-				.should.be.rejectedWith(Error, 'missing header content-type');
+				.should.be.rejectedWith(Error, str.errMsg.noContentType);
 		});
 
 		it('should reject if content-type is not equal to application/json', () => {
@@ -25,8 +28,9 @@ describe('jsonRequest.js', () => {
 				}
 			};
 
-			return jsonReq.validateBody(reqStub).should.be.rejectedWith(Error,
-				'content-type should be application/json, got ' + reqStub.headers['content-type']);
+			return jsonReq.validateBody(reqStub)
+				.should.be.rejectedWith(Error, str.errMsg.invalidContentType 
+					+ reqStub.headers['content-type']);
 		});
 
 		it('should reject if request body is undefined', () => {
@@ -37,7 +41,8 @@ describe('jsonRequest.js', () => {
 				body: undefined
 			};
 
-			return jsonReq.validateBody(reqStub).should.be.rejectedWith(Error, 'invalid req body');
+			return jsonReq.validateBody(reqStub)
+				.should.be.rejectedWith(Error, str.errMsg.invalidReqBody);
 		});
 
 		it('should reject if request body is null', () => {
@@ -48,7 +53,8 @@ describe('jsonRequest.js', () => {
 				body: null
 			};
 
-			return jsonReq.validateBody(reqStub).should.be.rejectedWith(Error, 'invalid req body');
+			return jsonReq.validateBody(reqStub)
+				.should.be.rejectedWith(Error, str.errMsg.invalidReqBody);
 		});
 
 		it('should resolve the req.body if content-type is application/json and req.body is valid', () => {
@@ -71,62 +77,12 @@ describe('jsonRequest.js', () => {
 		});
 
 		it('should reject if mongoId is not a valid MongoId', () => {
-			const invalidMongoId = 'a'.repeat(23);
-
-			return jsonReq.validateMongoId(invalidMongoId).should.be.rejectedWith(Error,
-				'invalid MongoId');
+			return jsonReq.validateMongoId(invalidMongoId)
+				.should.be.rejectedWith(Error, str.errMsg.invalidMongoId);
 		});
 
 		it('should resolve if mongoId is a valid MongoId', () => {
-			const validMongoId = 'a'.repeat(24);
-
 			return jsonReq.validateMongoId(validMongoId).should.be.fulfilled;
-		});
-
-	});
-
-	describe('#validateStringArray', () => {
-
-		it('should reject if stringArray is an object', () => {
-			const stringArrayStub = {};
-
-			return jsonReq.validateStringArray(stringArrayStub).should.be.rejectedWith(Error, 
-				'invalid field: expected array, got ' + typeof stringArrayStub);
-		});
-
-		it('should reject if stringArray is undefined', () => {
-			const stringArrayStub = undefined;
-
-			return jsonReq.validateStringArray(stringArrayStub).should.be.rejectedWith(Error, 
-				'invalid field: expected array, got ' + typeof stringArrayStub);
-		});
-
-		it('should reject if stringArray is null', () => {
-			const stringArrayStub = null;
-
-			return jsonReq.validateStringArray(stringArrayStub).should.be.rejectedWith(Error, 
-				'invalid field: expected array, got ' + typeof stringArrayStub);
-		});
-
-		it('should reject if stringArray is a string', () => {
-			const stringArrayStub = '';
-
-			return jsonReq.validateStringArray(stringArrayStub).should.be.rejectedWith(Error, 
-				'invalid field: expected array, got ' + typeof stringArrayStub);
-		});
-
-		it('should reject if stringArray is not an array of only strings', () => {
-			const stringArrayStub = ['', 'abcd', {}];
-
-			return jsonReq.validateStringArray(stringArrayStub).should.be.rejectedWith(Error,
-				'must be an array of only strings');
-		});
-
-		it('should resolve the stringArray if stringArray is an array of only strings', () => {
-			const stringArrayStub = ['', 'abcd'];
-			
-			return jsonReq.validateStringArray(stringArrayStub)
-				.should.eventually.equal(stringArrayStub);
 		});
 
 	});

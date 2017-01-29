@@ -1,9 +1,10 @@
+const str = require('appStrings').modules.jsonResponse;
 const jsonRes = require('modules/jsonResponse');
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const resCode = require('config').resCode();
 
-describe('jsonResponse.js', () => {
+describe.only('jsonResponse.js', () => {
 
 	var sandbox;
 
@@ -32,8 +33,8 @@ describe('jsonResponse.js', () => {
 				status: setStatus,
 				json: returnJson
 			};
-			assert.throws(() => { jsonRes.send(resStub, unsupportedResCode, content) },
-				Error, 'Unsupported ResCode')	;
+			assert.throws(() => { jsonRes.send(resStub, unsupportedResCode, content) },	
+				Error, str.errMsg.badResCode);
 		});
 
 	});

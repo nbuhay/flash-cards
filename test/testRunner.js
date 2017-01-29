@@ -1,8 +1,8 @@
 process.env.NODE_ENV='test';
 const assert = require('assert');
-const server = require('../bin/www').server();
+const server = require('bin/www').server();
 const mongoose = require('mongoose');
-const errHeader = require('../modules/errorHeader')(__filename);
+const errHeader = require('modules/errorHeader')(__filename);
 
 function importTest(name, path) {
   describe(name, () => require(path));
@@ -13,9 +13,11 @@ describe('Mocha Test Runner', () => {
 		
 		console.log('   Bootstraping Test Env');
 		console.log('\tstarting up the server...');
+
 		// start webserver
 		require('../bin/www');
 		console.log('\tserver is up and running');
+
 		// db ceremony...
 		// make sure connection is established
 		mongoose.connection.once('connected', () => {
@@ -32,12 +34,28 @@ describe('Mocha Test Runner', () => {
 
 	describe('Testing Env Canaries', () => {
 
-		it('should ensure Chai Assertion Libraries are installed', () =>{
+		it('should ensure chai is available', () =>{
 			assert.ok(require('chai'));
 		});
 
-		it('should ensure Chai Assert Library is available', () => {
-			assert.ok(require('chai').assert);
+		it('should ensure chai-as-promised is available', () =>{
+			assert.ok(require('chai-as-promised'));
+		});		
+
+		it('should ensure istanbul is available', () => {
+			assert.ok(require('istanbul'));
+		});
+
+		it('should ensure sinon is available', () =>{
+			assert.ok(require('sinon'));
+		});
+		
+		it('should ensure sinon-as-promised is available', () =>{
+			assert.ok(require('sinon-as-promised'));
+		});
+
+		it('should ensure nock is available', () =>{
+			assert.ok(require('nock'));
 		});
 
 	});

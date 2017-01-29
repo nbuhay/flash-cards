@@ -28,6 +28,8 @@ const pswdSettings = {
 		max: 256
 	}
 };
+const invalidMongoId = 'a'.repeat(23);
+const validMongoId = 'a'.repeat(24);
 
 module.exports.config = () => {
 	var node_env = [process.env.NODE_ENV || 'dev'];
@@ -72,4 +74,12 @@ module.exports.usernameSettings = () => {
 
 module.exports.pswdSettings = () => {
 	return pswdSettings;
+}
+
+module.exports.invalidMongoId = () => {
+	return invalidMongoId;
+}
+
+module.exports.validMongoId = () => {
+	return validMongoId;
 }

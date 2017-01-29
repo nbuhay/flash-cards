@@ -1,11 +1,12 @@
+const str = require('appStrings').modules.errorHeader;
+
 function errorHeader(filepath) {
 	if (!(typeof filepath === 'string')) {
-		throw new TypeError('expected a string, got ' + typeof filepath, __filename);
+		throw new TypeError(str.errMsg.expectStr + typeof filepath, __filename);
 	} else if (filepath.length === 0) {
-		throw new TypeError('expected filename but got empty string', __filename);
+		throw new TypeError(str.errMsg.expectFilename, __filename);
 	} else if (!/^.*\\.*$/.test(filepath) && !/^.*\/.*$/.test(filepath)) {
-		throw new TypeError(
-			'expected valid filepath with at least one backslash or forward slash but got: ' 
+		throw new TypeError(str.errMsg.expectFilepath 
 			+ filepath, __filename);
 	}
 
@@ -14,16 +15,16 @@ function errorHeader(filepath) {
 	// get first app name that evaluates to true 
 	switch (true) {
 		case /^.*dbAPI.*$/.test(filepath):
-			appName = 'dbAPI';
+			appName = str.appName.dbAPI;
 			break;
 		case /^.*webserver.*$/.test(filepath):
-			appName = 'webserver';
+			appName = str.appName.webserver;
 			break;
 		case /^.*test.*$/.test(filepath):
-			appName = 'test';
+			appName = str.appName.test;
 			break;
 		default:
-			appName = 'unknown';
+			appName = str.appName.default;
 	}
 
 	var filename = filepath.slice(filepath.lastIndexOf('\\') + 1, -3);

@@ -1,3 +1,4 @@
+const str = require('appStrings').modules.jsonResponse;
 const resCode = require('config').resCode();
 
 function send(res, status, content) {
@@ -11,7 +12,7 @@ function send(res, status, content) {
 			throw Error
 		}
 	} catch (err) {
-		throw Error('Unsupported ResCode');
+		throw Error(str.errMsg.badResCode);
 	}
 	res.status(status).json(content);
 }

@@ -1,14 +1,14 @@
+const str = require('appStrings').modules.jsonRequest;
 const mongoIdRe = require('config').mongoIdRe();
 
 function validateBody(req) {
 	return new Promise((resolve, reject) => {
 		if (req.headers['content-type'] === undefined) {
-			reject({ message: 'missing header content-type' });
+			reject({ message: str.errMsg.noContentType });
 		} else if (req.headers['content-type'] != 'application/json') {
-			var content = 'content-type should be application/json, got ' + req.headers['content-type'];
-			 reject({ message: content });
+			 reject({ message: str.errMsg.invalidContentType + req.headers['content-type'] });
 		} else if (req.body === undefined || req.body === null) {
-			reject({ message: 'invalid req body' });
+			reject({ message: str.errMsg.invalidReqBody });
 		} else {
 			resolve(req.body);
 		}
@@ -19,25 +19,9 @@ function validateBody(req) {
 function validateMongoId(mongoId) {
 	return new Promise((resolve, reject) => {
 		if (!(mongoIdRe.test(mongoId))) {
-			reject({ message: 'invalid MongoId' });
-		}
-		resolve();
-	})
-	.catch((reason) => { throw Error(reason.message); });
-}
-
-// deprecate. is more appropriate per model
-function validateStringArray(stringArray) {
-	return new Promise((resolve, reject) => {
-		if (!(Array.isArray(stringArray))) {
-			reject({ message: 'invalid field: expected array, got ' + typeof stringArray });
+			reject({ message: str.errMsg.invalidMongoId });
 		} else {
-			for (var i = 0; i < stringArray.length; i++) {
-				if (!(typeof stringArray[i] === 'string')) {
-					reject({ message: 'must be an array of only strings' });
-				}
-			}
-			resolve(stringArray);
+			resolve();
 		}
 	})
 	.catch((reason) => { throw Error(reason.message); });
@@ -45,6 +29,5 @@ function validateStringArray(stringArray) {
 
 module.exports = { 
 	validateBody,
-	validateMongoId,
-	validateStringArray
+	validateMongoId
 };

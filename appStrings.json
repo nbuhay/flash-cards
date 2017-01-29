@@ -1,0 +1,36 @@
+{
+	"dbAPI": {
+
+	},
+	"test": {
+		
+	},
+	"modules": {
+		"errorHeader": {
+			"appName":{
+				"dbAPI": "dbAPI",
+				"webserver": "webserver",
+				"test": "test",
+				"default": "unknown"
+			},
+			"errMsg": {
+				"expectStr": "expected a string, got ",
+				"expectFilename": "expected filename but got empty string",
+				"expectFilepath": "expected valid filepath with at least one backslash or forward slash, got "
+			}
+		},
+		"jsonRequest": {
+			"errMsg": {
+				"noContentType": "missing header content-type",
+				"invalidContentType": "content-type should be application/json, got ",
+				"invalidReqBody": "invalid request body",
+				"invalidMongoId": "invalid  MongoId"
+			}
+		},
+		"jsonResponse": {
+			"errMsg": {
+				"badResCode": "Unsupported ResCode"
+			}
+		}
+	}
+}

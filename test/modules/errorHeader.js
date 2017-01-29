@@ -1,5 +1,6 @@
-const errorHeader = require('../../modules/errorHeader');
 const assert = require('chai').assert;
+const str = require('appStrings').modules.errorHeader;
+const errorHeader = require('modules/errorHeader');
 
 describe('errorHeader.js', () => {
 
@@ -10,27 +11,24 @@ describe('errorHeader.js', () => {
 		});
 
 		it('should throw a TypeError if the typeof the arg is not a string', () => {
-			var invalidArgs = [ {}, 4, [], true, () => {}, undefined, null, NaN];
-			var expectedErrMsg = 'expected a string, got ';
+			const invalidArgs = [ {}, 4, [], true, () => {}, undefined, null, NaN];
+			const expectedErrMsg = str.errMsg.expectStr;
 
 			for (var i = 0; i < invalidArgs.length; i++) {
-				// console.log(typeof invalidArgs[i])
 				assert.throws(() => errorHeader(invalidArgs[i]), TypeError,
-				expectedErrMsg + typeof invalidArgs[i]);
+					expectedErrMsg + typeof invalidArgs[i]);
 			}
 		});
 
 		it('should throw a TypeError if passed the empty string', () => {
-			var emptyString = '';
-			var expectedErrMsg = 'expected filename but got empty string';
+			const emptyString = '';
+			const expectedErrMsg = str.errMsg.expectFilename;
 			assert.throws(() => errorHeader(emptyString), TypeError, expectedErrMsg);
 		});
 
 		it('should reject filepaths with no backslash or forward slash', () => {
-			var invalidFilepath = 'noSlashes';
-			var expectedErrMsg = 
-				'expected valid filepath with at least one backslash or forward slash but got: ' 
-				+ invalidFilepath;
+			const invalidFilepath = 'noSlashes';
+			const expectedErrMsg = str.errMsg.expectFilepath	+ invalidFilepath;
 
 			assert.throws(() => errorHeader(invalidFilepath), TypeError, expectedErrMsg);
 		});
@@ -40,19 +38,19 @@ describe('errorHeader.js', () => {
 		});
 
 		it('should match \'dbAPI\' from the passed filepath and include it as the app name in the return string', () => {
-			var filepath = '\\dbAPI';
+			var filepath = '\\' + str.appName.dbAPI;
 
 			assert.match(errorHeader(filepath), /^.*dbAPI.*$/);
 		});
 
 		it('should match \'webserver\' from the passed filepath and include it as the app name in the return string', () => {
-			var filepath = '\\webserver';
+			var filepath = '\\' + str.appName.webserver;
 
 			assert.match(errorHeader(filepath), /^.*webserver.*$/);
 		});
 
 		it('should match \'test\' from the passed filepath and include it as the app name in the return string', () => {
-			var filepath = '\\test';
+			var filepath = '\\' + str.appName.test;
 
 			assert.match(errorHeader(filepath), /^.*test.*$/);
 		});
@@ -70,7 +68,7 @@ describe('errorHeader.js', () => {
 		});
 
 		it('should have a return string format of \'error:appName.filename.\'', () => {
-			var appName = 'dbAPI';
+			var appName = str.appName.dbAPI;
 			var filename = 'filename.js';
 			var filepath = '.\\some\\' + appName + '\\filepath\\' + filename;
 
