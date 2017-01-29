@@ -77,8 +77,13 @@ function findAll(req, res) {
 			ResFactory('jsonRes', res, resCode['OK'], deckCards);
 		})
 		.catch((reason) => {
-			var content = { message: errHeader + 'findAll: ' + reason.message };
-			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			if (reason === undefined) {
+				var content = { message: errHeader + 'findAll: undefined reason, check query' };
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				var content = { message: errHeader + 'findAll: ' + reason.message };
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			}
 		});
 }
 
