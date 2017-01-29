@@ -106,3 +106,8 @@ NODE_ENV=test || dev || prod
 [Require Subvert - possible solution to testing jsonRes module](https://www.npmjs.com/package/require-subvert)
 
 [NodeJS Things to Know](https://edgecoders.com/how-well-do-you-know-node-js-36b1473c01c8#.92m4l5dy5)
+
+[AWS MongoDB](http://docs.aws.amazon.com/quickstart/latest/mongodb/architecture.html)
+
+[Raspberry Pi Jesse](https://www.raspberrypi.org/blog/raspbian-jessie-is-here/)
+[Install MongoDB on Jesse](https://meteor-universal.tumblr.com/post/113098361629/install-meteor-universal-on-raspberry-pi-model-b)

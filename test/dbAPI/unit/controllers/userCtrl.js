@@ -1269,7 +1269,7 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe.only('#findByIdAndRemove', () => {
+	describe('#findByIdAndRemove', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'findByIdAndRemove: ';
@@ -1299,7 +1299,7 @@ describe('userCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it.only('should send a 400 when _id is an invalid MongoId', () => {
+		it('should send a 400 when _id is an invalid MongoId', () => {
 			const dummyId = 'a';
 			const reqDummy = { 
 				params: {
@@ -1423,6 +1423,44 @@ describe('userCtrl.js', () => {
 				})
 				.catch((reason) => assert(false, reason.message));
 		});		
+
+	});
+
+	describe.skip('#findByIdAndUpdate');	
+
+	describe.skip('#findByIdAndUpdateLearning', () => {
+	
+	beforeEach(() => {
+		errorHeader.message += 'findByIdAndUpdateLearning: ';
+	});
+
+	it('function findByIdAndUpdateLearning should exist', () => {
+		should.exist(userCtrl.findByIdAndUpdateLearning);
+	});
+
+
+
+		// NEED USER CARD IMPLEMENTED BEFORE CONTINUING
+
+		// check req.body exists
+		//   check its a deck... object
+		// call mongore with body req.id
+		// send 400 if rejection from mongore
+		// User.findby id
+		//   error with User.findbyid then 500
+		//   no user fouund, then 404
+		// 
+	});
+
+	describe.skip('#findByIdAndRemoveLearning', () => {
+		
+		beforeEach(() => {
+			errorHeader.message += 'findByIdAndRemoveLearning: ';
+		});
+
+		it('function findByIdAndRemoveLearning should exist', () => {
+			should.exist(userCtrl.findByIdAndRemoveLearning);
+		});
 
 	});
 
