@@ -1,9 +1,10 @@
 const resCode = require('config').resCode();
+const config = require('config').config();
 const mongoIdRe = require('config').mongoIdRe();
+const http = require('http');
 const Deck = require('dbAPI/models/deck');
 const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
-const validateStringArray = require('modules/validateStringArray');
 const errHeader = require('modules/errorHeader')(__filename);
 
 function QueryFactory(type, conditions, options) {
@@ -21,6 +22,46 @@ function ResFactory(type, res, resCode, content) {
 	}[type];
 }
 
+function validateCreateBody(validReqBody) {
+	return new Promise((resolve, reject) => {
+		if (!validReqBody.hasOwnProperty('creator') || !mongoIdRe.test(validReqBody.creator)) {
+			reject({ message: 'invalid creator field' });
+		} else if (!validReqBody.hasOwnProperty('name') || typeof validReqBody.name !== 'string'
+			|| validReqBody.name.length === 0) {
+			reject({ message: 'invalid name field' });
+		} else if (!validReqBody.hasOwnProperty('description') || typeof validReqBody.name !== 'string'
+			|| validReqBody.name.length === 0) {
+			reject({ message: 'invalid description field' });
+		} else if (!validReqBody.hasOwnProperty('cards') || !(Array.isArray(validReqBody.cards))) {
+			reject({ message: 'invalid cards field' });
+		} else {
+			resolve(validReqBody);
+		}
+	})
+	.catch((reason) => { throw Error(reason.message); });
+}
+
+function checkCreatorExists(validDeckBody) {
+	return new Promise((resolve, reject) => {
+		const options = {
+			port: config.app.dbAPI.port,
+			path: '/api/user/_id/' + validDeckBody.creator
+		}
+		const callback = (response) => {
+			if (response.statusCode !== resCode['OK']) {
+				reject({ message: 'creator does not exist in db' })
+			} else {
+				resolve();
+			}
+		}
+		const request = http.request(options, callback);
+		request.on('error', (err) => reject({ message: 'Request error' }));
+		request.end();
+	})
+	.catch((reason) => { throw Error(reason.message); });
+}
+
+
 function findAll(req, res) {
 	const conditions = {};
 	return QueryFactory('find', conditions).exec()
@@ -37,12 +78,19 @@ function findAll(req, res) {
 }
 
 function create(req, res) {
-	return new Promise((resolve, reject) => {})
+	return jsonReq.validateBody(req)
+	.then((validReqBody) => validateCreateBody(validReqBody))
+	.then((validDeckBody) => checkCreatorExists(validDeckBody))
 	.then(() => Deck.create(req.body))
-	.then((deck) => res.status(resCode['OK']).json(deck))
+	.then((deck) => ResFactory('jsonRes', res, resCode['OK'], deck))
 	.catch((reason) => {
-		var content = { message: errHeader + 'create: ' + reason.message };
-		ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		if (reason === undefined) {
+			var content = { message: errHeader + 'create: ' + reason.message };
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			var content = { message: errHeader + 'create: ' + reason.message };
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		}
 	});
 }
 
