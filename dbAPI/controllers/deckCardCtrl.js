@@ -78,6 +78,8 @@ function findAll(req, res) {
 		.catch((reason) => {
 			if (reason === undefined) {
 				var content = { message: errHeader + 'findAll: ' + str.errMsg.checkQuery };
+				console.log('content')
+				console.log(content)
 				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 			}
 		});
