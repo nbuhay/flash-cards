@@ -1,3 +1,4 @@
+const str = require('appStrings').dbAPI.controllers.deckCardCtrl;
 const mongoose = require('mongoose');
 const assert = require('chai').assert;
 const sinon = require('sinon');
@@ -8,18 +9,24 @@ const DeckCard = require('dbAPI/models/deckCard');
 const deckCardCtrl = require('dbAPI/controllers/deckCardCtrl');
 
 var sandbox;
+var errorHeader;
 
-describe('deckCardCtrl.js', () => {
+beforeEach(function() {
+	errorHeader = { message: 'error:dbAPI.deckCardCtrl.' };
+	sandbox = sinon.sandbox.create();
+});
 
-	beforeEach(function() {
-		sandbox = sinon.sandbox.create();
-	});
+afterEach(function() {
+	sandbox.restore();
+});
 
-	afterEach(function() {
-		sandbox.restore();
-	});
+describe.only('deckCardCtrl.js', () => {
 
-	describe('#findAll', () => {
+	describe.only('#findAll', () => {
+
+		beforeEach(function() {
+			errorHeader.message += 'findAll: ';
+		});
 
 		it('function named findAll should exist', () => {
 			assert.isFunction(deckCardCtrl.findAll);
@@ -37,8 +44,7 @@ describe('deckCardCtrl.js', () => {
 				.then(() => {
 					assert.equal(deckCardStub.called, true, 'should be called once');
 					assert.equal(deckCardStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(deckCardStub.calledWith(conditions), 
-						'passed args not expected');
+					assert(deckCardStub.calledWithExactly(conditions), 'passed args not expected');
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -47,7 +53,8 @@ describe('deckCardCtrl.js', () => {
 			const mockReq = { req: {} };
 			const mockRes = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const mockExec = sandbox.stub().resolves();
+			const allDeckCardData = { users: {} };
+			const mockExec = sandbox.stub().resolves(allDeckCardData);
 			
 			sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
 
@@ -55,7 +62,7 @@ describe('deckCardCtrl.js', () => {
 				.then(() => {
 					assert.equal(jsonResStub.called, true, 'should be called once');
 					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
+					assert(jsonResStub.calledWithExactly(mockRes, resCode['OK'], allDeckCardData),
 						'passed args not expected');
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -65,7 +72,8 @@ describe('deckCardCtrl.js', () => {
 			const mockReq = { req: {} };
 			const mockRes = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const mockExec = sandbox.stub().rejects('throwing mock exception...');
+			const mockExec = sandbox.stub().rejects();
+			errorHeader.message += str.errMsg.checkQuery;
 			
 			sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
 
@@ -73,7 +81,7 @@ describe('deckCardCtrl.js', () => {
 				.then(() => {
 					assert.equal(jsonResStub.called, true, 'should be called once');
 					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
+					assert(jsonResStub.calledWithExactly(mockRes, resCode['SERVFAIL'], errorHeader), 
 						'passed args not expected');
 				})
 				.catch((reason) => assert(false, reason.message));

@@ -1,3 +1,4 @@
+const str = require('appStrings').dbAPI.controllers.deckCardCtrl;
 const resCode = require('config').resCode();
 const mongoIdRe = require('config').mongoIdRe();
 const DeckCard = require('dbAPI/models/deckCard');
@@ -70,18 +71,13 @@ function validateUpdate(validReqBody) {
 }
 
 function findAll(req, res) {
-	var conditions = {};
-	var query = QueryFactory('find', conditions);
-	return query.exec()
+	return QueryFactory('find', {}).exec()
 		.then((deckCards) => {
 			ResFactory('jsonRes', res, resCode['OK'], deckCards);
 		})
 		.catch((reason) => {
 			if (reason === undefined) {
-				var content = { message: errHeader + 'findAll: undefined reason, check query' };
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-			} else {
-				var content = { message: errHeader + 'findAll: ' + reason.message };
+				var content = { message: errHeader + 'findAll: ' + str.errMsg.checkQuery };
 				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 			}
 		});

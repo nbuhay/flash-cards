@@ -4,7 +4,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 const resCode = require('config').resCode();
 
-describe.only('jsonResponse.js', () => {
+describe('jsonResponse.js', () => {
 
 	var sandbox;
 

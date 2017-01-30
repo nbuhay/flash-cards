@@ -8,7 +8,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 chai.should();
 
-describe.only('jsonRequest.js', () => {
+describe('jsonRequest.js', () => {
 
 	describe('#validateBody', () => {
 

@@ -32,5 +32,14 @@
 				"badResCode": "Unsupported ResCode"
 			}
 		}
+	},
+	"dbAPI": {
+		"controllers": {
+			"deckCardCtrl": {
+				"errMsg": {
+					"checkQuery": "undefined reason, check query"
+				}
+			}
+		}
 	}
 }

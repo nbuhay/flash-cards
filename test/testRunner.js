@@ -68,7 +68,7 @@ describe('Mocha Test Runner', () => {
 			importTest('', './modules/jsonResponse');
 		});
 
-		describe('./dbAPI/controllers/', () => {
+		describe.only('./dbAPI/controllers/', () => {
 			importTest('', './dbAPI/unit/controllers/deckCardCtrl');
 			importTest('', './dbAPI/unit/controllers/deckCtrl');
 			importTest('', './dbAPI/unit/controllers/userCtrl');
