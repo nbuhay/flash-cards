@@ -85,7 +85,7 @@ describe.only('deckCardCtrl.js', () => {
 					console.log(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 					assert.equal(jsonResStub.called, true, 'should be called once');
 					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader), 
+					assert(jsonResStub.calledWith(resDummy, resCode['SERVFAIL'], errorHeader), 
 						'passed args not expected');
 				})
 				.catch((reason) => assert(false, reason.message));
