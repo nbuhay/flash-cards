@@ -74,11 +74,12 @@ describe.only('deckCardCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const mockExec = sandbox.stub().rejects();
 			errorHeader.message += str.errMsg.checkQuery;
-			
+
 			sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
 
 			return deckCardCtrl.findAll(mockReq, mockRes)
 				.then(() => {
+					console.log(jsonResStub.firstCall.args)
 					assert.equal(jsonResStub.called, true, 'should be called once');
 					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
 					assert(jsonResStub.calledWithExactly(mockRes, resCode['SERVFAIL'], errorHeader), 
