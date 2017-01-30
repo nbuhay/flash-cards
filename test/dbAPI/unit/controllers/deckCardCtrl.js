@@ -33,14 +33,14 @@ describe.only('deckCardCtrl.js', () => {
 		});
 
 		it('should call Deck.find with the empty list as the only arg', () => {
-			const mockReq = { req: {} };
-			const mockRes = { res: {} };
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
 			const conditions = {};
 			const jsonResStub = sandbox.stub(jsonRes);
-			const mockExec = sandbox.stub().resolves();
-			const deckCardStub = sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
+			const execStub = sandbox.stub().resolves();
+			const deckCardStub = sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
 
-			return deckCardCtrl.findAll(mockReq, mockRes)
+			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
 					assert.equal(deckCardStub.called, true, 'should be called once');
 					assert.equal(deckCardStub.calledTwice, false, 'shouldn\t be called twice');
@@ -50,39 +50,39 @@ describe.only('deckCardCtrl.js', () => {
 		});
 
 		it('should call jsonRes.send with a 200 when DeckCard.find resolves', () => {
-			const mockReq = { req: {} };
-			const mockRes = { res: {} };
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const allDeckCardData = { users: {} };
-			const mockExec = sandbox.stub().resolves(allDeckCardData);
+			const execStub = sandbox.stub().resolves(allDeckCardData);
 			
-			sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
+			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
 
-			return deckCardCtrl.findAll(mockReq, mockRes)
+			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
 					assert.equal(jsonResStub.called, true, 'should be called once');
 					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(jsonResStub.calledWithExactly(mockRes, resCode['OK'], allDeckCardData),
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], allDeckCardData),
 						'passed args not expected');
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should call jsonRes.send with a 500 when DeckCard.find rejects', () => {
-			const mockReq = { req: {} };
-			const mockRes = { res: {} };
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const mockExec = sandbox.stub().rejects();
+			const execStub = sandbox.stub().rejects();
 			errorHeader.message += str.errMsg.checkQuery;
 
-			sandbox.stub(DeckCard, 'find').returns({ exec: mockExec });
+			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
 
-			return deckCardCtrl.findAll(mockReq, mockRes)
+			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					console.log(jsonResStub.firstCall.args)
+					console.log(jsonResStub.firstCall.args);
 					assert.equal(jsonResStub.called, true, 'should be called once');
 					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(jsonResStub.calledWithExactly(mockRes, resCode['SERVFAIL'], errorHeader), 
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader), 
 						'passed args not expected');
 				})
 				.catch((reason) => assert(false, reason.message));
