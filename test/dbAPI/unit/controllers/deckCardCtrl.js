@@ -12,7 +12,9 @@ var sandbox;
 var errorHeader;
 
 beforeEach(function() {
-	errorHeader = { message: 'error:dbAPI.deckCardCtrl.' };
+	errorHeader = { 
+		message: require('modules/errorHeader')(require.resolve('dbAPI/controllers/deckCardCtrl')) 
+	};
 	sandbox = sinon.sandbox.create();
 });
 
@@ -80,15 +82,10 @@ describe.only('deckCardCtrl.js', () => {
 
 			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					console.log(jsonResStub);					
-					console.log(jsonResStub.firstCall.args);
-					assert.equal(jsonResStub.firstCall.args[0], resDummy, 'resDummy');
-					assert.equal(jsonResStub.firstCall.args[1], resCode['SERVFAIL'], 'resCode');
-					assert.equal(jsonResStub.firstCall.args[2].message, errorHeader.message, 'errorHeader');
-					console.log(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 					assert.equal(jsonResStub.callCount, 1, 'should be called once');
-					assert.equal(jsonResStub.calledWith(resDummy, resCode['SERVFAIL'], errorHeader), true, 
+					assert(jsonResStub.calledWith(resDummy, resCode['SERVFAIL'], errorHeader), 
 						'passed args not expected');
+					assert.equal(jsonResStub.firstCall.args[2].message, errorHeader.message, 'errorHeader');
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
