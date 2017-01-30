@@ -4,7 +4,7 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
 const resCode = require('config').resCode();
-const jsonRes = require('dbAPI/modules/jsonResponse');
+const jsonRes = require('modules/jsonResponse');
 const DeckCard = require('dbAPI/models/deckCard');
 const deckCardCtrl = require('dbAPI/controllers/deckCardCtrl');
 
@@ -49,7 +49,7 @@ describe.only('deckCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should call jsonRes.send with a 200 when DeckCard.find resolves', () => {
+		it('should send a 200 when DeckCard.find resolves', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
@@ -68,11 +68,12 @@ describe.only('deckCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should call jsonRes.send with a 500 when DeckCard.find rejects', () => {
+		it('should send a 500 when DeckCard.find rejects', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const execStub = sandbox.stub().rejects();
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
 			errorHeader.message += str.errMsg.checkQuery;
 
 			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });

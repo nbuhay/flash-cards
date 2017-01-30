@@ -2,7 +2,7 @@ const str = require('appStrings').dbAPI.controllers.deckCardCtrl;
 const resCode = require('config').resCode();
 const mongoIdRe = require('config').mongoIdRe();
 const DeckCard = require('dbAPI/models/deckCard');
-const jsonRes = require('dbAPI/modules/jsonResponse');
+const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
 
