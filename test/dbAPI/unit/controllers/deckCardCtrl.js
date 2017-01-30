@@ -79,6 +79,7 @@ describe.only('deckCardCtrl.js', () => {
 
 			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
+					console.log(jsonResStub);					
 					console.log(jsonResStub.firstCall.args);
 					console.log(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 					assert.equal(jsonResStub.called, true, 'should be called once');
