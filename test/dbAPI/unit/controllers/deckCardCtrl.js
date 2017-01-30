@@ -74,19 +74,22 @@ describe.only('deckCardCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const queryErrorSendsUndefinedReason = undefined;
 			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			
 			errorHeader.message += str.errMsg.checkQuery;
-
 			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
 
 			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
 					console.log(jsonResStub);					
 					console.log(jsonResStub.firstCall.args);
+					assert.equal(jsonResStub.firstCall.args[0], resDummy, 'resDummy');
+					assert.equal(jsonResStub.firstCall.args[1], resCode['SERVFAIL'], 'resCode');
 					console.log(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 					assert.equal(jsonResStub.called, true, 'should be called once');
-					assert.equal(jsonResStub.calledTwice, false, 'shouldn\t be called twice');
-					assert(jsonResStub.calledWith(resDummy, resCode['SERVFAIL'], errorHeader), 
+					assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
+					assert.equal(jsonResStub.calledWith(resDummy, resCode['SERVFAIL'], errorHeader), true, 
 						'passed args not expected');
+					assert.equal(jsonResStub.firstCall.args[2].message, errorHeader.message, 'errorHeader');
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
