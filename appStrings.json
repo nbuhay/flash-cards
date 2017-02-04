@@ -43,6 +43,11 @@
 					"invalidArrayField": "invalid field: expected array, got ",
 					"invalidStringArray": "must be an array of only strings"
 				}
+			},
+			"userCardCtrl": {
+				"errMsg": {
+					"checkQuery": "undefined reason, check query"
+				}
 			}
 		}
 	}

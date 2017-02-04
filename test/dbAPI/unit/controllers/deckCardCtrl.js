@@ -26,7 +26,7 @@ afterEach(function() {
 	sandbox.restore();
 });
 
-describe.only('deckCardCtrl.js', () => {
+describe('deckCardCtrl.js', () => {
 
 	describe('#findAll', () => {
 
@@ -58,7 +58,7 @@ describe.only('deckCardCtrl.js', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const allDeckCardData = { users: {} };
+			const allDeckCardData = { deckCards: {} };
 			const execStub = sandbox.stub().resolves(allDeckCardData);
 			
 			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });

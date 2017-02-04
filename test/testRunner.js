@@ -72,6 +72,7 @@ describe('Mocha Test Runner', () => {
 			importTest('', './dbAPI/unit/controllers/deckCardCtrl');
 			importTest('', './dbAPI/unit/controllers/deckCtrl');
 			importTest('', './dbAPI/unit/controllers/userCtrl');
+			importTest('', './dbAPI/unit/controllers/userCardCtrl');
 		});
 
 	});
