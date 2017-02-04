@@ -1,6 +1,5 @@
 const str = require('appStrings').dbAPI.controllers.deckCardCtrl;
 const resCode = require('config').resCode();
-const mongoIdRe = require('config').mongoIdRe();
 const DeckCard = require('dbAPI/models/deckCard');
 const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
@@ -82,17 +81,11 @@ function findAll(req, res) {
 }
 
 function findById(req, res) {
-	return new Promise((resolve, reject) => {
-		if (!mongoIdRe.test(req.params._id)) {
-			reject({ message: 'req invalid param _id' });
-		} else {
-			resolve();
-		}
-	})
+	return jsonReq.validateMongoId(req.params._id)
 	.then(() => { return QueryFactory('findById', req.params._id).exec(); })
 	.then((deckCard) => {
 		if (!deckCard) {
-			var content = { message: errHeader + 'findById: deckCard does not exist' };
+			var content = { message: errHeader + 'findById: ' + str.errMsg.doesNotExist };
 			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 		} else {
 			ResFactory('jsonRes', res, resCode['OK'], deckCard);			
@@ -100,10 +93,10 @@ function findById(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findById: undefined reason, check query' };
+			var content = { message: errHeader + 'findById: ' + str.errMsg.checkQuery };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'findAll: ' + reason.message };
+			var content = { message: errHeader + 'findById: ' + reason.message };
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});

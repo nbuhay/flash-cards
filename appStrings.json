@@ -37,7 +37,8 @@
 		"controllers": {
 			"deckCardCtrl": {
 				"errMsg": {
-					"checkQuery": "undefined reason, check query"
+					"checkQuery": "undefined reason, check query",
+					"doesNotExist": "deckCard does not exist"
 				}
 			}
 		}
