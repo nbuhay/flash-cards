@@ -105,22 +105,22 @@ describe.only('deckCardCtrl.js', () => {
 		});
 
 		it('should send a 400 if _id is not a valid Mongo ObjectID', () => {
-			const mockReq = { 
+			const reqStub = { 
 				params: {
 					_id: invalidMongoId
 				} 
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
 
-			return deckCardCtrl.findById(mockReq, mockRes)
+			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
 						assert.equal(jsonReqSpy.callCount, 1, 'should be called once');
 						assert(jsonReqSpy.calledWithExactly(invalidMongoId), 'req spy passed args not expected');
 						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(mockRes, resCode['BADREQ'], 
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], 
 							errorHeader), 'res stub passed args not expected');			
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -128,12 +128,12 @@ describe.only('deckCardCtrl.js', () => {
 
 		it('should send a 404 if _id does\'t exist in DeckCard collection', () => {
 			const idNotInCollection = validMongoId;
-			const mockReq = { 
+			const reqStub = { 
 				params: {
 					_id: idNotInCollection
 				} 
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
 			const stubCardData = null;
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
@@ -141,10 +141,10 @@ describe.only('deckCardCtrl.js', () => {
 			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: mockExec });
 			errorHeader.message += str.errMsg.doesNotExist;
 
-			return deckCardCtrl.findById(mockReq, mockRes)
+			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
 						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(mockRes, resCode['NOTFOUND'], errorHeader),
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
 							'passed args not expected');			
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -152,22 +152,22 @@ describe.only('deckCardCtrl.js', () => {
 
 		it('should send a 500 if DeckCard.findById rejects', () => {
 			const idInCollection = validMongoId;
-			const mockReq = { 
+			const reqStub = { 
 				params: {
 					_id: idInCollection
 				} 
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const mockExec = sandbox.stub().rejects();
 			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: mockExec });
 			errorHeader.message += str.errMsg.checkQuery;
 
-			return deckCardCtrl.findById(mockReq, mockRes)
+			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
 						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(mockRes, resCode['SERVFAIL'], errorHeader), 
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader), 
 							'passed args not expected');			
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -175,22 +175,22 @@ describe.only('deckCardCtrl.js', () => {
 
 		it('should send a 200 if _id exists in DeckCard collection', () => {
 			const idInCollection = validMongoId;
-			const mockReq = { 
+			const reqStub = { 
 				params: {
 					_id: idInCollection
 				} 
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
 			const stubCardData = true;
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const mockExec = sandbox.stub().resolves(stubCardData);
 			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: mockExec });
 
-			return deckCardCtrl.findById(mockReq, mockRes)
+			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
 						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(mockRes, resCode['OK'], stubCardData), 
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], stubCardData), 
 							'passed args not expected');			
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -198,265 +198,281 @@ describe.only('deckCardCtrl.js', () => {
 
 	});
 
-	describe.only('#create', () => {
+	describe('#create', () => {
+
+		beforeEach(function() {
+			errorHeader.message += 'create: ';
+		});
 
 		it('function named create should exist', () => {
 			assert.isFunction(deckCardCtrl.create);
 		});
 
-		it('should send a 400 if header content-type is undefined', () => {
-			const reqStub = { headers: [] };
-			const resStub = { res: {} };
+		it('should call jsonReq.validateBody once and pass the req', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.create(reqStub, resStub)
+			return deckCardCtrl.create(reqDummy, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(resStub, resCode['BADREQ']), 
+						assert.equal(jsonReqStub.callCount, 1, 'should be called once');
+						assert(jsonReqStub.calledWithExactly(reqDummy), 'passed args not expected'); 
+				});
+		});
+
+		it('should send a 400 if header content-type is undefined', () => {
+			const reqStub = { headers: {} };
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.noContentType;
+
+			return deckCardCtrl.create(reqStub, resDummy)
+				.then(() => {
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
 							'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 if header content-type doesn\'t equal application/json', () => {
+		it('should send a 400 if header content-type is not application/json', () => {
 			const reqStub = { 
 				headers: {
 					'content-type': 'text'
 				}
 			};
-			const resStub = { res: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 
+				(modulesStr.jsonRequest.errMsg.invalidContentType + reqStub.headers['content-type']);
 
-			return deckCardCtrl.create(reqStub, resStub)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(resStub, resCode['BADREQ']), 
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
 							'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 when req.body is undefined', () => {
-			const mockReq = { 
+		it('should send a 400 if req body is undefined', () => {
+			const reqStub = { 
 				headers: {
 					'content-type': 'application/json'
 				}
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
 							'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 when req.body is null', () => {
-			const mockReq = { 
+		it('should send a 400 if req body is null', () => {
+			const reqStub = { 
 				headers: {
 					'content-type': 'application/json'
 				},
 				body: null
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');
 				});
 		});
 
-		it('should send a 400 when req.body is not valid JSON', () => {
+		it('should send a 400 if req body is not valid JSON', () => {
 			const invalidJson = 'notJsonFormat';
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+			const reqStub = {
 				body: invalidJson
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
+			errorHeader.message += str.errMsg.invalidDeckCard;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
 							'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 when req.body does not have the property question', () => {
-			const invalidDeckCard = { noQuestion: true };
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+		it('should send a 400 if req body does\'t have the property question', () => {
+			const invalidDeckCard = {};
+			const reqStub = {
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidDeckCard;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
 							'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 when req.body does not have the property answer', () => {
+		it('should send a 400 if req body doesn\'t have property answer', () => {
 			const invalidDeckCard = { 
-				question: true,
-				noAnswer: true
+				question: true
 			};
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+			const reqStub = {
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidDeckCard;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');				
 				});
 		});
 
-		it('should send a 400 if req.body.question is not an array', () => {
-			const invalidDeckCard = { question: true, answer: true };
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+		it('should send a 400 if question is not an array', () => {
+			const invalidDeckCard = { 
+				question: true, 
+				answer: true 
+			};
+			const reqStub = {
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 
+				(str.errMsg.invalidArrayField + typeof reqStub.body.question);
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');				
 				});
 		});
 
-		it('should send a 400 if req.body.answer is not an array', () => {
-			const invalidDeckCard = { question: [], answer: true };
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+		it('should send a 400 if answer is not an array', () => {
+			const invalidDeckCard = { 
+				question: [], 
+				answer: true 
+			};
+			const reqStub = {
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 
+				(str.errMsg.invalidArrayField + typeof reqStub.body.answer);
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');		
 				});
 		});
 
-		it('should send a 400 if req.body.question is not an array of only strings', () => {
-			const invalidDeckCard = { question: [true], answer: [] };
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+		it('should send a 400 if question is not an array of only strings', () => {
+			const invalidDeckCard = { 
+				question: [true],
+				answer: []
+			};
+			const reqStub = {
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidStringArray;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');		
 				});
 		});
 
-		it('should send a 400 if req.body.answer is not an array of only strings', () => {
-			const invalidDeckCard = { question: ['true'], answer: [true] };
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+		it('should send a 400 if answer is not an array of only strings', () => {
+			const invalidDeckCard = { 
+				question: ['true'], 
+				answer: [true]
+			};
+			const reqStub = {
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidStringArray;
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');		
 				});
 		});
 
 		it('should send a 500 if DeckCard.create throws an exception', () => {
-			const validDeckCard = { question: ['true'], answer: ['true'] };
+			const validDeckCard = { 
+				question: ['true'], 
+				answer: ['true']
+			};
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: validDeckCard
 			};
 			const resStub = { res: {} };
-			const createStub = sandbox.stub().rejects();
-			const deckCardStub = sandbox.stub(DeckCard, 'create', createStub);
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
+			const deckCardStub = sandbox.stub(DeckCard, 'create').rejects();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
 
 			return deckCardCtrl.create(reqStub, resStub)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(resStub, resCode['SERVFAIL']), 
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resStub, resCode['SERVFAIL'], errorHeader), 
 							'passed args not expected');			
 				});
 		});
 
 		it('should send a 200 when DeckCard.create resolves', () => {
-			const validDeckCard = { question: ['true'], answer: ['true'] };
-			const mockReq = {
-				headers: {
-					'content-type': 'application/json'
-				},
+			const validDeckCard = { 
+				question: ['true'], 
+				answer: ['true'] 
+			};
+			const reqStub = {
 				body: validDeckCard
 			};
-			const mockRes = { res: {} };
-			const createStub = sandbox.stub().resolves();
-			const deckCardStub = sandbox.stub(DeckCard, 'create', createStub);
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateBody').resolves(reqStub.body);
+			const deckCardStub = sandbox.stub(DeckCard, 'create').resolves(reqStub.body);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.create(mockReq, mockRes)
+			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
-							'passed args not expected');			
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], reqStub.body), 
+							'passed args not expected');				
 				});
 		});
 
@@ -464,94 +480,113 @@ describe.only('deckCardCtrl.js', () => {
 
 	describe('#findByIdAndRemove', () => {
 
+		beforeEach(function() {
+			errorHeader.message += 'findByIdAndRemove: ';
+		});
+
 		it('function named findByIdAndRemove should exist', () => {
 			assert.isFunction(deckCardCtrl.findByIdAndRemove);
 		});
 
-		it('should send a 400 if req.params._id is not a valid Mongo ObjectID', () => {
-			const invalidMongoId = 'a'.repeat('23');
-			const mockReq = {
+		it('should call jsonReq.validateMongoId and pass _id', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
+				.then(() => {
+					assert.equal(jsonReqSpy.callCount, 1, 'should be called once');
+					assert(jsonReqSpy.calledWithExactly(reqStub.params._id),
+					 'passed args not expected');
+				});
+		});
+
+		it('should send a 400 if _id is not a valid Mongo ObjectID', () => {
+			const reqStub = {
 				params: {
 					_id: invalidMongoId
 				}
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
 
-			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');		
-				})
-		});
-
-		it('should send a 500 if DeckCard.findByIdAndRemove throws an exception', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = {
-				params: {
-					_id: validMongoId
-				}
-			};
-			const mockRes = { res: {} };
-			const mockExec = sandbox.stub().rejects();
-			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: mockExec });
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
-				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
-							'passed args not expected');		
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
+							'passed args not expected');			
 				});
 		});
 
-		it('should send a 404 if DeckCard :_id is not found in the DeckCard collection', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = {
+		it('should send a 500 if DeckCard.findByIdAndRemove rejects', () => {
+			const reqStub = {
 				params: {
 					_id: validMongoId
 				}
 			};
-			const mockRes = { res: {} };
-
-			const mockExec = sandbox.stub().resolves(null);
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
+			const execStub = sandbox.stub().rejects();
 			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: mockExec });
+				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
 
-			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['NOTFOUND']), 
-							'passed args not expected');		
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
+					 'passed args not expected');	
+				});
+		});
+
+		it('should send a 404 if _id is not found in the DeckCard collection', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
+			const execStub = sandbox.stub().resolves(null);
+			const deckCardStub = 
+				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.doesNotExist;
+
+			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
+				.then(() => {
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
+					 'passed args not expected');
 				});
 		});
 	
-		it('should send a 200 if DeckCard :_id is deleted from the DeckCard collection', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = {
+		it('should send a 200 and the deleted card if _id is deleted from the collection', () => {
+			const reqStub = {
 				params: {
 					_id: validMongoId
 				}
 			};
-			const mockRes = { res: {} };
-			const mockReturnedDeckCard = { question: ['true'], answer: ['true'] };
-			const mockExec = sandbox.stub().resolves(mockReturnedDeckCard);
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
+			const returnedDeckCardStub = { question: ['true'], answer: ['true'] };
+			const execStub = sandbox.stub().resolves(returnedDeckCardStub);
 			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: mockExec });
+				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.findByIdAndRemove(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
-							'passed args not expected');		
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], returnedDeckCardStub),
+					 'passed args not expected');	
 				});
 		});
 
@@ -559,52 +594,72 @@ describe.only('deckCardCtrl.js', () => {
 
 	describe('#findByIdAndUpdate', () => {
 
+		beforeEach(function() {
+			errorHeader.message += 'findByIdAndUpdate: ';
+		});
+
 		it('function named findByIdAndUpdate should exist', () => {
 			assert.isFunction(deckCardCtrl.findByIdAndUpdate);
 		});
 
-		it('should send a 400 if req.params._id is not a valid Mongo ObjectID', () => {
-			const invalidMongoId = 'a'.repeat('23');
-			const mockReq = {
+		it('should call jsonReq.validateMongoId and pass _id', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
+			sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					assert.equal(jsonReqSpy.callCount, 1, 'should be called once');
+					assert(jsonReqSpy.calledWithExactly(reqStub.params._id),
+					 'passed args not expected');
+				});
+		});
+
+		it('should send a 400 if _id is not a valid Mongo ObjectID', () => {
+			const reqStub = {
 				params: {
 					_id: invalidMongoId
 				}
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');		
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');		
 				});
 		});
 
-		it('should send a 400 if header \'content-type\' is undefined', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = { 
+		it('should send a 400 if header content-type is undefined', () => {
+			const reqStub = { 
 				headers: {},
 				params: {
 					_id: validMongoId
 				}
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.noContentType;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');				
 				});
 		});
 
-		it('should send a 400 if header \'content-type\' doesn\'t equal \'application/json\'', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = { 
+		it('should send a 400 if header content-type is not application/json', () => {
+			const reqStub = { 
 				headers: {
 					'content-type': 'text'
 				},
@@ -612,21 +667,22 @@ describe.only('deckCardCtrl.js', () => {
 					_id: validMongoId
 				}
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 
+				(modulesStr.jsonRequest.errMsg.invalidContentType + reqStub.headers['content-type']);
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');		
 				});
 		});
 
-		it('should send a 400 when req.body is undefined', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = { 
+		it('should send a 400 when req body is undefined', () => {
+			const reqStub = { 
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -634,21 +690,21 @@ describe.only('deckCardCtrl.js', () => {
 					_id: validMongoId
 				}
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');	
 				});
 		});
 
-		it('should send a 400 when req.body is null', () => {
-			const validMongoId = 'a'.repeat('24');
-			const mockReq = { 
+		it('should send a 400 when req body is null', () => {
+			const reqStub = { 
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -657,22 +713,22 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: null
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 when req.body doesn\'t have either a question or answer field', () => {
-			const validMongoId = 'a'.repeat('24');
-			const invalidDeckCard = { noQuestion: true };
-			const mockReq = {
+		it('should send a 400 when req body doesn\'t have either a question or answer field', () => {
+			const invalidDeckCard = {};
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -681,22 +737,22 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidDeckCard;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 if req.body.question is not an array', () => {
-			const validMongoId = 'a'.repeat('24');
+		it('should send a 400 if question is not an array', () => {
 			const invalidDeckCard = { question: true };
-			const mockReq = {
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -705,22 +761,23 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 
+				(str.errMsg.invalidArrayField + typeof reqStub.body.question);
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');			
 				});
 		});
 
-		it('should send a 400 if req.body.answer is not an array', () => {
-			const validMongoId = 'a'.repeat('24');
+		it('should send a 400 if answer is not an array', () => {
 			const invalidDeckCard = { answer: true };
-			const mockReq = {
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -729,22 +786,23 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += 
+				(str.errMsg.invalidArrayField + typeof reqStub.body.answer);
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');				
 				});
 		});
 
-		it('should send a 400 if req.body.question is not an array of only strings', () => {
-			const validMongoId = 'a'.repeat('24');
+		it('should send a 400 if question is not an array of only strings', () => {
 			const invalidDeckCard = { question: [true] };
-			const mockReq = {
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -753,22 +811,22 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidStringArray;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');				
 				});
 		});
 
-		it('should send a 400 if req.body.answer is not an array of only strings', () => {
-			const validMongoId = 'a'.repeat('24');
+		it('should send a 400 if answer is not an array of only strings', () => {
 			const invalidDeckCard = { answer: [true] };
-			const mockReq = {
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -777,22 +835,25 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: invalidDeckCard
 			};
-			const mockRes = { res: {} };
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidStringArray;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['BADREQ']), 
-							'passed args not expected');			
+					assert.equal(jsonResStub.callCount, 1, 'should be called once');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
+					 'passed args not expected');				
 				});
 		});
 
-		it('should send a 500 if DeckCard.findByIdAndUpdate throws an exception', () =>{
-			const validMongoId = 'a'.repeat('24');
-			const validDeckCard = { answer: ['true'], question: ['string'] };
-			const mockReq = {
+		it('should send a 500 if DeckCard.findByIdAndUpdate rejects', () =>{
+			const validDeckCard = { 
+				answer: ['true'], 
+				question: ['string'] 
+			};
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -801,24 +862,27 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: validDeckCard
 			};
-			const mockRes = { res: {} };
-			const mockExec = sandbox.stub().rejects();
-			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: mockExec });
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
+			const execStub = sandbox.stub().rejects();
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['SERVFAIL']), 
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader), 
 							'passed args not expected');		
 				});
 		});
 
-		it('should send a 404 if DeckCard :_id does not exist in the db', () =>{
-			const validMongoId = 'a'.repeat('24');
-			const validDeckCard = { answer: ['true'], question: ['string'] };
-			const mockReq = {
+		it('should send a 404 if_id does not exist in the db', () =>{
+			const validDeckCard = {
+				answer: ['true'],
+				question: ['string']
+			};
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -827,24 +891,28 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: validDeckCard
 			};
-			const mockRes = { res: {} };
-			const mockExec = sandbox.stub().resolves(null);
-			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: mockExec });
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
+			const returnedDeckCardStub = null;
+			const execStub = sandbox.stub().resolves(returnedDeckCardStub);
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.doesNotExist;
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['NOTFOUND']), 
-							'passed args not expected');		
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader), 
+							'passed args not expected');
 				});
 		});
 
 		it('should send a 200 if DeckCard.findByIdAndUpdate resolves', () =>{
-			const validMongoId = 'a'.repeat('24');
-			const validDeckCard = { answer: ['true'], question: ['string'] };
-			const mockReq = {
+			const validDeckCard = {
+				answer: ['true'],
+				question: ['string']
+			};
+			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
 				},
@@ -853,17 +921,18 @@ describe.only('deckCardCtrl.js', () => {
 				},
 				body: validDeckCard
 			};
-			const mockRes = { res: {} };
-			const mockExec = sandbox.stub().resolves();
-			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: mockExec });
+			const resDummy = { res: {} };
+			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
+			const returnedDeckCardStub = {};
+			const execStub = sandbox.stub().resolves(returnedDeckCardStub);
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return deckCardCtrl.findByIdAndUpdate(mockReq, mockRes)
+			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.called, true, 'should be called once');
-						assert.equal(jsonResStub.calledTwice, false, 'shouldn\'t be called twice');
-						assert(jsonResStub.calledWith(mockRes, resCode['OK']), 
-							'passed args not expected');		
+						assert.equal(jsonResStub.callCount, 1, 'should be called once');
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], returnedDeckCardStub), 
+							'passed args not expected');	
 				});
 		});
 

@@ -23,11 +23,11 @@ function ResFactory(type, res, resCode, content) {
 function validateStringArray(stringArray) {
 	return new Promise((resolve, reject) => {
 		if (!(Array.isArray(stringArray))) {
-			reject({ message: 'invalid field: expected array, got ' + typeof stringArray });
+			reject({ message: str.errMsg.invalidArrayField + typeof stringArray });
 		} else {
 			for (var i = 0; i < stringArray.length; i++) {
 				if (!(typeof stringArray[i] === 'string')) {
-					reject({ message: 'must be an array of only strings' });
+					reject({ message: str.errMsg.invalidStringArray });
 				}
 			}
 			resolve();
@@ -39,7 +39,7 @@ function validateStringArray(stringArray) {
 function validateCreate(validReqBody) {
 	return new Promise((resolve, reject) => {
 		if (!validReqBody.hasOwnProperty('question') || !validReqBody.hasOwnProperty('answer')) {
-			reject({ message: 'invalid DeckCard' });
+			reject({ message: str.errMsg.invalidDeckCard });
 		}
 		resolve();
 	})
@@ -52,7 +52,7 @@ function validateCreate(validReqBody) {
 function validateUpdate(validReqBody) {
 	return new Promise((resolve, reject) => {
 		if (!validReqBody.hasOwnProperty('question') && !validReqBody.hasOwnProperty('answer')) {
-			reject({ message: 'invalid DeckCard' });
+			reject({ message: str.errMsg.invalidDeckCard });
 		} 
 		resolve();
 	})
@@ -111,7 +111,7 @@ function create(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'create: undefined reason, check create' };
+			var content = { message: errHeader + 'create: ' + str.errMsg.checkQuery };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
 			var content = { message: errHeader + 'create: ' + reason.message };
@@ -121,17 +121,11 @@ function create(req, res) {
 }
 
 function findByIdAndRemove(req, res) {
-	return new Promise((resolve, reject) => {
-		if (!(mongoIdRe.test(req.params._id))) {
-			reject({ message: 'req invalid param _id' });
-		} else {
-			resolve(req.params._id);
-		}
-	})
+	return jsonReq.validateMongoId(req.params._id)
 	.then((valid_id) => QueryFactory('findByIdAndRemove', valid_id).exec())
 	.then((removedDeckCard) => {
 		if (removedDeckCard === null) {
-			var content = { message: 'DeckCard with passed _id does not exist in db' };
+			var content = { message: errHeader + 'findByIdAndRemove: ' + str.errMsg.doesNotExist };
 			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 		} else {
 			ResFactory('jsonRes', res, resCode['OK'], removedDeckCard);
@@ -139,7 +133,7 @@ function findByIdAndRemove(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findByIdAndRemove: undefined reason, check create' };
+			var content = { message: errHeader + 'findByIdAndRemove: ' + str.errMsg.checkQuery };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
 			var content = { message: errHeader + 'findByIdAndRemove: ' + reason.message };
@@ -149,12 +143,7 @@ function findByIdAndRemove(req, res) {
 }
 
 function findByIdAndUpdate(req, res) {
-	return new Promise((resolve, reject) => {
-		if (!mongoIdRe.test(req.params._id)) {
-			reject({ message: 'req invalid param _id' });
-		}
-		resolve();
-	})
+	return jsonReq.validateMongoId(req.params._id)
 	.then(() => jsonReq.validateBody(req))
 	.then((validReqBody) => validateUpdate(validReqBody))
 	.then(() => {
@@ -169,7 +158,7 @@ function findByIdAndUpdate(req, res) {
 	})
 	.then((updatedDeckCard) => {
 		if (updatedDeckCard === null) {
-			var content = { message: 'DeckCard with passed _id does not exist in db' };
+			var content = { message: errHeader + 'findByIdAndUpdate: ' + str.errMsg.doesNotExist };
 			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 		} else {
 			ResFactory('jsonRes', res, resCode['OK'], updatedDeckCard);
@@ -177,10 +166,10 @@ function findByIdAndUpdate(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findByIdAndRemove: undefined reason, check create' };
+			var content = { message: errHeader + 'findByIdAndUpdate: ' + str.errMsg.checkQuery };
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'findByIdAndRemove: ' + reason.message };
+			var content = { message: errHeader + 'findByIdAndUpdate: ' + reason.message };
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
