@@ -111,3 +111,4 @@ NODE_ENV=test || dev || prod
 
 [Raspberry Pi Jesse](https://www.raspberrypi.org/blog/raspbian-jessie-is-here/)
 [Install MongoDB on Jesse](https://meteor-universal.tumblr.com/post/113098361629/install-meteor-universal-on-raspberry-pi-model-b)
+[Open MongoDB port on raspi](https://www.mkyong.com/mongodb/mongodb-allow-remote-access/)

@@ -1,12 +1,14 @@
-const config = require('../../config').config();
-const resCode = require('../../config').resCode();
+const config = require('config').config();
+const resCode = require('config').resCode();
 const http = require('http');
-const mockUsers = require('../../config').mockUsers();
-const mockDecks = require('../../config').mockDecks();
-const testDeck = require('../../config').testDeck();
-const testUser = require('../../config').testUser();
+const mockUsers = require('config').mockUsers();
+const mockDecks = require('config').mockDecks();
+const testDeck = require('config').testDeck();
+const testUser = require('config').testUser();
 const mongoose = require('mongoose');
-const jsonRes = require('../modules/jsonResponse');
+const jsonRes = require('modules/jsonResponse');
+const Deck = require('dbAPI/models/deck');
+const User = require('dbAPI/models/user');
 
 var DECK_REQ_OPTS = {
 	port: config.db.port,
@@ -30,11 +32,11 @@ module.exports.insertUsers = (req, res) => {
 			var tmpUser = new User(user);
 			tmpUser.save((err) => {
 				if (err) {
-					jsonRes.send(res, CONST.RES('SERVFAIL'), 'Error importing all mock users');
+					jsonRes.send(res, resCode['SERVFAIL'], 'Error importing all mock users');
 				} else {
 					console.log('user' + count + ' saved!');
 					if (++count == mockUsers.length) {
-						jsonRes.send(res, CONST.RES('OK'), {msg: 'All users saved!'});
+						jsonRes.send(res, resCode['OK'], {msg: 'All users saved!'});
 					}
 				}
 			});
@@ -53,11 +55,11 @@ module.exports.insertDecks = (req, res) => {
 			var tmpDeck = new Deck(deck);
 			tmpDeck.save((err) => {
 				if (err) {
-					jsonRes.send(res, CONST.RES('SERVFAIL'), 'Error importing all mock decks');
+					jsonRes.send(res, resCode['SERVFAIL'], 'Error importing all mock decks');
 				} else {
 				console.log('deck' + count + ' saved!');
 				if(++count == mockDecks.length) {
-					jsonRes.send(res, CONST.RES('OK'), {msg: 'All decks saved!'});
+					jsonRes.send(res, resCode['OK'], {msg: 'All decks saved!'});
 					}
 				}
 			});
@@ -106,7 +108,7 @@ module.exports.insert = function (req, res) {
 
 							// callback only called when request hears a response event
 							var callback = function (response) {
-								jsonRes.send(res, CONST.RES('OK'), {'MockDataLoaded':  true});	
+								jsonRes.send(res, resCode['OK'], {'MockDataLoaded':  true});	
 							};
 
 							// setup the POST request
