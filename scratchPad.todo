@@ -1,10 +1,5 @@
 ---- Back End Phase II
 /*
-	Mongose Query Structure
-		define query
-		execute query
-		handle callback and errors
-
 	Cleaner Projections
 		mongoose.Model.findById(_id).select({ projection: data});
 
@@ -62,7 +57,7 @@
 */
 	--- Refactor/Harden Routes: easier to read, promise based, error handling
 		-- dbAPI
-
+			-	- action | REST Protocol | query parms | request body | route
 			-- USER
 				- create user  | POST   | none      | /api/user
 				- delete user  | DELETE | _id       | /api/user/_id/:_id
@@ -84,35 +79,33 @@
 				- insert all user data
 				- insert all deck
 				- associations between default decks and users
-		-- dbAPI
-			-- CARD		
+			-- UserCard
+				- all userCards   | GET    | none | none           | /api/usercards
+				- get userCard    | GET    | _id  | none           | /api/usercard/:_id
+				- delete userCard | DELETE | _id  | none           | /api/usercard/:_id
+				- update userCard | PUT    | _id  | valid usercard | /api/usercard/:_id
+				- create userCard | POST   | none | valid usercard | /api/usercard
+				- 
+			-- DeckCard		
+				- create card | POST   | deck_id          | /api/deck/:deck_id/card
+					- add lastUpdated field; make it set to call time of POST
+				- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+					- add lastUpdated field; make it set to call time of PUT
+				+- delete card | DELETE | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+				+- all cards   | GET    | deck_id          | /api/deck/:deck_id/card
 			!---- MONGOOSE POPULATE 
 				- auto populate subdocs._id with real object:http://mongoosejs.com/docs/populate.html
 			----- How will it integrate with existing routes?
-				- create card | POST   | deck_id          | /api/deck/:deck_id/card
-				- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
-				- delete card | DELETE | deck_id, card_id | /api/deck/:deck_id/card/:card_id
-				- all cards   | GET    | deck_id          | /api/deck/:deck_id/card
 
 		-- Deck
-			- Decks being practied by a user need to be stored with that user model
-				+- save to user object
-				- how to update if deck gets new additions?
-					- check for new cards
-					- compare check with master
-					- determine which cards want
-				+- fork their own copy of the deck
-				+- create cards off originals
-				- what becomes of favs?
-					+- rename learning
-					- +1 each time someone chooses to 'learn' the deck
+			- how to update if deck gets new additions?
+				- check for new cards
+				- compare check with master
+				- determine which cards want
 ---- Testing Phase II
 		-- Error Handling
-			- use __filename for better error string
 			- use function name
 		-- Chai Integration
-			- learn assert
-			- learn a BDD style
 			- clear definition of BDD
 			- clear definition of TDD
 		-- selineum
@@ -165,10 +158,6 @@
 				- 1 month
 				- 2 months
 				- 3 months
-	--- Refactor
-		-- standard load order for requires
-		-- require config.js 
-		-- research/implement better API error handling
 	--- Coding books and continued learning?
 			-4 https://medium.com/@sapegin/what-to-learn-in-2017-if-youre-a-frontend-developer-b6cfef46effd#.exzl2h3md
 			-4 https://medium.freecodecamp.com/5-key-learnings-from-the-post-bootcamp-job-search-9a07468d2331#.4y6kpunud

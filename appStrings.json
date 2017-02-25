@@ -38,7 +38,7 @@
 			"deckCardCtrl": {
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
-					"doesNotExist": "deckCard does not exist",
+					"doesNotExist": "DeckCard does not exist",
 					"invalidDeckCard": "invalid DeckCard",
 					"invalidArrayField": "invalid field: expected array, got ",
 					"invalidStringArray": "must be an array of only strings"
@@ -46,7 +46,10 @@
 			},
 			"userCardCtrl": {
 				"errMsg": {
-					"checkQuery": "undefined reason, check query"
+					"checkQuery": "undefined reason, check query",
+					"doesNotExist": "UserCard does not exist",
+					"undefinedDeckCard": "undefined req.body.deckCard",
+					"nullDeckCard": "null req.body.deckCard"
 				}
 			}
 		}

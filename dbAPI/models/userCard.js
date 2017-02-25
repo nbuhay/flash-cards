@@ -25,6 +25,16 @@ var userCardSchema = mongoose.Schema({
 			required: true,
 			type: Number,
 			default: 0
+		},
+		incorrectStreak: {
+			required: true,
+			type: Number,
+			default: 0
+		},
+		totalViews: {
+			required: true,
+			type: Number,
+			default: 0
 		}
 });
 
