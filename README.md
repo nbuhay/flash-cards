@@ -80,6 +80,7 @@ p.then
 
 [Node Debugger](https://github.com/node-inspector/node-inspector)
 [Actually Useful Instructions](http://kurtle.io/2015/11/01/how-to-set-up-node-inspector.html)
+	THIS ONLY WORKS WITH node -v 6.3.1!!
 
 	node-inspector & nodemond --debug
 

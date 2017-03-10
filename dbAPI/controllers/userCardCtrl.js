@@ -1,3 +1,4 @@
+const http = require('http');
 const str = require('appStrings').dbAPI.controllers.userCardCtrl;
 const config = require('config').config();
 const resCode = require('config').resCode();
@@ -9,7 +10,8 @@ const UserCard = require('dbAPI/models/userCard');
 function QueryFactory(type, conditions, options) {
 	return {
 		findAll: UserCard.find(conditions),
-		findById: UserCard.findById(conditions)
+		findById: UserCard.findById(conditions),
+		create: UserCard.create(conditions)
 	}[type];
 }
 
@@ -30,6 +32,27 @@ function validateCreate(validReqBody) {
 			}
 		})
 		.catch((reason) => { throw Error(reason.message); });
+}
+
+function validateDeckCardExists(validMongoId) {
+	return new Promise((resolve, reject) => {
+		var options = {
+			port: config.app.dbAPI.port,
+			path: '/api/deckCard/' + validMongoId
+		};
+		var req = http.request(options, (res) => {
+			if (res.statusCode === resCode['OK']) {
+				resolve();
+			} else if (res.statusCode === resCode['NOTFOUND']) {
+				reject({ message: str.errMsg.deckCardDoesNotExist });
+			} else {
+				reject({ message: str.errMsg.apiServfail });
+			}
+		});
+		req.on('error', (err) => reject({ message: err }));
+		req.end();
+	})
+	.catch((reason) => { throw Error(reason.message); });
 }
 
 function findAll(req, res) {
@@ -67,13 +90,28 @@ function findById(req, res) {
 }
 
 function create(req, res) {
-	var content = { mesage: errHeader + 'create' };
+	var content = { message: errHeader + 'create: ' };
 	return jsonReq.validateBody(req.body)
 		.then((validReqBody) => validateCreate(validReqBody))
 		.then((deckCardId) => jsonReq.validateMongoId(deckCardId))
+		.then(() => validateDeckCardExists(req.body.deckCard))
+		.then(() => QueryFactory('create', req.body).exec())
+		.then((createdUserCard) => {
+			ResFactory('jsonRes', res, resCode['OK'], createdUserCard);
+		})
 		.catch((reason) => {
-			content.message += reason.message;
-			jsonRes.send(res, resCode['BADREQ'], content);
+			if (reason === undefined) {
+				content.message += str.errMsg.checkQuery;
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				if (reason.message === str.errMsg.apiServfail) {
+					content.message += str.errMsg.apiServfail;
+					ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+				} else {
+					content.message += reason.message;
+					ResFactory('jsonRes', res, resCode['BADREQ'], content);
+				}
+			}
 		});
 }
 

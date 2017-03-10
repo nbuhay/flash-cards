@@ -24,7 +24,7 @@
 				"noContentType": "missing header content-type",
 				"invalidContentType": "content-type should be application/json, got ",
 				"invalidReqBody": "invalid request body",
-				"invalidMongoId": "invalid  MongoId"
+				"invalidMongoId": "invalid MongoId"
 			}
 		},
 		"jsonResponse": {
@@ -49,7 +49,9 @@
 					"checkQuery": "undefined reason, check query",
 					"doesNotExist": "UserCard does not exist",
 					"undefinedDeckCard": "undefined req.body.deckCard",
-					"nullDeckCard": "null req.body.deckCard"
+					"nullDeckCard": "null req.body.deckCard",
+					"deckCardDoesNotExist": "DeckCard does not exist",
+					"apiServfail": "flashCard API call failed"
 				}
 			}
 		}

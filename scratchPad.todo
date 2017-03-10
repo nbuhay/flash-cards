@@ -1,3 +1,15 @@
+---- MVP
+	- Go to blank dashboard
+	- Load in JSON
+		- verify valid
+	- no users yet - see everything
+		- or just a single default user
+	- click through deck
+		- randomized view
+		- option to play specific number of cards only
+		- option to show answer
+		- option to continue
+
 ---- Back End Phase II
 /*
 	Cleaner Projections
@@ -103,7 +115,6 @@
 				- compare check with master
 				- determine which cards want
 ---- Testing Phase II
-		-- Error Handling
 			- use function name
 		-- Chai Integration
 			- clear definition of BDD
