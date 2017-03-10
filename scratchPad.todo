@@ -92,11 +92,11 @@
 				- insert all deck
 				- associations between default decks and users
 			-- UserCard
-				- all userCards   | GET    | none | none           | /api/usercards
-				- get userCard    | GET    | _id  | none           | /api/usercard/:_id
+				+- all userCards   | GET    | none | none           | /api/usercards
+				+- get userCard    | GET    | _id  | none           | /api/usercard/:_id
 				- delete userCard | DELETE | _id  | none           | /api/usercard/:_id
 				- update userCard | PUT    | _id  | valid usercard | /api/usercard/:_id
-				- create userCard | POST   | none | valid usercard | /api/usercard
+				+- create userCard | POST   | none | valid usercard | /api/usercard
 				- 
 			-- DeckCard		
 				- create card | POST   | deck_id          | /api/deck/:deck_id/card
