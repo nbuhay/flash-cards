@@ -9,6 +9,7 @@ require('sinon-as-promised');
 const nock = require('nock');
 const resCode = require('config').resCode();
 const config = require('config').config();
+const validMongoId = require('config').validMongoId();
 const jsonRes = require('modules/jsonResponse');
 const Deck = require('dbAPI/models/deck');
 const deckCtrl = require('dbAPI/controllers/deckCtrl');
@@ -388,8 +389,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when body.creator does not exist in the db', () => {
-			const idDoesNotExistInDb = 'a'.repeat(24);
+		it.skip('should send a 400 when body.creator does not exist in the db', () => {
+			const idDoesNotExistInDb = validMongoId;
 			const validName = 'Test';
 			const validDescription = 'Description';
 			const validCards = [];
@@ -421,7 +422,7 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should call /api/deckCard/create for each element in cards array', () => {
+		it.skip('should call /api/deckCard/create for each element in cards array', () => {
 			const idDoesNotExistInDb = 'a'.repeat(24);
 			const validName = 'Test';
 			const validDescription = 'Description';

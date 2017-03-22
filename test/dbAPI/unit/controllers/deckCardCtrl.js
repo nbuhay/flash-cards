@@ -229,6 +229,7 @@ describe('deckCardCtrl.js', () => {
 
 			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
+						debugger;
 						assert.equal(jsonResStub.callCount, 1, 'should be called once');
 						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
 							'passed args not expected');			

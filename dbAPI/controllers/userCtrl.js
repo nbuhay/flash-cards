@@ -257,7 +257,7 @@ function findByIdAndUpdate(req, res) {
 
 function findByIdAndRemove(req, res) {
 	return jsonReq.validateMongoId(req.params._id)
-	.then(() => QueryFactory('findByIdAndRemove', req.params._id).exec())
+	.then(() => { return QueryFactory('findByIdAndRemove', req.params._id).exec() })
 	.then((deletedUser) => {
 		if (deletedUser === null) {
 			var content = { 

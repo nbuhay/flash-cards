@@ -28,7 +28,7 @@
 				{
 			"_id": "000000000000000000000005",
 			"question": ["What is the EC2"],
-			"answer": ["Elastic Compute Cloud"]
+			"answer": ["Elastic Compute Cloud", "VMs in cloud"]
 		},
 		{
 			"_id": "000000000000000000000006",

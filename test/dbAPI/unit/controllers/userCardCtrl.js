@@ -30,7 +30,7 @@ afterEach(() => {
 	sandbox.restore();
 });
 
-describe.only('userCardCtrl.js', () => {
+describe('userCardCtrl.js', () => {
 
 	describe('#findAll', () => {
 
@@ -216,7 +216,7 @@ describe.only('userCardCtrl.js', () => {
 
 	});
 
-	describe.only('#create', () => {
+	describe('#create', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'create: ';

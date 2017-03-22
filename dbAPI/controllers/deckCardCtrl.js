@@ -103,6 +103,7 @@ function findById(req, res) {
 }
 
 function create(req, res) {
+	var content =  { message: errHeader + 'create: ' };
 	return jsonReq.validateBody(req)
 	.then((validReqBody) => validateCreate(validReqBody))
 	.then((validDeckCard) => DeckCard.create(validDeckCard))
@@ -111,38 +112,40 @@ function create(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'create: ' + str.errMsg.checkQuery };
+			content.message += str.errMsg.checkQuery;
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'create: ' + reason.message };
+			content.message += reason.message;
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
 }
 
 function findByIdAndRemove(req, res) {
+	var content = { message: errHeader + 'findByIdAndRemove: ' };
 	return jsonReq.validateMongoId(req.params._id)
-	.then((valid_id) => QueryFactory('findByIdAndRemove', valid_id).exec())
-	.then((removedDeckCard) => {
-		if (removedDeckCard === null) {
-			var content = { message: errHeader + 'findByIdAndRemove: ' + str.errMsg.doesNotExist };
-			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
-		} else {
-			ResFactory('jsonRes', res, resCode['OK'], removedDeckCard);
-		}
-	})
-	.catch((reason) => {
-		if (reason === undefined) {
-			var content = { message: errHeader + 'findByIdAndRemove: ' + str.errMsg.checkQuery };
-			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-		} else {
-			var content = { message: errHeader + 'findByIdAndRemove: ' + reason.message };
-			ResFactory('jsonRes', res, resCode['BADREQ'], content);
-		}
-	});
+		.then(() => { return QueryFactory('findByIdAndRemove', req.params._id).exec(); })
+		.then((removedDeckCard) => {
+			if (removedDeckCard === null) {
+				content.message += str.errMsg.doesNotExist;
+				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+			} else {
+				ResFactory('jsonRes', res, resCode['OK'], removedDeckCard);
+			}
+		})
+		.catch((reason) => {
+			if (reason === undefined) {
+				content.message += str.errMsg.checkQuery;
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				content.message += reason.message;
+				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			}
+		});
 }
 
 function findByIdAndUpdate(req, res) {
+	var content = { message: errHeader + 'findByIdAndUpdate: ' };
 	return jsonReq.validateMongoId(req.params._id)
 	.then(() => jsonReq.validateBody(req))
 	.then((validReqBody) => validateUpdate(validReqBody))
@@ -158,7 +161,7 @@ function findByIdAndUpdate(req, res) {
 	})
 	.then((updatedDeckCard) => {
 		if (updatedDeckCard === null) {
-			var content = { message: errHeader + 'findByIdAndUpdate: ' + str.errMsg.doesNotExist };
+			content.message += str.errMsg.doesNotExist;
 			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 		} else {
 			ResFactory('jsonRes', res, resCode['OK'], updatedDeckCard);
@@ -166,10 +169,10 @@ function findByIdAndUpdate(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findByIdAndUpdate: ' + str.errMsg.checkQuery };
+			content.message += str.errMsg.checkQuery;
 			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'findByIdAndUpdate: ' + reason.message };
+			content.message += reason.message;
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});

@@ -1288,11 +1288,12 @@ describe('userCtrl.js', () => {
 			};
 			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonReqStub.calledOnce.should.be.true;
-					jsonReqStub.calledTwice.should.be.not.be.true;
+					jsonReqStub.callCount.should.equal(1);
 					expect(jsonReqStub.calledWithExactly(reqDummy.params._id), 'calledWithExactly')
 						.to.be.true;
 				})
@@ -1334,11 +1335,11 @@ describe('userCtrl.js', () => {
 			const execStub = sandbox.stub().resolves();
 			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
 				() => { return { exec: execStub }});
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					userStub.calledOnce.should.be.true;
-					userStub.calledTwice.should.not.be.true;
+					userStub.callCount.should.equal(1);
 					expect(userStub.calledWithExactly(reqDummy.params._id), 'calledWithExactly')
 						.to.be.true;
 				})

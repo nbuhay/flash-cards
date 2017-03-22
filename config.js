@@ -2,6 +2,7 @@ const env = require('env.json');
 const mockDeckCards = require('mockData/deckCards').cards;
 const mockDecks = require('mockData/decks').decks;
 const mockUsers = require('mockData/users').users;
+const mockUserCards = require('mockData/userCards').cards;
 const resCode = {
 	OK: 200,
 	SERVFAIL: 500,
@@ -34,6 +35,10 @@ const validMongoId = 'a'.repeat(24);
 module.exports.config = () => {
 	var node_env = [process.env.NODE_ENV || 'dev'];
 	return env[node_env];
+}
+
+module.exports.mockUserCards = () => {
+	return mockUserCards;
 }
 
 module.exports.mockDeckCards = () => {

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const assert = require('chai').assert;
-const sinon = require('sinon');
 const http = require('http');
 const resCode = require('config').resCode();
 const config = require('config').config();
@@ -13,6 +12,7 @@ const mockUsers = require('config').mockUsers();
 const testDeckCard = require('config').testDeckCard();
 const testDeck = require('config').testDeck();
 const testUser = require('config').testUser();
+const validMongoId = require('config').validMongoId();
 const dbBootstrap = require('test/dbBootstrap');
 const errHeader = require('modules/errorHeader')(__filename);
 
@@ -23,7 +23,7 @@ describe('deckCardCtrl.js', () => {
 	});
 
 	beforeEach(() => {
-		return dbBootstrap.beforeEach();
+		return dbBootstrap.beforeEach	();
 	});	
 
 	describe('/api/deckCard', () => {
@@ -348,9 +348,8 @@ describe('deckCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 			});
 
-			it('should send a 404 when no document with :_id is found', () => {
+			it('should send a 404 when no document with _id is found', () => {
 					return new Promise((resolve, reject) => {
-						const validMongoId = 'a'.repeat('24');
 						const options = {
 							port: config.app.dbAPI.port,
 							path: '/api/deckCard/' + validMongoId,
@@ -368,10 +367,9 @@ describe('deckCardCtrl.js', () => {
 
 			it('should send a 200 when an existing DeckCard is deleted from the db', () => {
 				return new Promise((resolve, reject) => {
-					const validMongoId = mockDeckCards[testDeckCard]._id.toString();
 					const options = {
 						port: config.app.dbAPI.port,
-						path: '/api/deckCard/' + validMongoId,
+						path: '/api/deckCard/' + mockDeckCards[testDeckCard]._id.toString(),
 						method: 'DELETE'
 					};
 					const req = http.request(options, (res) => resolve(res.statusCode));
