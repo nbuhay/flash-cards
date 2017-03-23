@@ -24,6 +24,7 @@
 				"noContentType": "missing header content-type",
 				"invalidContentType": "content-type should be application/json, got ",
 				"invalidReqBody": "invalid request body",
+				"undefinedMongoId": "undefined MongoId",
 				"invalidMongoId": "invalid MongoId"
 			}
 		},
@@ -35,6 +36,15 @@
 	},
 	"dbAPI": {
 		"controllers": {
+			"userCtrl": {
+				"errMsg": {
+					"checkQuery": "undefined reason, check query",
+					"doesNotExist": "User does not exist",
+					"invalidArrayField": "expected array, got ",
+					"emptyArray": "empty req.body array",
+					"invalidBody": "invalid req.body: "
+				}
+			},
 			"deckCardCtrl": {
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",

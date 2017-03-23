@@ -10,7 +10,7 @@ function validateBody(req) {
 		} else if (req.body === undefined || req.body === null) {
 			reject({ message: str.errMsg.invalidReqBody });
 		} else {
-			resolve(req.body);
+			resolve();
 		}
 	})
 	.catch((reason) => { throw Error(reason.message); });
@@ -18,7 +18,9 @@ function validateBody(req) {
 
 function validateMongoId(mongoId) {
 	return new Promise((resolve, reject) => {
-		if (!(mongoIdRe.test(mongoId))) {
+		if (mongoId === undefined) {
+			reject({ message: str.errMsg.undefinedMongoId });
+		} else if (!(mongoIdRe.test(mongoId))) {
 			reject({ message: str.errMsg.invalidMongoId });
 		} else {
 			resolve();

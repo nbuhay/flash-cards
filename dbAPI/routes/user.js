@@ -11,9 +11,9 @@ router.route('/:_id')
 	.put(userCtrl.findByIdAndUpdate)
 	// .delete(userCtrl.findOneAndRemove);
 
-router.route('/_id/:user_id/learning/deck/_id/:deck_id')
+router.route('/:user_id/learning/:deck_id')
 	.post(userCtrl.saveLearning)
-	.put(userCtrl.findByIdAndUpdateLearning)
+	.put(userCtrl.updateLearning)
 	.delete(userCtrl.findByIdAndRemoveLearning);
 
 module.exports = router;

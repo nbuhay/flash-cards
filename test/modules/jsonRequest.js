@@ -57,7 +57,7 @@ describe('jsonRequest.js', () => {
 				.should.be.rejectedWith(Error, str.errMsg.invalidReqBody);
 		});
 
-		it('should resolve the req.body if content-type is application/json and req.body is valid', () => {
+		it('should resolve if content-type is application/json and req.body is valid', () => {
 			const reqStub = {
 				headers: {
 					'content-type': 'application/json'
@@ -65,7 +65,7 @@ describe('jsonRequest.js', () => {
 				body: 'validBody'
 			};
 
-			return jsonReq.validateBody(reqStub).should.eventually.equal(reqStub.body);
+			return jsonReq.validateBody(reqStub).should.be.fulfilled;
 		});
 
 	});
@@ -74,6 +74,11 @@ describe('jsonRequest.js', () => {
 
 		it('function validateMongoId should exist', () => {
 			expect(jsonReq.validateMongoId).to.exist;
+		});
+
+		it('should reject if mongoId is undefined', () => {
+			return jsonReq.validateMongoId(undefined)
+				.should.be.rejectedWith(Error, str.errMsg.undefinedMongoId);
 		});
 
 		it('should reject if mongoId is not a valid MongoId', () => {

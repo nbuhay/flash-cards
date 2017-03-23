@@ -2,6 +2,10 @@ const config = require('config').config();
 const resCode = require('config').resCode();
 const usernameSettings = require('config').usernameSettings();
 const pswdSettings = require('config').pswdSettings();
+const validMongoId = require('config').validMongoId();
+const invalidMongoId = require('config').invalidMongoId();
+const str = require('appStrings').dbAPI.controllers.userCtrl;
+const modulesStr = require('appStrings').modules;
 const assert = require('chai').assert;
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
@@ -33,6 +37,10 @@ describe('userCtrl.js', () => {
 
 	describe('#findAll', () => {
 
+		beforeEach(function() {
+			errorHeader.message += 'findAll: ';
+		});
+
 		it('function named findAll should exist', () => {
 			expect(userCtrl.findAll).to.exist;
 		});
@@ -60,13 +68,14 @@ describe('userCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const execStub = sandbox.stub().rejects();
 			const userStub = sandbox.stub(User, 'find', () => { return { exec: execStub } });
+			errorHeader.message += str.errMsg.checkQuery;
 
 			return userCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
 					expect(userStub.calledOnce, 'User calledOnce').to.be.true;
 					expect(jsonResStub.calledOnce, 'jsonRes calledOnce').to.be.true;
 					expect(jsonResStub.
-						calledWithMatch(resDummy, resCode['SERVFAIL']),'calledWithMatch').to.be.true;
+						calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),'calledWithExactly').to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -76,7 +85,8 @@ describe('userCtrl.js', () => {
 			const resDummy = { res: {} };
 			const reqDummy = { req: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const execStub = sandbox.stub().resolves();
+			const userDataStub = { users: {} };
+			const execStub = sandbox.stub().resolves(userDataStub);
 			const userStub = sandbox.stub(User, 'find', () => { return { exec: execStub }; });
 
 			return userCtrl.findAll(reqDummy, resDummy)
@@ -84,7 +94,7 @@ describe('userCtrl.js', () => {
 					expect(userStub.calledOnce, 'User calledOnce').to.be.true;
 					expect(jsonResStub.calledOnce, 'jsonRes calledOnce').to.be.true;
 					expect(jsonResStub.
-						calledWithMatch(resDummy, resCode['OK']),'calledWithMatch').to.be.true;
+						calledWithExactly(resDummy, resCode['OK'], userDataStub),'calledWithExactly').to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -93,12 +103,15 @@ describe('userCtrl.js', () => {
 
 	describe('#findById', () => {
 
+		beforeEach(function() {
+			errorHeader.message += 'findById: ';
+		});
+
 		it('function findById should exist', () => {
 			expect(userCtrl.findById).to.be.exist;
 		});
 
 		it('should send a 400 when req.params._id is an invalid MongoId', () => {
-			const invalidMongoId = 'a'.repeat(23);
 			const reqStub = {
 				params: {
 					_id: invalidMongoId
@@ -106,18 +119,17 @@ describe('userCtrl.js', () => {
 			};
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.not.be.true;
-					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
+					jsonResStub.callCount.should.equal(1);
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send a 500 if User.findById rejects', () => {
-			const validMongoId = 'a'.repeat(24);
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -127,18 +139,17 @@ describe('userCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const execStub = sandbox.stub().rejects();
 			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
+			errorHeader.message += str.errMsg.checkQuery;
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.not.be.true;
-					jsonResStub.calledWithMatch(resDummy, resCode['SERVFAIL']).should.be.true;
+					jsonResStub.callCount.should.equal(1);
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send a 404 if user _id does not exist in the db', () => {
-			const validMongoId = 'a'.repeat(24);
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -149,18 +160,17 @@ describe('userCtrl.js', () => {
 			const userDoesNotExist = null;
 			const execStub = sandbox.stub().resolves(userDoesNotExist);
 			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
+			errorHeader.message += str.errMsg.doesNotExist;
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
-					jsonResStub.calledWithMatch(resDummy, resCode['NOTFOUND']).should.be.true;
+					jsonResStub.callCount.should.equal(1);
+					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send a 200 and user data if _id exists in the db', () => {
-			const validMongoId = 'a'.repeat(24);
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -168,21 +178,19 @@ describe('userCtrl.js', () => {
 			};
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const userDataFromDb = true;
+			const userDataFromDb = { user: {} };
 			const execStub = sandbox.stub().resolves(userDataFromDb);
 			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['OK'], userDataFromDb).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send a 200 but no data if req.method is HEAD and _id exists in the db', () => {
-			const validMongoId = 'a'.repeat(24);
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -197,8 +205,7 @@ describe('userCtrl.js', () => {
 		
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['OK'], undefined).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -216,7 +223,7 @@ describe('userCtrl.js', () => {
 			expect(userCtrl.findOne).to.exist;
 		});
 
-		it('should call jsonRequest.validatBody with the req', () => {
+		it('should call jsonRequest.validateBody with the req', () => {
 			const reqStub = { req: {} };
 			const resDummy = { res: {} };
 			const validateBodyStub = sandbox.stub().resolves();
@@ -225,8 +232,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonReqStub.calledOnce.should.be.true;
-					jsonReqStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonReqStub.calledWithExactly(reqStub).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -242,8 +248,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -261,8 +266,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -280,8 +284,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -299,8 +302,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -320,8 +322,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -341,8 +342,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -363,8 +363,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -385,8 +384,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -407,8 +405,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -429,8 +426,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -452,8 +448,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -475,8 +470,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -498,8 +492,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -521,8 +514,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -640,8 +632,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)
 						.should.be.true;
 				})
@@ -665,8 +656,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader)
 						.should.be.true;
 				})
@@ -689,8 +679,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['OK'], userDataFromDb)
 						.should.be.true;
 				})
@@ -715,8 +704,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['OK'], null)
 						.should.be.true;
 				})
@@ -744,8 +732,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -762,8 +749,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -781,8 +767,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -801,8 +786,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -824,8 +808,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -847,8 +830,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -870,8 +852,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -895,8 +876,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -920,8 +900,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -945,8 +924,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -971,8 +949,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -998,8 +975,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -1027,8 +1003,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -1058,8 +1033,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -1091,8 +1065,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.false;
+					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -1315,8 +1288,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.be.not.be.true;
+					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
 					 'calledWithExactly').to.be.true;
 				})
@@ -1363,8 +1335,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.not.be.true;
+					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub
 						.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
 							'calledWithExactly').to.be.true;
@@ -1390,8 +1361,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.not.be.true;
+					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub
 						.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
 							'calledWithExactly').to.be.true;
@@ -1416,8 +1386,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.calledOnce.should.be.true;
-					jsonResStub.calledTwice.should.not.be.true;
+					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub
 						.calledWithExactly(resDummy, resCode['OK'], userDataFromDb),
 							'calledWithExactly').to.be.true;
@@ -1427,30 +1396,212 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe.skip('#findByIdAndUpdate');	
+	describe.skip('#findByIdAndUpdate', () => {
 
-	describe.skip('#findByIdAndUpdateLearning', () => {
+	});
+
+	describe.only('#updateLearning', () => {
 	
-	beforeEach(() => {
-		errorHeader.message += 'findByIdAndUpdateLearning: ';
-	});
+		beforeEach(() => {
+			errorHeader.message += 'updateLearning: ';
+		});
 
-	it('function findByIdAndUpdateLearning should exist', () => {
-		should.exist(userCtrl.findByIdAndUpdateLearning);
-	});
+		it('function updateLearning should exist', () => {
+			should.exist(userCtrl.updateLearning);
+		});
 
+		it('should call jsonReq.validMongoId and pass it req.params.user_id', () => {
+			const reqStub = {
+				params: {
+					user_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonReqStub.calledWithExactly(reqStub.params.user_id).should.be.true;	
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
 
-		// NEED USER CARD IMPLEMENTED BEFORE CONTINUING
+		it('should send a 400 if req.params.user_id is not a valid Mongo Id', () => {
+			const reqStub = {
+				params: {
+					user_id: invalidMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
 
-		// check req.body exists
-		//   check its a deck... object
-		// call mongore with body req.id
-		// send 400 if rejection from mongore
-		// User.findby id
-		//   error with User.findbyid then 500
-		//   no user fouund, then 404
-		// 
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;	
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should call jsonReq.validMongoId and pass it req.params.deck_id', () => {
+			const anotherValidMongoId = 'b'.repeat(24);
+			const reqStub = {
+				params: {
+					user_id: validMongoId,
+					deck_id: anotherValidMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonReqStub.calledWithExactly(reqStub.params.deck_id).should.be.true;	
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 400 if req.params.deck_id is not a valid Mongo Id', () => {
+			const reqStub = {
+				params: {
+					user_id: validMongoId,
+					deck_id: invalidMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;	
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should call jsonRequest.validateBody and pass it req.body', () => {
+			const reqStub = { 
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: {}
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody');
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					validateBodyStub.calledWithExactly(reqStub.body).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 400 if jsonRequest.validateBody rejects', () => {
+			const reqStub = { 
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: {}
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const rejectReason = { message: 'generic reason' };
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').rejects(rejectReason);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += rejectReason.message;
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 400 if req.body is not an array', () => {
+			const notAnArray = {};
+			const reqStub = { 
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: notAnArray
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidBody;
+			errorHeader.message += str.errMsg.invalidArrayField + typeof reqStub.body;
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 400 if req.body is empty', () => {
+			const emptyArray = [];
+			const reqStub = { 
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: emptyArray
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidBody;
+			errorHeader.message += str.errMsg.emptyArray;
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 400 if req.body contains any invalid MongoId', () => {
+			const containsInvalidMongoId = [ { _id: validMongoId }, { _id: invalidMongoId } ];
+			const reqStub = { 
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: containsInvalidMongoId
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			validateMongoIdStub.withArgs(invalidMongoId).rejects(modulesStr.jsonRequest.errMsg.invalidMongoId);
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidBody;
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+			// NEED USER CARD IMPLEMENTED BEFORE CONTINUING
+			//
+			// HEAD on each userCard, verify exists
+			// PUT for each userCard
+			// but what if there is an error?
+			//   what is course correct?
+			//   how to handle already PUT data?
+			// 500 if serve fail
+			// 200 if update ok
 	});
 
 	describe.skip('#findByIdAndRemoveLearning', () => {

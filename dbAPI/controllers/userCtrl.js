@@ -1,4 +1,5 @@
 const config = require('config').config();
+const str = require('appStrings').dbAPI.controllers.userCtrl;
 const usernameSettings = require('config').usernameSettings();
 const pswdSettings = require('config').pswdSettings();
 const resCode = require('config').resCode();
@@ -117,24 +118,36 @@ function validateFindOne(body) {
 	.catch((reason) => { throw Error(reason.message); });
 }
 
+function validateUpdateLearning(body) {
+	var content = { message: str.errMsg.invalidBody };
+	return new Promise((resolve, reject) => {
+		if (!(Array.isArray(body))) {
+			reject({ message: str.errMsg.invalidArrayField + typeof body });
+		} else if (!body.length) {
+			reject({ message: str.errMsg.emptyArray });
+		} else {
+			resolve();
+		}
+	})
+	.then(() => { return Promise.all(body.map((elem) => jsonReq.validateMongoId(elem._id))); })
+	.catch((reason) => { throw Error(content.message + reason.message); });
+}
+
 function findAll(req, res) {
+	var content = { message: errHeader + 'findAll: ' };
 	const conditions = {};
 	return QueryFactory('find', conditions).exec()
 		.then((users) => {
 			ResFactory('jsonRes', res, resCode['OK'], users);
 		})
 		.catch((reason) => {
-			if (reason === undefined) {
-				var content = { message: errHeader + 'findAll: undefined reason, check query' };
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-			} else {
-				var content = { message: errHeader + 'findAll: ' + reason.message };
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-			}
+			content.message += str.errMsg.checkQuery;
+			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 		});
 }
 
 function findById(req, res) {
+	var content = { message: errHeader + 'findById: ' };
 	return jsonReq.validateMongoId(req.params._id)
 		.then(() => {
 			const _id = mongoose.Types.ObjectId(req.params._id);
@@ -142,8 +155,8 @@ function findById(req, res) {
 		})
 		.then((user) => {
 			if (!user) {
-				var content = { message: errHeader + 'findById: user does not exist' };
-				ResFactory('jsonRes', res, resCode['NOTFOUND'], req.stringify);
+				content.message += str.errMsg.doesNotExist;
+				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 			} else {
 				if (req.method === 'HEAD') {
 					ResFactory('jsonRes', res, resCode['OK']);			
@@ -153,9 +166,8 @@ function findById(req, res) {
 			}
 		})
 		.catch((reason) => {
-			var content = { message: errHeader + 'findById: ' };
 			if (reason === undefined) {
-				content.message += 'undefined reason, check query';
+				content.message += str.errMsg.checkQuery;
 				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 			} else {
 				content.message += reason.message;
@@ -165,6 +177,7 @@ function findById(req, res) {
 }
 
 function findOne(req, res) {
+	var content = { message: errHeader + 'findOne: ' };
 	return jsonReq.validateBody(req)
 		.then((validReqBody) => validateFindOne(validReqBody))
 		.then((validFindOne) => {
@@ -173,7 +186,7 @@ function findOne(req, res) {
 		})
 		.then((user) => {
 			if (!user) {
-				var content = { message: errHeader + 'findOne: no matching user found' };
+				content.message += 'no matching user found';
 				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 			} else {
 				if (req.method !== 'HEAD') {
@@ -184,7 +197,6 @@ function findOne(req, res) {
 			}
 		})
 		.catch((reason) => {
-			var content = { message: errHeader + 'findOne: ' };
 			if (reason === undefined) {
 				content.message += 'undefined reason, check query';
 				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
@@ -362,32 +374,19 @@ function findByIdAndRemoveLearning(req, res) {
 	.then(undefined, (reason) => { 
 		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'findByIdAndRemoveLearning.' + reason });
 	});
-};
+}
 
-function findByIdAndUpdateLearning(req, res) {
-	var updates = req.body;
-	return new Promise((resolve, reject) => {
-		User.findById(req.params.user_id, (err, user) => {
-			if (err) reject('User.findById:error: ' + err);
-			resolve(user);
-		})
-	})
-	.then((user) => {
-		return new Promise((resolve, reject) => {
-			User.findByIdAndUpdate(req.params.user_id, { 'decks.learning' : updates.decks.learning },
-			{ 'new' : true}, (err, updatedUser) => {
-				if (err) reject('User.findByIdandUpdate:error: ' + err );
-				resolve(updatedUser);
-			});
+function updateLearning(req, res) {
+	var content = { message: errHeader + 'updateLearning: ' };
+	return jsonReq.validateMongoId(req.params.user_id)
+		.then(() => jsonReq.validateMongoId(req.params.deck_id))
+		.then(() => jsonReq.validateBody(req.body))
+		.then(() => validateUpdateLearning(req.body))
+	 	.catch((reason) => {
+	 		content.message += reason.message;
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
 		});
-	})
-	.then((updatedUser) => {
-		jsonRes.send(res, resCode['OK'], updatedUser);
-	})
-	.then(undefined, (reason) => {
-		jsonRes.send(res, resCode['SERVFAIL'], { message: errHeader + 'findByIdAndUpdateLearning.' + reason });
-	});
-};
+}
 
 module.exports = {
 	findAll,
@@ -398,5 +397,5 @@ module.exports = {
 	findByIdAndRemove,
 	saveLearning,
 	findByIdAndRemoveLearning,
-	findByIdAndUpdateLearning
+	updateLearning
 }
