@@ -97,7 +97,7 @@ describe('userCardCtrl.js', () => {
 
 	});
 
-	describe('#findById', () => {
+	describe.only('#findById', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'findById: ';
@@ -156,14 +156,13 @@ describe('userCardCtrl.js', () => {
 			};
 			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const userCardStub = sandbox.stub(UserCard, 'findById').rejects();
+			const execStub = sandbox.stub().rejects();
+			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
 			errorHeader.message += str.errMsg.checkQuery;
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
 						'calledWithExactly').to.be.true;
 				})
@@ -179,14 +178,13 @@ describe('userCardCtrl.js', () => {
 			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
 			const userCardDoesNotExist = null;
-			const userCardStub = sandbox.stub(UserCard, 'findById').resolves(userCardDoesNotExist);
+			const execStub = sandbox.stub().resolves(userCardDoesNotExist);
+			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
 			errorHeader.message += str.errMsg.doesNotExist;
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
 						'calledWithExactly').to.be.true;
 				})
@@ -202,13 +200,35 @@ describe('userCardCtrl.js', () => {
 			const resDummy = { res: {} };
 			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
 			const userCardData = { user: {} };
-			const userCardStub = sandbox.stub(UserCard, 'findById').resolves(userCardData);
+			const execStub = sandbox.stub().resolves(userCardData);
+			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], userCardData),
+						'calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 200 but no data if req.method is HEAD and _id exists in UserCard collection', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				method: 'HEAD'
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const userCardData = { user: {} };
+			const execStub = sandbox.stub().resolves(userCardData);
+			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCardCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], undefined),
 						'calledWithExactly').to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));

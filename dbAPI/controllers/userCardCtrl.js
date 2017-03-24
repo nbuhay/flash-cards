@@ -69,13 +69,17 @@ function findAll(req, res) {
 function findById(req, res) {
 	var content = { message: errHeader + 'findById: ' };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => QueryFactory('findById', req.params._id))
+		.then(() => QueryFactory('findById', req.params._id).exec())
 		.then((userCard) => {
 			if (!userCard) {
 				content.message += str.errMsg.doesNotExist;
 				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 			} else {
-				ResFactory('jsonRes', res, resCode['OK'], userCard);
+				if (req.method !== 'HEAD') {
+					ResFactory('jsonRes', res, resCode['OK'], userCard);
+				} else {
+					ResFactory('jsonRes', res, resCode['OK'], undefined);
+				}
 			}
 		})
 		.catch((reason) => {
