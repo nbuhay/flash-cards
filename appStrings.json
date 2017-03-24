@@ -39,7 +39,9 @@
 			"userCtrl": {
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
+					"checkAPICall": "something went wrong with the API call",
 					"doesNotExist": "User does not exist",
+					"userCardDoesNotExist": "UserCard does not exist",
 					"invalidArrayField": "expected array, got ",
 					"emptyArray": "empty req.body array",
 					"invalidBody": "invalid req.body: "

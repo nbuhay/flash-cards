@@ -129,7 +129,29 @@ function validateUpdateLearning(body) {
 			resolve();
 		}
 	})
-	.then(() => { return Promise.all(body.map((elem) => jsonReq.validateMongoId(elem._id))); })
+	.then(() => Promise.all(body.map((elem) => jsonReq.validateMongoId(elem._id))))
+	.then(() => Promise.all(body.map((elem) => {
+		return new Promise((resolve, reject) => {
+			const options = {
+				port: config.app.dbAPI.port,
+				path: '/api/userCard/' + elem._id,
+				method: 'HEAD'
+			};
+			const callback = (response) => {
+				if (response.statusCode === resCode['NOTFOUND']) {
+					reject({ message: str.errMsg.userCardDoesNotExist });
+				} else if (response.statusCode === resCode['OK']) {
+					resolve();
+				} else {
+					reject({ message: str.errMsg.checkAPICall });
+				}
+			};
+			const request = http.request(options, callback);
+			request.on('error', (err) => reject({ message: err }));
+			request.end();
+		})
+		.catch((reason) => { throw Error(reason.message); });
+	})))
 	.catch((reason) => { throw Error(content.message + reason.message); });
 }
 
@@ -382,6 +404,30 @@ function updateLearning(req, res) {
 		.then(() => jsonReq.validateMongoId(req.params.deck_id))
 		.then(() => jsonReq.validateBody(req.body))
 		.then(() => validateUpdateLearning(req.body))
+		.then(() => Promise.all(req.body.map((elem) => {
+			return new Promise((resolve, reject) => {
+				const options = {
+					port: config.app.dbAPI.port,
+					path: '/api/userCard/' + elem._id,
+					method: 'PUT'
+				};
+				const callback = (response) => {
+					if (response.statusCode === resCode['SERVFAIL']) {
+						reject({ message: str.errMsg.checkAPICall });
+					} else {
+						resolve();
+					}
+				};
+				const request = http.request(options, callback);
+				request.on('error', (err) => reject({ message: err }));
+				request.end();
+			})
+			.catch((reason) => {
+				content.message += reason.message;
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			});
+		})))
+		.then(() => ResFactory('jsonRes', res, resCode['OK'], undefined))
 	 	.catch((reason) => {
 	 		content.message += reason.message;
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);

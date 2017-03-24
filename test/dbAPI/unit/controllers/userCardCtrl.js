@@ -97,7 +97,7 @@ describe('userCardCtrl.js', () => {
 
 	});
 
-	describe.only('#findById', () => {
+	describe('#findById', () => {
 
 		beforeEach(() => {
 			errorHeader.message += 'findById: ';

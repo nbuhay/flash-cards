@@ -1400,7 +1400,7 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe.only('#updateLearning', () => {
+	describe('#updateLearning', () => {
 	
 		beforeEach(() => {
 			errorHeader.message += 'updateLearning: ';
@@ -1593,15 +1593,126 @@ describe('userCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-			// NEED USER CARD IMPLEMENTED BEFORE CONTINUING
-			//
-			// HEAD on each userCard, verify exists
-			// PUT for each userCard
-			// but what if there is an error?
-			//   what is course correct?
-			//   how to handle already PUT data?
-			// 500 if serve fail
-			// 200 if update ok
+		it('should send a 400 if any req.body MongoId doesn\'t exist in UserCard collection', () => {
+			const validMongoIdArray = [ { _id: validMongoId } ];
+			const reqStub = {
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: validMongoIdArray
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['NOTFOUND'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidBody;
+			errorHeader.message += str.errMsg.userCardDoesNotExist;
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 500 if any HEAD /api/userCard/:_id return 500', () => {
+			const validMongoIdArray = [ { _id: validMongoId } ];
+			const reqStub = {
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: validMongoIdArray
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['SERVFAIL'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidBody;
+			errorHeader.message += str.errMsg.checkAPICall;
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 500 if any PUT /api/userCard/:_id return 500', () => {
+			const validMongoIdArray = [ { _id: validMongoId } ];
+			const reqStub = {
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: validMongoIdArray
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedHEADReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkAPICall;
+
+			const options = {
+				port: config.app.dbAPI.port,
+				path: '/api/userCard/' + validMongoId,
+				method: 'PUT'
+			};
+			const expectedPUTReqResult = { statusCode: resCode['SERVFAIL'] };
+
+			httpRequestStub.callsArgWith(1, expectedHEADReqResult);
+			httpRequestStub.withArgs(options).callsArgWith(1, expectedPUTReqResult);
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send a 200 if all PUT /api/userCard/:_id return 200', () => {
+			const validMongoIdArray = [ { _id: validMongoId } ];
+			const reqStub = {
+				params: {
+					user_id: validMongoId,
+					deck_id: validMongoId
+				},
+				body: validMongoIdArray
+			};
+			const resDummy = { res: {} };
+			const validateMongoIdStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedHEADReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			const options = {
+				port: config.app.dbAPI.port,
+				path: '/api/userCard/' + validMongoId,
+				method: 'PUT'
+			};
+			const expectedPUTReqResult = { statusCode: resCode['OK'] };
+
+			httpRequestStub.callsArgWith(1, expectedHEADReqResult);
+			httpRequestStub.withArgs(options).callsArgWith(1, expectedPUTReqResult);
+
+			return userCtrl.updateLearning(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], undefined).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
 	});
 
 	describe.skip('#findByIdAndRemoveLearning', () => {
