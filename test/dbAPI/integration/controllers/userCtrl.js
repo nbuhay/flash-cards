@@ -1,81 +1,58 @@
-const config = require('../../../config').config();
-const resCode = require('../../../config').resCode();
+const config = require('config').config();
+const resCode = require('config').resCode();
 const assert = require('chai').assert;
 const http = require('http');
-const mockUsers = require('../../../config').mockUsers();
-const mockDecks = require('../../../config').mockDecks();
-const testDeck = require('../../../config').testDeck();
-const testUser = require('../../../config').testUser();
+const mockUsers = require('config').mockUsers();
+const mockDecks = require('config').mockDecks();
+const testDeck = require('config').testDeck();
+const testUser = require('config').testUser();
 const mongoose = require('mongoose');
+const dbBootstrap = require('test/dbBootstrap');
+const errHeader = require('modules/errorHeader')(__filename);
 
-describe('dbAPI/controllers/userCtrl.js', () => {
+describe('userCtrl.js', () => {
 
-	before((done) => {
-		console.log('\tBefore Tests');
-		// db ceremony...
-			var promise = new Promise((resolve, reject) => {
-				// cleanse the db
-				mongoose.connection.db.dropDatabase(() => {
-					console.log('\tmongoose.connection.db.dropDatabase: success');
-					resolve();
-				});
-			})
-			.then(() => {
-				return new Promise((resolve, reject) => {
-					// mockUsers[i]._id casted to Mongo ObjectId type
-					for (var i = 0; i < mockUsers.length; i++) {
-						mockUsers[i]._id = mongoose.Types.ObjectId(mockUsers[i]._id);
-					}
-					// drop the user collection
-					mongoose.connection.collection('users').insert(mockUsers, (err, users) => {
-						if (err) reject('mongoose.connection.collection(\'users\').insert: ' + err);
-						console.log('\tmongoose.connection.collection(\'users\').insertedCount: %s', users.insertedCount);
-						resolve();
-				});
-			})
-			.then(() => {
-				// mockDecks[i]._id casted to Mongo ObjectId type
-				for (var i = 0; i < mockDecks.length; i++) {
-					mockDecks[i]._id = mongoose.Types.ObjectId(mockDecks[i]._id);
-				}
-				// drop the deck collection
-				mongoose.connection.collection('decks').insert(mockDecks, (err, decks) => {
-					if (err) reject('mongoose.connection.collection(\'decks\').insert:error: ' + err);
-					console.log('\tmongoose.connection.collection(\'decks\').insertedCount: %s', decks.insertedCount);
-					done();
-				});
-			})
-			.catch((reason) => console.log('\terror:before.%s', reason));
-		});
+	before(() => {
+		return dbBootstrap.before();
 	});
 
-	describe('GET /api/users', () => {
-		it('should return all Users inserted from mockUsers', () => {
-			return new Promise((resolve, reject) => {
-				var options = {
-					port: config.app.dbAPI.port,
-					path: '/api/users'
-				};
-				var callback = (res) => {
-					var users = '';
-					res
-						.on('data', (chunk) => users += chunk)
-						.on('end', () => {
-							try {
-								assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
-							} catch (err) {
-								reject(err);
-							}
-							resolve(JSON.parse(users));
-						});
-				};
-			var req = http.request(options, callback);
-			req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
-			req.end();
-			})
-			.then((resolveValue) => assert.lengthOf(resolveValue, mockUsers.length))
-			.then(undefined, (rejectValue) => assert(false, rejectValue.message));
+	beforeEach(() => {
+		return dbBootstrap.beforeEach();
+	});	
+
+	describe('/api/user', () => {
+		
+		describe('GET', () => {
+		
+			it('should return all Users inserted from mockUsers', () => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user'
+					};
+					var callback = (res) => {
+						var users = '';
+						res
+							.on('data', (chunk) => users += chunk)
+							.on('end', () => {
+								try {
+									assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
+								} catch (err) {
+									reject(err);
+								}
+								resolve(JSON.parse(users));
+							});
+					};
+				var req = http.request(options, callback);
+				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
+				req.end();
+				})
+				.then((resolveValue) => assert.lengthOf(resolveValue, mockUsers.length))
+				.then(undefined, (rejectValue) => assert(false, rejectValue.message));
+			});
+
 		});
+
 	});
 
 	describe('POST /api/user', () => {
@@ -148,39 +125,31 @@ describe('dbAPI/controllers/userCtrl.js', () => {
 		});
 	});
 
-	describe('GET /api/user/_id/:_id', () => {
-		it('should return User user with user._id == :_id', (done) => {
-			var options = {
-				port: config.app.dbAPI.port,
-				path: '/api/user/name/' + mockUsers[testUser].userName
-			};
-			var callback = (response) => {
-				var user = '';
-				response
-					.on('data', (chunk) => {
-						user += chunk;
-					})
-					.on('end', () => {
-						var options = {
-							port: config.app.dbAPI.port,
-							path: '/api/user/_id/' + (JSON.parse(user))._id
-						};
-						var callback = (response) => {
-							var user = '';
-							response
-								.on('data', (chunk) => {
-									user += chunk;
-								})
-								.on('end', () => {
-									assert(response.statusCode == resCode['OK']);
-									done();
-								});
-						};
-						http.request(options, callback).end();
-					});
-			};
-			http.request(options, callback).end();
+	describe('GET /api/user/:_id', () => {
+		
+		describe('GET', () => {
+
+			it('should return user with _id', () => {
+				return new Promise((resolve, reject) => {
+					const options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user/' + mockUsers[testUser]._id
+					};
+					const callback = (response) => {
+						var user = '';
+						response
+							.on('data', (chunk) => user += chunk)
+							.on('end', () => resolve(user));
+					};
+					const request = http.request(options, callback);
+					request.end();
+				})
+				.then((user) => assert.equal(user.name, mockUsers[testUser].name))
+				.catch((reason) => assert(false, reason.message));
+			});
+
 		});
+
 	});
 
 	describe.skip('GET /api/user/name/:userName', () => {

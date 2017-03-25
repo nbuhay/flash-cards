@@ -6,11 +6,11 @@ var User = mongoose.model('User');
 var Deck = mongoose.model('Deck');
 const userId = "000000000000000000000000";
 
-module.exports.loadDeck = (req, res, next) => {
+module.exports.loadDeck = (req, res) => {
 	return new Promise((resolve, reject) => {
 		var options = {
 			port: config.app.dbAPI.port,
-			path: '/api/user/_id/' + userId
+			path: '/api/user/' + userId
 		};
 		var callback = (response) => {
 			var user = '';
@@ -23,13 +23,15 @@ module.exports.loadDeck = (req, res, next) => {
 		request.end();
 	})
 	.then((decks) => {
-		var i = 0;
-		while (i < decks.length) {
-			if (decks[i].refDeck == req.params.deck_id) {
-				next(decks[i]);
+		return new Promise((resolve, reject) => {
+			var i = 0;
+			while (i < decks.length) {
+				if (decks[i].deck._id === req.params._id) {
+					resolve(decks[i]);
+				}
+				i++;
 			}
-			i++;
-		}
+		})
 	})
 	.catch((reason) => {
 		res.status(resCode['SERVFAIL']).json({ message: reason.message })

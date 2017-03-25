@@ -7,11 +7,11 @@ const errHeader = 'error:webserver:indexCtrl.';
 
 // GET user
 // return user to next
-module.exports.loadUserHome = (req, res, next) => {
+module.exports.loadUserHome = (req, res) => {
 	return new Promise((resolve, reject) => {
 		var options = {
 			port: config.app.dbAPI.port,
-			path: '/api/user/_id/' + userId
+			path: '/api/user/' + userId
 		};
 		var callback = (response) => {
 			var user = '';
@@ -28,9 +28,6 @@ module.exports.loadUserHome = (req, res, next) => {
 		var request = http.request(options, callback);
 		request.on('error', (err) => reject('dbAPIRequest: ' + err));
 		request.end();		
-	})
-	.then((user) => {
-		next(user);
 	})
 	.catch((reason) => {
 		var content = { message: errHeader + 'loadUserHome.' + reason }

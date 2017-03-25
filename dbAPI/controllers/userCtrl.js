@@ -15,7 +15,10 @@ const http = require('http');
 function QueryFactory(type, conditions, options) {
 	return {
 		find: User.find(conditions),
-		findById: User.findById(conditions),
+		findById: User.findById(conditions)
+			.populate({ path: 'decks.created' })
+			.populate({ path: 'decks.learning.deck'})
+			.populate({ path: 'decks.learning.userCards', populate: { path: 'deckCard' } }),
 		findByIdAndRemove: User.findByIdAndRemove(conditions),
 		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
 		findOne: User.findOne(conditions.conditions, conditions.projection, options),
@@ -160,6 +163,7 @@ function findAll(req, res) {
 	const conditions = {};
 	return QueryFactory('find', conditions).exec()
 		.then((users) => {
+			debugger;
 			ResFactory('jsonRes', res, resCode['OK'], users);
 		})
 		.catch((reason) => {
@@ -427,7 +431,7 @@ function updateLearning(req, res) {
 				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 			});
 		})))
-		.then(() => ResFactory('jsonRes', res, resCode['OK'], undefined))
+		.then(() => ResFactory('jsonRes', res, resCode['OK']))
 	 	.catch((reason) => {
 	 		content.message += reason.message;
 			ResFactory('jsonRes', res, resCode['BADREQ'], content);

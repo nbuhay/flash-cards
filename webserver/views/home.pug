@@ -2,10 +2,9 @@ extends layout
 
 mixin deckDiv(deck)
 	div(style='border-style: solid')
-		h3 #{deck.name}
-		p #{deck.description}
+		h3 #{deck.deck.name}
 		br
-		input(type="button" onclick='location.href=\'/deck/learn/_id/' + deck.refDeck + '\'' value="Begin")
+		input(type="button" onclick='location.href=\'/deck/learn/' + deck.deck._id + '\'' value="Begin")
 		br
 		input(type="button" class="edit" value="Edit")
 		input(type="button" class="delete" value="Delete")

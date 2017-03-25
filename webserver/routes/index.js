@@ -16,9 +16,8 @@ router.get('/signup', function (req, res) {
 });
 
 router.get('/home', (req, res) => {
-	indexCtrl.loadUserHome(req, res, (user) => {
-		renderRes.send(res, resCode['OK'], 'home', user);
-	});
+	indexCtrl.loadUserHome(req, res)
+		.then((user) => renderRes.send(res, resCode['OK'], 'home', user))
 });
 
 module.exports = router;

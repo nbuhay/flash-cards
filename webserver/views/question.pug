@@ -1,13 +1,13 @@
 extends layout
 
 block content
-	for card in flashCards
+	for card in userCards
 		div(class='card' style='display: none; margin: auto; text-align: center;')
 			div(style='display: inline;')
-				for question in card.question
+				for question in card.deckCard.question
 					h1= question
 			div(style='display: none;')
-				for answer in card.answer
+				for answer in card.deckCard.answer
 					h1= answer
 	div(id='correct' style='height: 100px; width: 100px; background-color: #55AA55; margin: auto; display: none;')
 	div(id='incorrect' style='height: 100px; width: 100px; background-color: #D46A6A; margin: auto; display: none;')

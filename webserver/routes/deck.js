@@ -17,10 +17,9 @@ router.get('/create/cards', function(req, res) {
 	res.render('deckCreateCards');
 });
 
-router.get('/learn/_id/:deck_id', (req, res) => {
-	deckCtrl.loadDeck(req, res, (deck) => {
-		res.status(resCode['OK']).render('question', deck);
-	});
+router.get('/learn/:_id', (req, res) => {
+	deckCtrl.loadDeck(req, res)
+		.then((deck) => res.status(resCode['OK']).render('question', deck));
 });
 
 router.get('/learn/card/answer', function(req, res) {
