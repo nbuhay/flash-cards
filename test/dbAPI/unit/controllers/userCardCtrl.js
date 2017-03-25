@@ -14,6 +14,8 @@ const sinon = require('sinon');
 require('sinon-as-promised');
 const invalidMongoId = require('config').invalidMongoId();
 const validMongoId = require('config').validMongoId();
+const invalidDate = require('config').invalidDate();
+const validDate = require('config').validDate();
 const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const UserCard = require('dbAPI/models/userCard');
@@ -57,7 +59,7 @@ describe('userCardCtrl.js', () => {
 				});
 		});
 
-		it('should send a 500 when UserCard.find rejects', () => {
+		it('should send 500 when UserCard.find rejects', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
@@ -76,7 +78,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 200 and all UserCard data when UserCard.find resolves', () => {
+		it('should send 200 and all UserCard data when UserCard.find resolves', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
@@ -107,7 +109,7 @@ describe('userCardCtrl.js', () => {
 			expect(userCardCtrl.findById).to.exist;
 		});
 
-		it('should send a 400 if _id is not a valid Mongo ObjectID', () => {
+		it('should send 400 if _id is not a valid Mongo ObjectID', () => {
 			const reqStub = {
 				params: {
 					_id: invalidMongoId
@@ -148,7 +150,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 500 if UserCard.findById rejects', () => {
+		it('should send 500 if UserCard.findById rejects', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -169,7 +171,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 404 if _id does\'t exist in UserCard collection', () => {
+		it('should send 404 if _id does\'t exist in UserCard collection', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -191,7 +193,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 200 if _id exists in UserCard collection', () => {
+		it('should send 200 if _id exists in UserCard collection', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -212,7 +214,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 200 but no data if req.method is HEAD and _id exists in UserCard collection', () => {
+		it('should send 200 but no data if req.method is HEAD and _id exists in UserCard collection', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -263,7 +265,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 when req.body.dekCard is undefined', () => {
+		it('should send 400 when req.body.dekCard is undefined', () => {
 			const reqStub = {
 				body: {}
 			};
@@ -281,7 +283,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 when req.body.dekCard is null', () => {
+		it('should send 400 when req.body.dekCard is null', () => {
 			const reqStub = {
 				body: {
 					deckCard: null 
@@ -345,7 +347,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 500 if http GET to check the deckCard exists fails', () => {
+		it('should send 500 if http GET to check the deckCard exists fails', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -370,7 +372,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if req.body.deckCard does\'nt exist in the deckCard db', () => {
+		it('should send 400 if req.body.deckCard does\'nt exist in the deckCard db', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -395,7 +397,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 500 if UserCard.create throws an error', () => {
+		it('should send 500 if UserCard.create throws an error', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -422,7 +424,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-	it('should send a 200 if UserCard.create resolves', () => {
+	it('should send 200 if UserCard.create resolves', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -445,6 +447,682 @@ describe('userCardCtrl.js', () => {
 					jsonResStub.callCount.should.equal(1);
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], savedUserCardData),
 						'calledWithExactly').to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+	});
+
+describe('#findByIdAndUpdate', () => {
+
+		beforeEach(() => {
+			errorHeader.message += str.funcHeader.findByIdAndUpdate;
+		});
+
+		it('function named findByIdAndUpdate should exist', () => {
+			expect(userCardCtrl.findByIdAndUpdate).to.exist;
+		});
+
+		it('should call jsonReq.validateMongoId with req.params._id', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					jsonReqStub.calledWithExactly(reqStub.params._id).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 400 if jsonReq.validateMongoId rejects', () => {
+			const reqStub = {
+				params: {
+					_id: invalidMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId')
+				.rejects(modulesStr.jsonRequest.errMsg.invalidMongoId);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should call jsonReq.validateBody with req.body', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: {}
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					jsonReqBodyStub.calledWithExactly(reqStub.body).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 400 if jsonReq.validateBody rejects', () => {
+			const invalidReqBody = {};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody')
+				.rejects(modulesStr.jsonRequest.errMsg.invalidReqBody);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 400 if jsonReq.validateMongoId rejects req.body.deckCard', () => {
+			const invalidReqBody = {
+				deckCard: invalidMongoId
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			jsonReqMongoStub.withArgs(invalidReqBody.deckCard).rejects(str.errMsg.undefinedDeckCard)
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.funcHeader.validateFindByIdAndUpdate;
+			errorHeader.message += str.errMsg.undefinedDeckCard;
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 400 if req.body.deckCard doesn\'t exist in deckCard collection', () => {
+			const validReqBody = {
+				deckCard: validMongoId
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: validReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['NOTFOUND'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.funcHeader.validateFindByIdAndUpdate;
+			errorHeader.message += str.errMsg.deckCardDoesNotExist;
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.gotCorrect to false if it\'s undefined', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.gotCorrect).to.equal(false);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.gotCorrect to false if it\'s not a Boolean', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: 'NotBoolean'
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.gotCorrect).to.equal(false);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.lastSeen to current Date if it\'s undefined', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.lastSeen instanceof Date 
+						&& !isNaN(reqStub.body.lastSeen.valueOf())).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.lastSeen to current Date if it\'s not a Date object', () => {
+			const notDateObject = true;
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: notDateObject
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.lastSeen instanceof Date 
+						&& !isNaN(reqStub.body.lastSeen.valueOf())).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.lastSeen to current Date if it\'s an invalid Date', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: invalidDate
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.lastSeen instanceof Date 
+						&& !isNaN(reqStub.body.lastSeen.valueOf())).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.lastCorrect to current Date if it\'s undefined', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: validDate,
+				lastSeen: validDate
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.lastCorrect instanceof Date 
+						&& !isNaN(reqStub.body.lastCorrect.valueOf())).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.lastSeen to current Date if it\'s not a Date object', () => {
+			const notDateObject = true;
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: notDateObject
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.lastCorrect instanceof Date 
+						&& !isNaN(reqStub.body.lastCorrect.valueOf())).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.lastCorrect to current Date if it\'s not a valid Date', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: invalidDate
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.lastCorrect instanceof Date 
+						&& !isNaN(reqStub.body.lastCorrect.valueOf())).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.correctStreak to 0 if it\'s undefined', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.correctStreak).to.equal(0);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.correctStreak to 0 if it\'s NaN', () => {
+			const notNumber = true;
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: notNumber
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.correctStreak).to.equal(0);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.incorrectStreak to 0 if it\'s undefined', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.incorrectStreak).to.equal(0);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.incorrectStreak to 0 if it\'s NaN', () => {
+			const notNumber = true;
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0,
+				incorrectStreak: notNumber
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.incorrectStreak).to.equal(0);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.totalViews to 0 if it\'s undefined', () => {
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0,
+				incorrectStreak: 0
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.totalViews).to.equal(0);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should default req.body.totalViews to 0 if it\'s NaN', () => {
+			const notNumber = true;
+			const invalidUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0,
+				incorrectStreak: 0,
+				totalViews: notNumber
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: invalidUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					expect(reqStub.body.totalViews).to.equal(0);
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should call UserCard.findByIdAndUpdate with the validated req.body', () => {
+			const validUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0,
+				incorrectStreak: 0,
+				totalViews: 0
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: validUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const execStub = sandbox.stub().resolves();
+			const userCardStub = sandbox.stub(UserCard, 'findByIdAndUpdate').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					const updateData = {
+						gotCorrect: validUserCardReqBody.gotCorrect,
+						lastSeen: validUserCardReqBody.lastSeen,
+						lastCorrect: validUserCardReqBody.lastCorrect,
+						correctStreak: validUserCardReqBody.correctStreak,
+						incorrectStreak: validUserCardReqBody.incorrectStreak,
+						totalViews: validUserCardReqBody.totalViews
+					};
+					userCardStub.calledWithExactly(reqStub.params._id, updateData).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 500 when UserCard.findByIdAndUpdate rejects', () => {
+			const validUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0,
+				incorrectStreak: 0,
+				totalViews: 0
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: validUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const execStub = sandbox.stub().rejects();
+			const userCardStub = sandbox.stub(UserCard, 'findByIdAndUpdate').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					debugger;
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 200 when UserCard.findByIdAndUpdate resolves', () => {
+			const validUserCardReqBody = {
+				deckCard: validMongoId,
+				gotCorrect: true,
+				lastSeen: validDate,
+				lastCorrect: validDate,
+				correctStreak: 0,
+				incorrectStreak: 0,
+				totalViews: 0
+			};
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				},
+				body: validUserCardReqBody
+			};
+			const resDummy = { res: {} };
+			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const jsonReqBodyStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const httpRequestStub = sandbox.stub(http, 'request');
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const execStub = sandbox.stub().resolves();
+			const userCardStub = sandbox.stub(UserCard, 'findByIdAndUpdate').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
+
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+
+			return userCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+				.then(() => {
+					debugger;
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], undefined).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});

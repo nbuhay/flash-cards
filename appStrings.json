@@ -37,6 +37,9 @@
 	"dbAPI": {
 		"controllers": {
 			"userCtrl": {
+				"funcHeader": {
+					"updateLearning": "updateLearning: " 
+				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
 					"checkAPICall": "something went wrong with the API call",
@@ -57,6 +60,10 @@
 				}
 			},
 			"userCardCtrl": {
+				"funcHeader": {
+					"findByIdAndUpdate": "findByIdAndUpdate: ",
+					"validateFindByIdAndUpdate": "validateFindByIdAndUpdate: "
+				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
 					"doesNotExist": "UserCard does not exist",

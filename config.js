@@ -31,6 +31,8 @@ const pswdSettings = {
 };
 const invalidMongoId = 'a'.repeat(23);
 const validMongoId = 'a'.repeat(24);
+const validDate = new Date();
+const invalidDate = new Date('invalid');
 
 module.exports.config = () => {
 	var node_env = [process.env.NODE_ENV || 'dev'];
@@ -87,4 +89,12 @@ module.exports.invalidMongoId = () => {
 
 module.exports.validMongoId = () => {
 	return validMongoId;
+}
+
+module.exports.invalidDate = () => {
+	return invalidDate;
+}
+
+module.exports.validDate = () => {
+	return validDate;
 }

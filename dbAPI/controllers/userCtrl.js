@@ -399,7 +399,7 @@ function findByIdAndRemoveLearning(req, res) {
 }
 
 function updateLearning(req, res) {
-	var content = { message: errHeader + 'updateLearning: ' };
+	var content = { message: errHeader + str.funcHeader.updateLearning };
 	return jsonReq.validateMongoId(req.params.user_id)
 		.then(() => jsonReq.validateMongoId(req.params.deck_id))
 		.then(() => jsonReq.validateBody(req.body))
