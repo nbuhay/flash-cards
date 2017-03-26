@@ -1713,6 +1713,7 @@ describe('userCtrl.js', () => {
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
+
 	});
 
 	describe.skip('#findByIdAndRemoveLearning', () => {

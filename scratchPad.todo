@@ -1,135 +1,70 @@
----- MVP
-	- Go to blank dashboard
-	- Load in JSON
-		- verify valid
-	- no users yet - see everything
-		- or just a single default user
-	- click through deck
-		- randomized view
-		- option to play specific number of cards only
-		- option to show answer
-		- option to continue
+---- MVP I
+	- complete Routes
+		- unit tests
+		- integration tests
+	- working test suite on Travis CI
+	- mock data set to study
+	- flow for adding cards in bulk
+	- playable deck in front end that updates results
+	- Project Documentation
+		- proper README.md
+		- github description
+	- Better Unit Test formatting
+		- spacing
+		- message when DB inserts/doesn't
 
----- Back End Phase II
-/*
-	Cleaner Projections
-		mongoose.Model.findById(_id).select({ projection: data});
+comfortable asking questions and not having immediate answer
+	current practice bootstrap MongoDB with default data
+	is vagrant a good fit for my app?
+	what's an effictve test for .populate methods
+	think through testing a front end
+	what is your definition of TDD and BDD?  How do they differ?
+		TDD is about detail whereas BDD removes detail in favor of general behvaior
+	what happens when user is deleted?
+		what happnes to UserCards that reference the User's created Deck DeckCards?
 
-	Model.save vs Model.create
-		Model.create looks visually cleaner for first-time insertions
-		Set default values model vs putting in controller logic
-		Model.save() can be called w/o any params 
-			i.e.
-				var deck = new Deck(req.body);
-				deck._id = abc;
-				deck.save((err, callback) => {});
-
-	Finding/removing a sub-document
-		Each document has an _id
-		DocumentArrays have a special id method for looking up a document by its _id.
-			var doc = parent.children.id(_id);
-		can similarily remove
-			parent.children.id(_id).remove();
-			//need to save parent to have removal persist
-			parent.save()
-
-	Error Checking Questions
-		were req.params sent?
-		after mongoose query, does an object get returned/exist?
-		what types are req.params expected to be?
-	
-	Difference between error and exception - https://www.joyent.com/node-js/production/design/errors
-		errors are Error class, pased to function/thrown
-			when thrown, is considered an exception
-			throw new Error('something bad'); // exception
-			callback(new Error('something bas')); // regular error
-		suggest try/catch when JSON.parse or other user-input validation
-		not common to catch error from async
-
-		Operational errors
-			run-time problems experienced by correctly written programs
-			not bugs, problems with something else
-				failed to connect to server
-				failed to resolve hostname
-				invalid user input
-				request timeout
-				server returned a 500 response
-				socket hang-up
-				system is out of memory
-			Programmer Errors
-				bugs in program, things that can always be avoided by changing code.
-					tried to read property of "undefined"
-					called an asynchronous function without a callback
-					passed a string where an object was expected
-					passed an object where an IP address string was expected
-
-			This distinction is very important: 
-				operational errors are part of the normal operation of a program
-				Programmer errors are bugs
-*/
-	--- Refactor/Harden Routes: easier to read, promise based, error handling
+	--- Routes:
 		-- dbAPI
 			-	- action | REST Protocol | query parms | request body | route
 			-- USER
-				- create user  | POST   | none      | /api/user
+				+- create user  | POST   | none      | /api/user
 				- delete user  | DELETE | _id       | /api/user/_id/:_id
-				- edit user    | PUT    | _id       | /api/user/_id/:_id
-				- get user     | GET    | _id       | /api/user/_id/:_id
-				- get user     | GET    | userName  | /api/user/name/:userName
-				- all users    | GET    | none      | /api/users
+					- should remove all UserCards
+					- created decks should be given to generic user
+				+- edit user    | PUT    | _id       | /api/user/_id/:_id
+				+- get user     | GET    | _id       | /api/user/_id/:_id
+				+- all users    | GET    | none      | /api/users
 				- learning     | POST   |
-				- rm learning  | DELETE |
-				- updtLearning | PUT    |
-			-- DECK
-				- create deck | POST   | none      | /api/deck
-				- edit deck   | PUT    | _id       | /api/deck/_id/:_id
-				- delete deck | DELETE | _id       | /api/deck/_id/:_id
-				- all decks   | GET    | none      | /api/decks
-				- get a deck  | GET    | _id       | /api/deck/_id/:_id
-				- get a deck  | GET    | name      | /api/deck/name/:name
-			-- MOCK Data
+can implemented PUT handle this?
+				+- rm learning  | DELETE |
+				+- updtLearning | PUT    |
+			+-- DECK
+				+- create deck | POST   | none      | /api/deck
+				+- edit deck   | PUT    | _id       | /api/deck/_id/:_id
+				+- delete deck | DELETE | _id       | /api/deck/_id/:_id
+				+- all decks   | GET    | none      | /api/decks
+				+- get a deck  | GET    | _id       | /api/deck/_id/:_id
+				.- get a deck  | GET    | name      | /api/deck/name/:name
+			+-- Delete MOCK Data
 				- insert all user data
 				- insert all deck
 				- associations between default decks and users
 			-- UserCard
-				+- all userCards   | GET    | none | none           | /api/usercards
-				+- get userCard    | GET    | _id  | none           | /api/usercard/:_id
+				- all userCards   | GET    | none | none           | /api/usercards
+				- get userCard    | GET    | _id  | none           | /api/usercard/:_id
 				- delete userCard | DELETE | _id  | none           | /api/usercard/:_id
 				- update userCard | PUT    | _id  | valid usercard | /api/usercard/:_id
-				+- create userCard | POST   | none | valid usercard | /api/usercard
-				- 
-			-- DeckCard		
-				- create card | POST   | deck_id          | /api/deck/:deck_id/card
-					- add lastUpdated field; make it set to call time of POST
-				- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
+				- create userCard | POST   | none | valid usercard | /api/usercard
+			+-- DeckCard		
+				+- create card | POST   | deck_id          | /api/deck/:deck_id/card
+				+- edit card   | PUT    | deck_id, card_id | /api/deck/:deck_id/card/:card_id
 					- add lastUpdated field; make it set to call time of PUT
 				+- delete card | DELETE | deck_id, card_id | /api/deck/:deck_id/card/:card_id
 				+- all cards   | GET    | deck_id          | /api/deck/:deck_id/card
-			!---- MONGOOSE POPULATE 
-				- auto populate subdocs._id with real object:http://mongoosejs.com/docs/populate.html
-			----- How will it integrate with existing routes?
-
-		-- Deck
-			- how to update if deck gets new additions?
-				- check for new cards
-				- compare check with master
-				- determine which cards want
----- Testing Phase II
-			- use function name
-		-- Chai Integration
-			- clear definition of BDD
-			- clear definition of TDD
-		-- selineum
-		!----- Testing ceremonies
-			-- test/mockData.js
-				- drop databse
-				- insert expected values
-					- objects
-					- associations
-				- continue onto test
-				- DB Connectivity specific to testing
 ---- Front End
 /*
+	Ideas
+
 	res.render data after api calls are done
 	move rendering into its own named function
 		testable
@@ -146,15 +81,16 @@
 			send to view
 	include div for error (will only display if error message is sent through [Getting MEAN 214])
 */
---- New Routes
-	----- what are the routes needed?
---- Balsamiq Mock 
-	----- what are new pages are needed?
---- Controller calls
-	----- what are new pages are needed?
-	----- what are new pages are needed?
---- CSS
-	----- what are new pages are needed?
+/* Questions
+
+	What framework to unit test?
+		any compatible with mocha?
+
+	What new routes are needed in front end?
+	What new controllers are needed in front end?
+	What other pages are needed
+
+*/
 ---- Misc
 	--- Learning Algorithm
 		- save state on practice feedback:  What could be added?
@@ -172,12 +108,6 @@
 	--- Coding books and continued learning?
 			-4 https://medium.com/@sapegin/what-to-learn-in-2017-if-youre-a-frontend-developer-b6cfef46effd#.exzl2h3md
 			-4 https://medium.freecodecamp.com/5-key-learnings-from-the-post-bootcamp-job-search-9a07468d2331#.4y6kpunud
-	--- Project Documentation
-	-- proper README.md
-		- writeup
-	-- github description
 	--- Tools
-		-- BitBucket auth
-		-- Github auth
 		-- Local Builds
 			- Jenkins RasPi
