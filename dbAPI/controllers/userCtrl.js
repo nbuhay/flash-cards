@@ -294,28 +294,26 @@ function findByIdAndUpdate(req, res) {
 }
 
 function findByIdAndRemove(req, res) {
+	var content = { message: errHeader + str.funcHeader.findByIdAndRemove };
 	return jsonReq.validateMongoId(req.params._id)
-	.then(() => { return QueryFactory('findByIdAndRemove', req.params._id).exec() })
-	.then((deletedUser) => {
-		if (deletedUser === null) {
-			var content = { 
-				message: errHeader + 'findByIdAndRemove: no matching user found'
-			};
-			ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
-		} else {
-			ResFactory('jsonRes', res, resCode['OK'], deletedUser);
-		}
-	})
-	.catch((reason) => {
-		var content = { message: errHeader + 'findByIdAndRemove: ' };
-		if (reason === undefined) {
-			content.message += 'undefined reason, check query';
-			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-		} else {
-			content.message += reason.message;
-			ResFactory('jsonRes', res, resCode['BADREQ'], content);
-		}
-	});
+		.then(() => QueryFactory('findByIdAndRemove', req.params._id).exec())
+		.then((deletedUser) => {
+			if (deletedUser === null) {
+				content.message += str.errMsg.noUserMatch;
+				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+			} else {
+				ResFactory('jsonRes', res, resCode['OK'], deletedUser);
+			}
+		})
+		.catch((reason) => {
+			if (reason === undefined) {
+				content.message += str.errMsg.checkQuery;
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				content.message += reason.message;
+				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			}
+		});
 }
 
 function saveLearning(req, res) {

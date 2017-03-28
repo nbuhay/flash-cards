@@ -1242,10 +1242,10 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe('#findByIdAndRemove', () => {
+	describe.only('#findByIdAndRemove', () => {
 
 		beforeEach(() => {
-			errorHeader.message += 'findByIdAndRemove: ';
+			errorHeader.message += str.funcHeader.findByIdAndRemove;
 		});
 
 		it('function findByIdAndRemove should exist', () => {
@@ -1266,9 +1266,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonReqStub.callCount.should.equal(1);
-					expect(jsonReqStub.calledWithExactly(reqDummy.params._id), 'calledWithExactly')
-						.to.be.true;
+					expect(jsonReqStub.calledWithExactly(reqDummy.params._id)).to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -1288,9 +1286,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
-					 'calledWithExactly').to.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -1311,9 +1307,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					userStub.callCount.should.equal(1);
-					expect(userStub.calledWithExactly(reqDummy.params._id), 'calledWithExactly')
-						.to.be.true;
+					expect(userStub.calledWithExactly(reqDummy.params._id)).to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -1331,14 +1325,12 @@ describe('userCtrl.js', () => {
 			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
 				() => { return { exec: execStub }});
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'undefined reason, check query'; 
+			errorHeader.message += str.errMsg.checkQuery; 
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					expect(jsonResStub
-						.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
-							'calledWithExactly').to.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)
+						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -1357,14 +1349,12 @@ describe('userCtrl.js', () => {
 			const userStub = sandbox.stub(User, 'findByIdAndRemove', 
 				() => { return { exec: execStub }});
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'no matching user found'; 
+			errorHeader.message += str.errMsg.noUserMatch; 
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					expect(jsonResStub
-						.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
-							'calledWithExactly').to.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader)
+						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -1386,10 +1376,8 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findByIdAndRemove(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					expect(jsonResStub
-						.calledWithExactly(resDummy, resCode['OK'], userDataFromDb),
-							'calledWithExactly').to.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], userDataFromDb)
+						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});		

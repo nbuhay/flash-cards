@@ -38,7 +38,8 @@
 		"controllers": {
 			"userCtrl": {
 				"funcHeader": {
-					"updateLearning": "updateLearning: " 
+					"updateLearning": "updateLearning: ",
+					"findByIdAndRemove": "findByIdAndRemove: "
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
@@ -47,7 +48,8 @@
 					"userCardDoesNotExist": "UserCard does not exist",
 					"invalidArrayField": "expected array, got ",
 					"emptyArray": "empty req.body array",
-					"invalidBody": "invalid req.body: "
+					"invalidBody": "invalid req.body: ",
+					"noUserMatch": "no matching user found"
 				}
 			},
 			"deckCardCtrl": {
