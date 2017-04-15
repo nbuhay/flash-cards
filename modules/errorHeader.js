@@ -27,7 +27,14 @@ function errorHeader(filepath) {
 			appName = str.appName.default;
 	}
 
-	var filename = filepath.slice(filepath.lastIndexOf('\\') + 1, -3);
+	var filename;
+
+	if (/^.*\\.*$/.test(filepath)) {
+		filename = filepath.slice(filepath.lastIndexOf('\\') + 1, -3);
+	} else {
+		filename = filepath.slice(filepath.lastIndexOf('\/') + 1, -3);
+	}
+
 
 	var errorHeading = 'error:' + appName + '.' + filename + '.';
 	return errorHeading;
