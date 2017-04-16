@@ -448,7 +448,7 @@ describe('deckCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 			});
 
-			it('should send a 200 when document with :_id is found and updated', () => {
+			it.skip('should send a 200 when document with :_id is found and updated', () => {
 				const mockDeckCard = {
 					_id: mockDeckCards[testDeckCard]._id.toString(),
 					question: ['Valid question'],
@@ -474,7 +474,7 @@ describe('deckCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 			});
 
-			it('should return the updated document when :_id is found and updated', () => {
+			it.skip('should return the updated document when :_id is found and updated', () => {
 				const mockDeckCard = {
 					_id: mockDeckCards[testDeckCard]._id.toString(),
 					question: ['Valid question'],
@@ -513,7 +513,7 @@ describe('deckCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 			});
 
-			it('should only update question when question is the only provided field', () => {
+			it.skip('should only update question when question is the only provided field', () => {
 				const mockDeckCard = {
 					_id: mockDeckCards[testDeckCard]._id.toString(),
 					question: ['Valid question']
