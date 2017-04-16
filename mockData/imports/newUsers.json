@@ -1,0 +1,24 @@
+{
+	"users": [
+		{
+			"_id": "AAAAAAAAAAAAAAAAAAAAAAAA",
+			"userName": "Mock",
+			"pswd": "MockMock",
+			"email": {
+				"domainId": "mocker",
+				"domain": "mock",
+				"extension": "tech"
+			}
+		},
+		{
+			"_id": "AAAAAAAAAAAAAAAAAAAAAAAB",
+			"userName": "Test",
+			"pswd": "TestTest",
+			"email": {
+				"domainId": "tester",
+				"domain": "test",
+				"extension": "tech"
+			}
+		}
+	]
+}

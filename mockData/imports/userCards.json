@@ -1,0 +1,24 @@
+{
+	"cards": [
+		{
+			"_id": "000000000000000000000000",
+			"deckCard": "000000000000000000000005",
+			"gotCorrect": false,
+			"lastSeen": 1490134881020,
+			"lastCorrect": 1490134881020,
+			"correctStreak": 0,
+			"incorrectStreak": 0,
+			"totalViews": 0
+		},
+		{
+			"_id": "000000000000000000000001",
+			"deckCard": "000000000000000000000006",
+			"gotCorrect": false,
+			"lastSeen": 1490134881020,
+			"lastCorrect": 1490134881020,
+			"correctStreak": 0,
+			"incorrectStreak": 0,
+			"totalViews": 0
+		}
+	]
+}

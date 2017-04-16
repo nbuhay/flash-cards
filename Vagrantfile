@@ -33,6 +33,7 @@ Vagrant.configure("2") do |config|
   SHELL
   config.vm.network "forwarded_port", guest: 3000, host: 3000, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 27017, host: 27017, host_ip: "127.0.0.1"
   config.vm.synced_folder "D:/code/flashCards", "/home/vagrant/flashCards"
 
   # Disable automatic box update checking. If you disable this, then

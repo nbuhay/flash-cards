@@ -1,0 +1,52 @@
+{
+	"users": [
+		{
+			"_id": { "$oid": "000000000000000000000000" },
+			"userName": "Bu",
+			"pswd": "abc123abc123",
+			"email": {
+				"domainId": "nichobu",
+				"domain": "flash",
+				"extension": "com"
+			},
+			"decks": {
+				"created": [
+					"000000000000000000000000",
+					"000000000000000000000001",
+					"000000000000000000000002"
+				],
+				"learning": [
+					{
+						"deck": "000000000000000000000001",
+						"userCards": [
+							"000000000000000000000000",
+							"000000000000000000000001"
+						]
+					}
+				]
+			}
+		},
+		{
+			"_id": { "$oid": "000000000000000000000001" },
+			"userName": "Ant",
+			"pswd": "MermanMerman",
+			"email": {
+				"domainId": "celwyn",
+				"domain": "yah",
+				"extension": "com"
+			},
+			"decks": {}
+		},
+		{
+			"_id": { "$oid": "000000000000000000000002" },
+			"userName": "Jane",
+			"pswd": "DoeDoeDoe",
+			"email": {
+				"domainId": "jd",
+				"domain": "jd",
+				"extension": "com"
+			},
+			"decks": {}
+		}
+	]
+}

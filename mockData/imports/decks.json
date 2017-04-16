@@ -1,0 +1,41 @@
+{
+	"decks": [
+		{
+			"_id": { "$oid": "000000000000000000000000" },
+			"creator": "000000000000000000000000",
+			"name": "Harmony",
+			"description": "New learnings from Harmony book",
+			"tags": ["music theory", "composition"],
+			"cards": [
+				"000000000000000000000000",
+				"000000000000000000000001",
+				"000000000000000000000002"
+			],
+			"learning": 0
+		},
+		{
+			"_id": { "$oid": "000000000000000000000001" },
+			"creator": "000000000000000000000000",
+			"name": "AWS Certified Developer",
+			"description": "Review material from Udemy",
+			"tags": ["AWS", "cloud"],
+			"cards": [
+				"000000000000000000000005",
+				"000000000000000000000006"
+			],
+			"learning": 0
+		},
+		{
+			"_id": { "$oid": "000000000000000000000002" },
+			"creator": "000000000000000000000000",
+			"name": "Audio_Recording",
+			"description": "Pro Tools and audio recording techniques.",
+			"tags": ["recording", "pro tools", "audio"],
+			"cards": [
+				"000000000000000000000003",
+				"000000000000000000000004"
+			],
+			"learning": 0
+		}
+	]
+}
