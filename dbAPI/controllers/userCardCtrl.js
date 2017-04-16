@@ -139,7 +139,7 @@ function findById(req, res) {
 function create(req, res) {
 	var content = { message: errHeader + 'create: ' };
 	return jsonReq.validateBody(req.body)
-		.then((validReqBody) => validateCreate(validReqBody))
+		.then(() => validateCreate(req.body))
 		.then((deckCardId) => jsonReq.validateMongoId(deckCardId))
 		.then(() => validateDeckCardExists(req.body.deckCard))
 		.then(() => QueryFactory('create', req.body).exec())

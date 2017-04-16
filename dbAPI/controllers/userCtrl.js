@@ -1,6 +1,6 @@
 const config = require('config').config();
 const str = require('appStrings').dbAPI.controllers.userCtrl;
-const usernameSettings = require('config').usernameSettings();
+const userNameSettings = require('config').userNameSettings();
 const pswdSettings = require('config').pswdSettings();
 const resCode = require('config').resCode();
 const User = require('dbAPI/models/user');
@@ -15,10 +15,10 @@ const http = require('http');
 function QueryFactory(type, conditions, options) {
 	return {
 		find: User.find(conditions),
-		findById: User.findById(conditions)
-			.populate({ path: 'decks.created' })
-			.populate({ path: 'decks.learning.deck'})
-			.populate({ path: 'decks.learning.userCards', populate: { path: 'deckCard' } }),
+		findById: User.findById(conditions),
+			// .populate({ path: 'decks.created' })
+			// .populate({ path: 'decks.learning.deck'})
+			// .populate({ path: 'decks.learning.userCards', populate: { path: 'deckCard' } }),
 		findByIdAndRemove: User.findByIdAndRemove(conditions),
 		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
 		findOne: User.findOne(conditions.conditions, conditions.projection, options),
@@ -34,22 +34,23 @@ function ResFactory(type, res, resCode, content) {
 
 function validateCreate(body) {
 	return new Promise((resolve, reject) => {
-		if (!body.hasOwnProperty('username') 
-			|| body.username.length < usernameSettings.length.min
-			|| body.username.length > usernameSettings.length.max) {
-				reject({ message: 'invalid username' });
+		if (!body.hasOwnProperty('userName') 
+			|| body.userName.length < userNameSettings.length.min
+			|| body.userName.length > userNameSettings.length.max) {
+				reject({ message: str.errMsg.invalidUserName });
 		} else if (!body.hasOwnProperty('pswd')
 			|| body.pswd.length < pswdSettings.length.min
 			|| body.pswd.length > pswdSettings.length.max) {
-			reject({ message: 'invalid pswd' });
+			reject({ message: str.errMsg.invalidPswd });
 		} else if (!body.hasOwnProperty('email')
 			|| !body.email.hasOwnProperty('domainId')
 			|| !body.email.hasOwnProperty('domain')
 			|| !body.email.hasOwnProperty('extension')
-			|| !validator.isEmail(body.email.domainId + '@' + body.email.domain + '.' + body.email.extension)) {
-			reject({ message: 'invalid email' });
+			|| !validator
+				.isEmail(body.email.domainId + '@' + body.email.domain + '.' + body.email.extension)) {
+			reject({ message: str.errMsg.invalidEmail });
 		} else {
-			resolve(body);
+			resolve();
 		}
 	})
 	.catch((reason) => { throw Error(reason.message); });
@@ -60,19 +61,19 @@ function validateFindOne(body) {
 		if (!body.hasOwnProperty('queryParms') 
 			|| body.queryParms === undefined
 			|| body.queryParms === null) {
-				reject({message: 'invalid queryParms'});
+				reject({ message: str.errMsg.invalidQueryParms });
 		} else if (!body.queryParms.hasOwnProperty('conditions')
 			|| body.queryParms.conditions === undefined
 			|| body.queryParms.conditions === null) {
-			reject({message: 'invalid queryParms.conditions'});
+			reject({ message: str.errMsg.invalidQueryParmsCond });
 		} else if (body.queryParms.hasOwnProperty('projection') 
 			&& body.queryParms.hasOwnProperty('options')) {
 				if (body.queryParms.projection === undefined 
 					|| body.queryParms.projection === null) {
-					reject({message: 'invalid queryParms.projection'});
+					reject({ message: str.errMsg.invalidQueryParmsProj });
 				} else if (body.queryParms.options === undefined 
 					|| body.queryParms.options === null) {
-					reject({message: 'invalid queryParms.options'});
+					reject({ message: str.errMsg.invalidQueryParmsOpts });
 				} else {
 					resolve({
 						queryParms: {
@@ -85,7 +86,7 @@ function validateFindOne(body) {
 		} else if (body.queryParms.hasOwnProperty('projection')) {
 			if (body.queryParms.projection === undefined
 				|| body.queryParms.projection === null) {
-				reject({message: 'invalid queryParms.projection'});
+				reject({ message: str.errMsg.invalidQueryParmsProj });
 			} else {
 				resolve({
 					queryParms: {
@@ -98,7 +99,7 @@ function validateFindOne(body) {
 		} else if (body.queryParms.hasOwnProperty('options')){
 			if (body.queryParms.options === undefined 
 				|| body.queryParms.options === null) {
-				reject({message: 'invalid queryParms.options'});
+				reject({message: str.errMsg.invalidQueryParmsOpts });
 			} else {
 				resolve({
 					queryParms: {
@@ -163,7 +164,6 @@ function findAll(req, res) {
 	const conditions = {};
 	return QueryFactory('find', conditions).exec()
 		.then((users) => {
-			debugger;
 			ResFactory('jsonRes', res, resCode['OK'], users);
 		})
 		.catch((reason) => {
@@ -203,16 +203,16 @@ function findById(req, res) {
 }
 
 function findOne(req, res) {
-	var content = { message: errHeader + 'findOne: ' };
+	var content = { message: errHeader + str.funcHeader.findOne };
 	return jsonReq.validateBody(req)
-		.then((validReqBody) => validateFindOne(validReqBody))
+		.then(() => validateFindOne(req.body))
 		.then((validFindOne) => {
 			return QueryFactory('findOne', validFindOne.queryParms, validFindOne.options)
 				.exec()
 		})
 		.then((user) => {
 			if (!user) {
-				content.message += 'no matching user found';
+				content.message += str.errMsg.doesNotExist;
 				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
 			} else {
 				if (req.method !== 'HEAD') {
@@ -224,7 +224,7 @@ function findOne(req, res) {
 		})
 		.catch((reason) => {
 			if (reason === undefined) {
-				content.message += 'undefined reason, check query';
+				content.message += str.errMsg.checkQuery;
 				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
 			} else {
 				content.message += reason.message;
@@ -235,53 +235,55 @@ function findOne(req, res) {
 
 function create(req, res) {
 	return jsonReq.validateBody(req)
-	.then((validReqBody) => validateCreate(validReqBody))
-	.then((validCreate) => {
-		return new Promise((resolve, reject) => {
-			const findOneReqBody = {
-				queryParms: {
-					conditions: {
-						email: validCreate.email
+		.then(() => validateCreate(req.body))
+		.then(() => {
+			return new Promise((resolve, reject) => {
+				const findOneReqBody = {
+					queryParms: {
+						conditions: {
+							email: req.body.email
+						}
 					}
-				}
-			};
-			const options = {
-				port: config.app.dbAPI.port,
-				path: '/api/user/findOne',
-				method: 'HEAD'
-			};
-			const callback = (response) => {
-				if (response.statusCode === resCode['NOTFOUND']) {
-					resolve();
-				} else if (response.statusCode === resCode['OK']) {
-					reject({ message: 'user with email already exists' });
-				} else {
-					reject({ message: 'something went wrong with HEAD /api/user/findOne' });
-				}
-			};
-			const request = http.request(options, callback);
-			request.on('error', (err) => {
-				reject({ message: err });
-			});
-			request.end(JSON.stringify(findOneReqBody));
+				};
+				const options = {
+					port: config.app.dbAPI.port,
+					path: '/api/user/findOne',
+					method: 'HEAD',
+					headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(findOneReqBody))
+						}
+				};
+				const callback = (response) => {
+					if (response.statusCode === resCode['NOTFOUND']) {
+						resolve();
+					} else if (response.statusCode === resCode['OK']) {
+						reject({ message: str.errMsg.emailExists });
+					} else {
+						reject({ message: 'something went wrong with HEAD /api/user/findOne' });
+					}
+				};
+				const request = http.request(options, callback);
+				request.on('error', (err) => reject({ message: err }));
+				request.end(JSON.stringify(findOneReqBody));
+			})
+			.catch((reason) => { throw Error(reason.message); });
 		})
-		.catch((reason) => { throw Error(reason.message); });
-	})
-	.then(() => QueryFactory('create', req.body).exec())
-	.then(() => {
-		var content = 'user creation successful';
-		ResFactory('jsonRes', res, resCode['OK'], content);
-	})
-	.catch((reason) => {
-		var content = { message: errHeader + 'create: ' };
-		if (reason === undefined) {
-			content.message += 'undefined reason, check query';
-			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-		} else {
-			content.message += reason.message;
-			ResFactory('jsonRes', res, resCode['BADREQ'], content);
-		}
-	});
+		.then(() => QueryFactory('create', req.body).exec())
+		.then(() => {
+			var content = 'user creation successful';
+			ResFactory('jsonRes', res, resCode['OK'], content);
+		})
+		.catch((reason) => {
+			var content = { message: errHeader + str.funcHeader.create };
+			if (reason === undefined) {
+				content.message += 'undefined reason, check query';
+				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				content.message += reason.message;
+				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			}
+		});
 }
 
 function findByIdAndUpdate(req, res) {

@@ -1,9 +1,13 @@
 const router = require('express').Router();
-const userCtrl = require('../controllers/userCtrl');
+const userCtrl = require('dbAPI/controllers/userCtrl');
 
 router.route('/')
 	.get(userCtrl.findAll)
 	.post(userCtrl.create);
+
+router.route('/find')
+	.get(userCtrl.findOne)
+	.head(userCtrl.findOne);
 
 router.route('/:_id')
 	.head(userCtrl.findById)

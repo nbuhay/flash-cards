@@ -6,6 +6,11 @@
 		
 	},
 	"modules": {
+		"misc": {
+			"errMsg": {
+				"reqFail": "http request failed: "
+			}
+		},
 		"errorHeader": {
 			"appName":{
 				"dbAPI": "dbAPI",
@@ -38,8 +43,11 @@
 		"controllers": {
 			"userCtrl": {
 				"funcHeader": {
+					"findAll": "findAll: ",
+					"create": "create: ",
 					"updateLearning": "updateLearning: ",
-					"findByIdAndRemove": "findByIdAndRemove: "
+					"findByIdAndRemove": "findByIdAndRemove: ",
+					"findOne": "findOne: "
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
@@ -49,10 +57,21 @@
 					"invalidArrayField": "expected array, got ",
 					"emptyArray": "empty req.body array",
 					"invalidBody": "invalid req.body: ",
-					"noUserMatch": "no matching user found"
+					"noUserMatch": "no matching user found",
+					"invalidUserName": "invalid userName",
+					"invalidPswd": "invalid password",
+					"invalidEmail": "invalid email",
+					"invalidQueryParms": "invalid queryParms",
+					"invalidQueryParmsCond": "invalid queryParms.conditions",
+					"invalidQueryParmsProj": "invalid queryParms.projection",
+					"invalidQueryParmsOpts": "invalid queryParms.options",
+					"emailExists": "user with email already exists"
 				}
 			},
 			"deckCardCtrl": {
+				"funcHeader": {
+					"findByIdAndUpdate": "findByIdAndUpdate: "
+				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
 					"doesNotExist": "DeckCard does not exist",
@@ -63,6 +82,7 @@
 			},
 			"userCardCtrl": {
 				"funcHeader": {
+					"create": "create: ",
 					"findByIdAndUpdate": "findByIdAndUpdate: ",
 					"validateFindByIdAndUpdate": "validateFindByIdAndUpdate: "
 				},

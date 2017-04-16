@@ -1,13 +1,19 @@
 const config = require('config').config();
 const resCode = require('config').resCode();
 const assert = require('chai').assert;
+const chai = require('chai');
+chai.should();
+const expect = require('chai').expect;
 const http = require('http');
 const mockUsers = require('config').mockUsers();
+const mockNewUsers = require('config').mockNewUsers();
 const mockDecks = require('config').mockDecks();
 const testDeck = require('config').testDeck();
 const testUser = require('config').testUser();
+const testNewUser = require('config').testNewUser();
 const mongoose = require('mongoose');
 const dbBootstrap = require('test/dbBootstrap');
+const modulesStr = require('appStrings').modules;
 const errHeader = require('modules/errorHeader')(__filename);
 
 describe('userCtrl.js', () => {
@@ -20,11 +26,72 @@ describe('userCtrl.js', () => {
 		return dbBootstrap.beforeEach();
 	});	
 
+	describe('/api/user/find', () => {
+		
+		describe('GET', () => {
+
+			it('route should exist', () => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user/find',
+						header: {
+							'Content-Type': 'application/json'
+						}
+					};
+					var req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+					req.end();
+				})
+				.then((statusCode) => assert.notEqual(statusCode, resCode['NOTFOUND']))
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
+
+		describe('HEAD', () => {
+
+			it('route should exist', () => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user/find',
+						method: 'HEAD',
+						header: {
+							'Content-Type': 'application/json'
+						}
+					};
+					var req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+					req.end();
+				})
+				.then((statusCode) => assert.notEqual(statusCode, resCode['NOTFOUND']))
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
+	
+	});
+
 	describe('/api/user', () => {
 		
 		describe('GET', () => {
+
+			it('route should exist', () => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user'
+					};
+					var req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+					req.end();
+				})
+				.then((statusCode) => assert.notEqual(statusCode, resCode['NOTFOUND']))
+				.catch((reason) => assert(false, reason.message));
+			});
 		
-			it('should return all Users inserted from mockUsers', () => {
+			it('should return all Users from db', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
@@ -34,28 +101,86 @@ describe('userCtrl.js', () => {
 						var users = '';
 						res
 							.on('data', (chunk) => users += chunk)
-							.on('end', () => {
-								try {
-									assert.equal(res.statusCode, resCode['OK'], 'badStatusCode: ' + res.statusCode);
-								} catch (err) {
-									reject(err);
-								}
-								resolve(JSON.parse(users));
-							});
+							.on('end', () => resolve(JSON.parse(users)));
 					};
-				var req = http.request(options, callback);
-				req.on('error', (err) => reject({ message: 'dbAPIRequest:error: ' + err }));
-				req.end();
+					var req = http.request(options, callback);
+					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+					req.end();
 				})
-				.then((resolveValue) => assert.lengthOf(resolveValue, mockUsers.length))
-				.then(undefined, (rejectValue) => assert(false, rejectValue.message));
+				.then((users) => {
+					assert.lengthOf(users, mockUsers.length);
+					for (var i = 0; i < mockUsers.length; i++) {
+						expect(mockUsers[i].userName).to.equal(users[i].userName);
+					}
+				})
+				.catch((reason) => assert(false, reason.message));
+			});
+
+		});
+
+		describe.skip('POST', () => {
+
+			it('route should exist', () => {
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user',
+						method: 'POST'
+					};
+					var req = http.request(options, (res) => resolve(res.statusCode));
+					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+					req.end();
+				})
+				.then((statusCode) => assert.notEqual(statusCode, resCode['NOTFOUND']))
+				.catch((reason) => assert(false, reason.message));
+			});
+
+			it('should save new User to the db', () => {
+				mockNewUser = mockNewUsers[testNewUser];
+				return new Promise((resolve, reject) => {
+					var options = {
+						port: config.app.dbAPI.port,
+						path: '/api/user',
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': Buffer.byteLength(JSON.stringify(mockNewUser))
+						}
+					};
+					var req = http.request(options, (res) => {
+						debugger;
+						resolve();
+					})
+					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+					req.end(JSON.stringify(mockNewUser));
+				})
+				.then(() => {
+					return new Promise((resolve, reject) => {
+						var options = {
+							port: config.app.dbAPI.port,
+							path: '/api/user/' + mongoose.Types.ObjectId(mockNewUser._id)
+						};
+						var req = http.request(options, (res) => {
+							var user = '';
+							res
+								.on('data', (chunk) => user += chunk)
+								.on('end', () => resolve(JSON.parse(user)));
+						});
+						req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
+						req.end();
+					});
+				})
+				.then((user) => {
+					assert.equal(user._id, mockNewUser._id)
+				})
+				.catch((reason) => assert(false, reason.message));
 			});
 
 		});
 
 	});
 
-	describe('POST /api/user', () => {
+	describe.skip('POST /api/user', () => {
 		it('should save new User to the db', () => {
 			var mockUser = {
 				_id: mongoose.Types.ObjectId("000000000000000000000003"),
@@ -216,7 +341,7 @@ describe('userCtrl.js', () => {
 		});
 	});
 
-	describe('POST /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
+	describe.skip('POST /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
 		it('should save Deck deck to User user\'s user.decks.learning', () => {
 			return new Promise((resolve, reject) => {
 				var path = '/api/user/_id/' + mockUsers[testUser]._id + '/learning/deck/_id/' + mockDecks[testDeck]._id;
@@ -265,7 +390,7 @@ describe('userCtrl.js', () => {
 		});
 	});
 
-	describe('PUT /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
+	describe.skip('PUT /api/user/_id/:user_id/learning/deck/_id/:deck_id', () => {
 		it('should save updates to Deck deck from User user\'s user.decks.learning where deck._id == :deck_id', () => {
 			var mockUser = {};
 			return new Promise((resolve, reject) => {

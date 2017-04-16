@@ -25,7 +25,7 @@
 			"question": ["What is voice priority"],
 			"answer": ["When > 32 tracks of audio, voice priority determines which 32 are heard", "The first 32 in the list are heard."]
 		},
-				{
+		{
 			"_id": "000000000000000000000005",
 			"question": ["What is the EC2"],
 			"answer": ["Elastic Compute Cloud", "VMs in cloud"]

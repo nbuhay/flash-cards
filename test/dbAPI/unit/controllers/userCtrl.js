@@ -1,6 +1,6 @@
 const config = require('config').config();
 const resCode = require('config').resCode();
-const usernameSettings = require('config').usernameSettings();
+const userNameSettings = require('config').userNameSettings();
 const pswdSettings = require('config').pswdSettings();
 const validMongoId = require('config').validMongoId();
 const invalidMongoId = require('config').invalidMongoId();
@@ -19,7 +19,6 @@ const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const User = require('dbAPI/models/user');
 const http = require('http');
-const PassThrough = require('stream').PassThrough;
 
 var sandbox;
 var errorHeader;
@@ -38,7 +37,7 @@ describe('userCtrl.js', () => {
 	describe('#findAll', () => {
 
 		beforeEach(function() {
-			errorHeader.message += 'findAll: ';
+			errorHeader.message += str.funcHeader.findAll;
 		});
 
 		it('function named findAll should exist', () => {
@@ -143,7 +142,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
+					debugger;
 					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
@@ -216,7 +215,7 @@ describe('userCtrl.js', () => {
 	describe('#findOne', () => {
 
 		beforeEach(() => {
-			errorHeader.message += 'findOne: ';
+			errorHeader.message += str.funcHeader.findOne;
 		});
 
 		it('function findOne should exist', () => {
@@ -232,471 +231,451 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonReqStub.calledWithExactly(reqStub).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body does not have property queryParms', () => {
-			const reqDummy = { req: {} };
+			const reqStub = { 
+				body: {}
+			};
 			const resDummy = { res: {} };
 			const reqBodyStub = {};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms';
+			errorHeader.message += str.errMsg.invalidQueryParms;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms is undefined', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: undefined
+			const reqStub = {
+				body: {
+					queryParms: undefined
+				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms';
+			errorHeader.message += str.errMsg.invalidQueryParms;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms is null', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: null
+			const reqStub = {
+				body: {
+					queryParms: null
+				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms';
+			errorHeader.message += str.errMsg.invalidQueryParms;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms does not have property conditions', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {}
+			const reqStub = {
+				body: {
+					queryParms: {}
+				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.conditions';
+			errorHeader.message += str.errMsg.invalidQueryParmsCond;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms.conditions is undefined', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: undefined
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: undefined
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.conditions';
+			errorHeader.message += str.errMsg.invalidQueryParmsCond;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms.conditions is null', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: null
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: null
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.conditions';
+			errorHeader.message += str.errMsg.invalidQueryParmsCond;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if body.queryParms.projection and its equal to undefined', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					projection: undefined
+		it('should send 400 if body.queryParms.projection equals undefined', () => {
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						projection: undefined
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.projection';
+			errorHeader.message += str.errMsg.invalidQueryParmsProj;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if body.queryParms.projection and its equal to null', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					projection: null
+		it('should send 400 if body.queryParms.projection equals null', () => {
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						projection: null
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.projection';
+			errorHeader.message += str.errMsg.invalidQueryParmsProj;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if body.queryParms.options and its equal to undefined', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					options: undefined
+		it('should send 400 if body.queryParms.options equals undefined', () => {
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						options: undefined
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.options';
+			errorHeader.message += str.errMsg.invalidQueryParmsOpts;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if body.queryParms.options and its equal to null', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					options: null
+		it('should send 400 if body.queryParms.options equals null', () => {
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						options: null
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.options';
+			errorHeader.message += str.errMsg.invalidQueryParmsOpts;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms has projection and options fields and projection is equal to undefined', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					projection: undefined,
-					options: {}
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						projection: undefined,
+						options: {}
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.projection';
+			errorHeader.message += str.errMsg.invalidQueryParmsProj;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms has projection and options fields and projection is equal to null', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					projection: null,
-					options: {}
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						projection: null,
+						options: {}
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.projection';
+			errorHeader.message += str.errMsg.invalidQueryParmsProj;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms has projection and options fields and options is equal to undefined', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					projection: {},
-					options: undefined
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						projection: {},
+						options: undefined
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.options';
+			errorHeader.message += str.errMsg.invalidQueryParmsOpts;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should send 400 if body.queryParms has projection and options fields and options is equal to null', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: {},
-					projection: {},
-					options: null
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: {},
+						projection: {},
+						options: null
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid queryParms.options';
+			errorHeader.message += str.errMsg.invalidQueryParmsOpts;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should call User.findOne(conditions, projection, options) if body.queryParms has projection and options fields', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} },
-					projection: { projection: {} },
-					options: { options: {} }
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: { conditions: {} },
+						projection: { projection: {} },
+						options: { options: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const execStub = sandbox.stub().resolves();
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
 					userStub.calledWith(
-						reqBodyStub.queryParms.conditions,
-						reqBodyStub.queryParms.projection,
-						reqBodyStub.queryParms.options).should.be.true;
+						reqStub.body.queryParms.conditions,
+						reqStub.body.queryParms.projection,
+						reqStub.body.queryParms.options).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should call User.findOne(conditions, projection, undefined) if body.queryParms has projection field but no option field', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} },
-					projection: { projection: {} }
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: { conditions: {} },
+						projection: { projection: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const execStub = sandbox.stub().resolves();
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
 					userStub.calledWith(
-						reqBodyStub.queryParms.conditions,
-						reqBodyStub.queryParms.projection,
+						reqStub.body.queryParms.conditions,
+						reqStub.body.queryParms.projection,
 						undefined).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should call User.findOne(conditions, undefined, options) if body.queryParms has options field but no projection field', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} },
-					options: { options: {} }
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: { conditions: {} },
+						options: { options: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const execStub = sandbox.stub().resolves();
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
 					userStub.calledWith(
-						reqBodyStub.queryParms.conditions,
+						reqStub.body.queryParms.conditions,
 						undefined,
-						reqBodyStub.queryParms.options).should.be.true;
+						reqStub.body.queryParms.options).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('should call User.findOne(conditions, undefined, undefined) if body.queryParms only has conditions', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} }
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: { conditions: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const execStub = sandbox.stub().resolves();
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
 					userStub.calledWith(
-						reqBodyStub.queryParms.conditions,
+						reqStub.body.queryParms.conditions,
 						undefined,
 						undefined).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 500 if User.findOne rejects', () =>{
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} }
+		it('should send 500 if User.findOne rejects', () =>{
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: { conditions: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const execStub = sandbox.stub().rejects();
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'undefined reason, check query';
+			errorHeader.message += str.errMsg.checkQuery;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)
 						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 404 if User.findOne resolves null', () =>{
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} }
+		it('should send 404 if User.findOne resolves null', () =>{
+			const reqStub = {
+				body: {
+					queryParms: {
+						conditions: { conditions: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const userDoesNotExist = null;
 			const execStub = sandbox.stub().resolves(userDoesNotExist);
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'no matching user found';
+			errorHeader.message += str.errMsg.doesNotExist;
 
-			return userCtrl.findOne(reqDummy, resDummy)
+			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader)
 						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 200 and the user data if User.findOne resolves', () =>{
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} }
-				}
-			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
-			const userDataFromDb = { userData: {} };
-			const execStub = sandbox.stub().resolves(userDataFromDb);
-			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			return userCtrl.findOne(reqDummy, resDummy)
-				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithExactly(resDummy, resCode['OK'], userDataFromDb)
-						.should.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('should send a 200 and null if User.find resolves and req.method is HEAD', () =>{
+		it('should send 200 and the user data if User.findOne resolves', () =>{
 			const reqStub = {
-				method: 'HEAD'
-			};
-			const resDummy = { res: {} };
-			const reqBodyStub = {
-				queryParms: {
-					conditions: { conditions: {} }
+				body: {
+					queryParms: {
+						conditions: { conditions: {} }
+					}
 				}
 			};
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves(reqBodyStub);
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const userDataFromDb = { userData: {} };
 			const execStub = sandbox.stub().resolves(userDataFromDb);
 			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
@@ -704,7 +683,30 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], userDataFromDb)
+						.should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 200 and null if User.find resolves and req.method is HEAD', () =>{
+			const reqStub = {
+				method: 'HEAD',
+				body: {
+					queryParms: {
+						conditions: { conditions: {} }
+					}
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const userDataFromDb = { userData: {} };
+			const execStub = sandbox.stub().resolves(userDataFromDb);
+			const userStub = sandbox.stub(User, 'findOne', () => { return { exec: execStub }; });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.findOne(reqStub, resDummy)
+				.then(() => {
 					jsonResStub.calledWithExactly(resDummy, resCode['OK'], null)
 						.should.be.true;
 				})
@@ -716,281 +718,229 @@ describe('userCtrl.js', () => {
 	describe('#create', () => {
 
 		beforeEach(() => {
-			errorHeader.message += 'create: ';
+			errorHeader.message += str.funcHeader.create;
 		});
 
 		it('function create should exist', () => {
 			expect(userCtrl.create).to.exist;
 		});
 
-		it('should send a 400 if header content-type is missing', () => {
-			const reqStub = {
-				headers: {}
-			};
+		it('should call jsonReq.validateBody passing req', () =>{
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			return userCtrl.create(reqStub, resDummy)
+			return userCtrl.create(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
+					jsonReqStub.calledWithExactly(reqDummy).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if header content-type is not application/json', () => {
-			const reqStub = {
-				headers: {
-					'content-type': 'text'
-				}
-			};
+		it('should send 400 if jsonReq.validateBody rejects', () =>{
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
+			const rejectReason = { message: 'generic reason' };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').rejects(rejectReason);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += rejectReason.message;
 
-			return userCtrl.create(reqStub, resDummy)
+			return userCtrl.create(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body is undefined', () => {
+		it('should send 400 if body.userName is undefined', () => {
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				body: undefined
-			};
-			const resDummy = { res: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			return userCtrl.create(reqStub, resDummy)
-				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithMatch(resDummy, resCode['BADREQ']).should.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('should send a 400 if body.username is undefined', () => {
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid username';
+			errorHeader.message += str.errMsg.invalidUserName;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.username.length is less than 2 characters', () => {
-			const invalidUsername = 'a'.repeat(usernameSettings.length.min - 1);
+		it('should send 400 if body.userName.length is < userNameSettings.length.matching chars', () => {
+			const invalidUserName = 'a'.repeat(userNameSettings.length.min - 1);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: invalidUsername
+					userName: invalidUserName
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid username';
+			errorHeader.message += str.errMsg.invalidUserName;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.username.length is less greater than 21 characters', () => {
-			const invalidUsername = 'a'.repeat(usernameSettings.length.max + 1);
+		it('should send 400 if body.userName.length is > userNameSettings.length.max chars', () => {
+			const invalidUsername = 'a'.repeat(userNameSettings.length.max + 1);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: invalidUsername
+					userName: invalidUsername
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid username';
+			errorHeader.message += str.errMsg.invalidUserName;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.pswd is undefined', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.pswd is undefined', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername
+					userName: validUserName
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid pswd';
+			errorHeader.message += str.errMsg.invalidPswd;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.pswd.length is less than pswdSettings.length.min', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.pswd.length is < pswdSettings.length.min', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const invalidPswd = 'a'.repeat(pswdSettings.length.min - 1);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: invalidPswd
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid pswd';
+			errorHeader.message += str.errMsg.invalidPswd;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.pswd.length is greater than pswdSettings.length.max', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.pswd.length is > pswdSettings.length.max', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const invalidPswd = 'a'.repeat(pswdSettings.length.max + 1);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: invalidPswd
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid pswd';
+			errorHeader.message += str.errMsg.invalidPswd;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.email is undefined', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.email is undefined', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid email';
+			errorHeader.message += str.errMsg.invalidEmail;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.email.domainId is undefined', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.email.domainId is undefined', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {}
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid email';
+			errorHeader.message += str.errMsg.invalidEmail;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.email.domain is undefined', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.email.domain is undefined', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 					}
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid email';
+			errorHeader.message += str.errMsg.invalidEmail;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.email.domain is undefined', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.email.domain is undefined', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'a';
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId
@@ -998,28 +948,25 @@ describe('userCtrl.js', () => {
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid email';
+			errorHeader.message += str.errMsg.invalidEmail;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.email.extension is undefined', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.email.extension is undefined', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'a';
 			const domain = 'a';
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId,
@@ -1028,29 +975,26 @@ describe('userCtrl.js', () => {
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid email';
+			errorHeader.message += str.errMsg.invalidEmail;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if body.email is not a valid email', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if body.email is not a valid email', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'a';
 			const domain = 'a';
 			const extension = 'a';
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId,
@@ -1060,29 +1004,26 @@ describe('userCtrl.js', () => {
 				}
 			};
 			const resDummy = { res: {} };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 'invalid email';
+			errorHeader.message += str.errMsg.invalidEmail;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 400 if email already exists in the db', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+		it('should send 400 if email already exists in db', () => {
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'valid';
 			const domain = 'valid';
 			const extension = 'com';
 			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId,
@@ -1094,10 +1035,11 @@ describe('userCtrl.js', () => {
 			const resDummy = { res: {} };
 			const httpRequestStub = sandbox.stub(http, 'request');
 			const expectedReqResult = { statusCode: resCode['OK'] };
+			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			httpRequestStub.callsArgWith(1, expectedReqResult);
-			errorHeader.message += 'user with email already exists';
+			errorHeader.message += str.errMsg.emailExists;
 
 			return userCtrl.create(reqStub, resDummy)
 				.then(() => {
@@ -1113,7 +1055,7 @@ describe('userCtrl.js', () => {
 		});
 
 		it('should send a 500 when findOne api resCode is neither 200 or 404', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'valid';
 			const domain = 'valid';
@@ -1123,7 +1065,7 @@ describe('userCtrl.js', () => {
 					'content-type': 'application/json'
 				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId,
@@ -1155,7 +1097,7 @@ describe('userCtrl.js', () => {
 		});
 
 		it('should send a 500 if User.create throws an error', () =>  {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'valid';
 			const domain = 'valid';
@@ -1165,7 +1107,7 @@ describe('userCtrl.js', () => {
 					'content-type': 'application/json'
 				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId,
@@ -1198,7 +1140,7 @@ describe('userCtrl.js', () => {
 		});
 
 		it('should send a 200 when user is saved to the db', () => {
-			const validUsername = 'a'.repeat(usernameSettings.length.min);
+			const validUserName = 'a'.repeat(userNameSettings.length.min);
 			const validPswd = 'a'.repeat(pswdSettings.length.min);
 			const domainId = 'valid';
 			const domain = 'valid';
@@ -1208,7 +1150,7 @@ describe('userCtrl.js', () => {
 					'content-type': 'application/json'
 				},
 				body: {
-					username: validUsername,
+					userName: validUserName,
 					pswd: validPswd,
 					email: {
 						domainId: domainId,
@@ -1242,7 +1184,7 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe.only('#findByIdAndRemove', () => {
+	describe('#findByIdAndRemove', () => {
 
 		beforeEach(() => {
 			errorHeader.message += str.funcHeader.findByIdAndRemove;
@@ -1252,7 +1194,7 @@ describe('userCtrl.js', () => {
 			should.exist(userCtrl.findByIdAndRemove);
 		});
 
-		it('should call jsonReq.validMongoId and pass it the User _id', () => {
+		it('should call jsonReq.validateMongoId and pass it the User _id', () => {
 			const dummyId = 'a';
 			const reqDummy = { 
 				params: {
@@ -1398,7 +1340,7 @@ describe('userCtrl.js', () => {
 			should.exist(userCtrl.updateLearning);
 		});
 
-		it('should call jsonReq.validMongoId and pass it req.params.user_id', () => {
+		it('should call jsonReq.validateMongoId and pass it req.params.user_id', () => {
 			const reqStub = {
 				params: {
 					user_id: validMongoId
@@ -1432,7 +1374,7 @@ describe('userCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should call jsonReq.validMongoId and pass it req.params.deck_id', () => {
+		it('should call jsonReq.validateMongoId and pass it req.params.deck_id', () => {
 			const anotherValidMongoId = 'b'.repeat(24);
 			const reqStub = {
 				params: {

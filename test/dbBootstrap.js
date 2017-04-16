@@ -24,7 +24,7 @@ function insertMockData(tableName, data) {
 }
 
 function before() {
-	console.log('\tBefore Tests');
+	console.log('\tBefore Each Test...');
 	console.log('\tmongoose.connection.db.dropDatabase');
 	return cleanseDb()
 		.then(() => {

@@ -30,7 +30,7 @@ describe('deckCardCtrl.js', () => {
 		
 		describe('POST', () => {
 
-			it('should not return a 404 when calling this POST route', () => {
+			it('route should exist', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
@@ -41,18 +41,12 @@ describe('deckCardCtrl.js', () => {
 					req.on('error', (err) => reject({ message: errHeader + 'create: ' + err }));
 					req.end();
 				})
-				.then((statusCode) => {
-					assert.notEqual(statusCode, resCode['NOTFOUND'], 'route does not exist');
-				})
+				.then((statusCode) => assert.notEqual(statusCode, resCode['NOTFOUND']))
 				.catch((reason) => assert(false, reason.message));
 			});
 			
-			it('should send the new deckCard when its saved to the db', () => {
-				const mockDeckCard = {
-					_id: 'a'.repeat(24),
-					question: ['Valid question'],
-					answer:	['Valid answer']
-				};
+			it.skip('should send the new deckCard when its saved to the db', () => {
+				const mockDeckCard = mockDeckCards[testDeckCard];
 				return new Promise((resolve, reject) => {
 					const options = {
 						port: config.app.dbAPI.port,

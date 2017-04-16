@@ -2,6 +2,7 @@ const env = require('env.json');
 const mockDeckCards = require('mockData/deckCards').cards;
 const mockDecks = require('mockData/decks').decks;
 const mockUsers = require('mockData/users').users;
+const mockNewUsers = require('mockData/newUsers').users;
 const mockUserCards = require('mockData/userCards').cards;
 const resCode = {
 	OK: 200,
@@ -16,8 +17,9 @@ const resCode = {
 const testDeckCard = 0;
 const testDeck = 0;
 const testUser = 0;
+const testNewUser = 0;
 const mongoIdRe = /^[0-9a-fA-F]{24}$/;
-const usernameSettings = {
+const userNameSettings = {
 	length: {
 		min: 2,
 		max: 21
@@ -55,6 +57,10 @@ module.exports.mockUsers = () => {
 	return mockUsers;
 }
 
+module.exports.mockNewUsers = () => {
+	return mockNewUsers;
+}
+
 module.exports.resCode = () => {
 	return resCode;
 }
@@ -71,12 +77,16 @@ module.exports.testUser = () => {
 	return testUser;
 }
 
+module.exports.testNewUser = () => {
+	return testNewUser;
+}
+
 module.exports.mongoIdRe = () => {
 	return mongoIdRe;
 }
 
-module.exports.usernameSettings = () => {
-	return usernameSettings;
+module.exports.userNameSettings = () => {
+	return userNameSettings;
 }
 
 module.exports.pswdSettings = () => {
