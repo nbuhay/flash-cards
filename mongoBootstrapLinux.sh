@@ -10,11 +10,15 @@ mongo $DB --quiet --eval "db.dropDatabase()"
 cat ./mockData/imports/deckCards.json | jq '.cards[]' > import.json
 mongoimport --db $DB --collection deckcards --file ./import.json
 
+cat ./mockData/imports/userCards.json | jq '.cards[]' > import.json
+mongoimport --db $DB --collection usercards --file ./import.json
+
 cat ./mockData/imports/decks.json | jq '.decks[]' > import.json
 mongoimport --db $DB --collection decks --file ./import.json
 
 cat ./mockData/imports/users.json | jq '.users[]' > import.json
 mongoimport --db $DB --collection users --file ./import.json
+
 rm import.json
 
 # mongoimport --db $DB --collection instruments --drop --file ./mockData/instruments.json

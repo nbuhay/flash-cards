@@ -1,8 +1,8 @@
 {
 	"cards": [
 		{
-			"_id": "000000000000000000000000",
-			"deckCard": "000000000000000000000005",
+			"_id": { "$oid": "000000000000000000000000" },
+			"deckCard": { "$oid": "000000000000000000000005" },
 			"gotCorrect": false,
 			"lastSeen": 1490134881020,
 			"lastCorrect": 1490134881020,
@@ -11,8 +11,28 @@
 			"totalViews": 0
 		},
 		{
-			"_id": "000000000000000000000001",
-			"deckCard": "000000000000000000000006",
+			"_id": { "$oid": "000000000000000000000001" },
+			"deckCard": { "$oid": "000000000000000000000006" },
+			"gotCorrect": false,
+			"lastSeen": 1490134881020,
+			"lastCorrect": 1490134881020,
+			"correctStreak": 0,
+			"incorrectStreak": 0,
+			"totalViews": 0
+		},
+		{
+			"_id": { "$oid": "000000000000000000000002" },
+			"deckCard": { "$oid": "000000000000000000000007" },
+			"gotCorrect": false,
+			"lastSeen": 1490134881020,
+			"lastCorrect": 1490134881020,
+			"correctStreak": 0,
+			"incorrectStreak": 0,
+			"totalViews": 0
+		},
+		{
+			"_id": { "$oid": "000000000000000000000003" },
+			"deckCard": { "$oid": "000000000000000000000008" },
 			"gotCorrect": false,
 			"lastSeen": 1490134881020,
 			"lastCorrect": 1490134881020,

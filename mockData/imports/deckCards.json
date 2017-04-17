@@ -34,6 +34,16 @@
 			"_id": { "$oid": "000000000000000000000006" },
 			"question": ["What is Amazon's data warehousing service"],
 			"answer": ["RedShift"]
+		},
+		{
+			"_id": { "$oid": "000000000000000000000007" },
+			"question": ["What is an edge location"],
+			"answer": ["CDN end point for CloudFront"]
+		},
+		{
+			"_id": { "$oid": "000000000000000000000008" },
+			"question": ["How does an edge location work"],
+			"answer": ["First load files on CloudFront", "AWS user req files, goes to edge location", "edge location grabs from CDN, gives to user, caches at edge", "next user accessing same content can take advantage of cached content"]
 		}
 	]
 }

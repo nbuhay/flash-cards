@@ -1,18 +1,6 @@
 {
 	"tmpCards": [
 		{
-			"question": ["How many AWS regions and availability zones are there (2016 CloudGuru)"],
-			"answer": ["14 regions", "38 availability zones"]
-		},
-		{
-			"question": ["How many AWS regions and availability zones are there (2017 AWS.com)"],
-			"answer": ["16 regions", "42 availability zones"]
-		},
-		{
-			"question": ["What is an edge location"],
-			"answer": ["CDN end point for CloudFront"]
-		},
-		{
 			"question": ["How does an edge location work"],
 			"answer": ["First load files on CloudFront", "AWS user req files, goes to edge location", "edge location grabs from CDN, gives to user, caches at edge", "next user accessing same content can take advantage of cached content"]
 		},
