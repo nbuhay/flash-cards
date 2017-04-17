@@ -35,7 +35,7 @@ function validateCreateBody(validReqBody) {
 		} else if (!validReqBody.hasOwnProperty('cards') || !(Array.isArray(validReqBody.cards))) {
 			reject({ message: 'invalid cards field' });
 		} else {
-			resolve(validReqBody);
+			resolve();
 		}
 	})
 	.catch((reason) => { throw Error(reason.message); });
@@ -45,7 +45,7 @@ function checkCreatorExists(validDeckBody) {
 	return new Promise((resolve, reject) => {
 		const options = {
 			port: config.app.dbAPI.port,
-			path: '/api/user/_id/' + validDeckBody.creator
+			path: '/api/user/' + validDeckBody.creator
 		}
 		const callback = (response) => {
 			if (response.statusCode !== resCode['OK']) {
@@ -79,8 +79,8 @@ function findAll(req, res) {
 
 function create(req, res) {
 	return jsonReq.validateBody(req)
-	.then((validReqBody) => validateCreateBody(validReqBody))
-	.then((validDeckBody) => checkCreatorExists(validDeckBody))
+	.then(() => validateCreateBody(req.body))
+	.then(() => checkCreatorExists(req.body))
 	.then(() => Deck.create(req.body))
 	.then((deck) => ResFactory('jsonRes', res, resCode['OK'], deck))
 	.catch((reason) => {

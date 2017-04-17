@@ -19,6 +19,7 @@ const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const User = require('dbAPI/models/user');
 const http = require('http');
+const Query = require('mongoose').Query;
 
 var sandbox;
 var errorHeader;
@@ -74,7 +75,8 @@ describe('userCtrl.js', () => {
 					expect(userStub.calledOnce, 'User calledOnce').to.be.true;
 					expect(jsonResStub.calledOnce, 'jsonRes calledOnce').to.be.true;
 					expect(jsonResStub.
-						calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),'calledWithExactly').to.be.true;
+						calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),'calledWithExactly')
+							.to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -93,7 +95,8 @@ describe('userCtrl.js', () => {
 					expect(userStub.calledOnce, 'User calledOnce').to.be.true;
 					expect(jsonResStub.calledOnce, 'jsonRes calledOnce').to.be.true;
 					expect(jsonResStub.
-						calledWithExactly(resDummy, resCode['OK'], userDataStub),'calledWithExactly').to.be.true;
+						calledWithExactly(resDummy, resCode['OK'], userDataStub),'calledWithExactly')
+							.to.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
@@ -103,14 +106,14 @@ describe('userCtrl.js', () => {
 	describe('#findById', () => {
 
 		beforeEach(function() {
-			errorHeader.message += 'findById: ';
+			errorHeader.message += str.funcHeader.findById;
 		});
 
 		it('function findById should exist', () => {
 			expect(userCtrl.findById).to.be.exist;
 		});
 
-		it('should send a 400 when req.params._id is an invalid MongoId', () => {
+		it('should send 400 when req.params._id is an invalid MongoId', () => {
 			const reqStub = {
 				params: {
 					_id: invalidMongoId
@@ -122,13 +125,13 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader)
+						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 500 if User.findById rejects', () => {
+		it('should populate created decks', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -137,18 +140,104 @@ describe('userCtrl.js', () => {
 			const resDummy = { res: {} };
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const execStub = sandbox.stub().rejects();
-			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById',
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
 			errorHeader.message += str.errMsg.checkQuery;
+
+			const populateParm = { path: 'decks.created' };
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					debugger;
-					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
+					populateStub.calledWithExactly(populateParm).should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 404 if user _id does not exist in the db', () => {
+		it('should populate learning decks', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const execStub = sandbox.stub().rejects();
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById',
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
+			errorHeader.message += str.errMsg.checkQuery;
+
+			const populateParm = { path: 'decks.learning.deck' };
+
+			return userCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					populateStub.calledWithExactly(populateParm).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should populate all learning decks\' user cards', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const execStub = sandbox.stub().rejects();
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById',
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
+			errorHeader.message += str.errMsg.checkQuery;
+
+			const populateParm = {
+				path: 'decks.learning.userCards',
+				populate: { path: 'deckCard' }
+			};
+
+			return userCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					populateStub.calledWithExactly(populateParm).should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 500 if User.findById rejects', () => {
+			const reqStub = {
+				params: {
+					_id: validMongoId
+				}
+			};
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const execStub = sandbox.stub().rejects();
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById',
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
+			errorHeader.message += str.errMsg.checkQuery;
+
+			return userCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)
+						.should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 404 if user _id does not exist in the db', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -158,18 +247,23 @@ describe('userCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const userDoesNotExist = null;
 			const execStub = sandbox.stub().resolves(userDoesNotExist);
-			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById', 
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
 			errorHeader.message += str.errMsg.doesNotExist;
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader).should.be.true;
+					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader)
+						.should.be.true;
 				})
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send a 200 and user data if _id exists in the db', () => {
+		it('should send 200 and user data if _id exists in the db', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -179,7 +273,12 @@ describe('userCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const userDataFromDb = { user: {} };
 			const execStub = sandbox.stub().resolves(userDataFromDb);
-			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById', 
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
 
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
@@ -200,8 +299,13 @@ describe('userCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const userDataFromDb = true;
 			const execStub = sandbox.stub().resolves(userDataFromDb);
-			const userStub = sandbox.stub(User, 'findById', () => { return { exec: execStub }; });
-		
+			const populateStub = sandbox.stub(Query.prototype, 'populate');
+			const userStub = sandbox.stub(User, 'findById', 
+				() => { return { populate: populateStub } });
+			populateStub.onCall(0).returnsThis();
+			populateStub.onCall(1).returnsThis();
+			populateStub.onCall(2).returns({ exec: execStub });
+
 			return userCtrl.findById(reqStub, resDummy)
 				.then(() => {
 					jsonResStub.callCount.should.equal(1);
@@ -212,7 +316,7 @@ describe('userCtrl.js', () => {
 
 	});
 
-	describe('#findOne', () => {
+	describe.skip('#findOne', () => {
 
 		beforeEach(() => {
 			errorHeader.message += str.funcHeader.findOne;
@@ -537,6 +641,7 @@ describe('userCtrl.js', () => {
 
 			return userCtrl.findOne(reqStub, resDummy)
 				.then(() => {
+					debugger;
 					userStub.calledWith(
 						reqStub.body.queryParms.conditions,
 						reqStub.body.queryParms.projection,
@@ -732,9 +837,7 @@ describe('userCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCtrl.create(reqDummy, resDummy)
-				.then(() => {
-					jsonReqStub.calledWithExactly(reqDummy).should.be.true;
-				})
+				.then(() => jsonReqStub.calledWithExactly(reqDummy).should.be.true)
 				.catch((reason) => assert(false, reason.message));
 		});
 

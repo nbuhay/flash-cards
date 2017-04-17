@@ -2,8 +2,10 @@ const router = require('express').Router();
 const userCtrl = require('dbAPI/controllers/userCtrl');
 
 router.route('/')
-	.get(userCtrl.findAll)
 	.post(userCtrl.create);
+
+router.route('/all')
+	.get(userCtrl.findAll);
 
 router.route('/find')
 	.get(userCtrl.findOne)

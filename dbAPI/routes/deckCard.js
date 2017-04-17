@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const deckCardCtrl = require('../controllers/deckCardCtrl');
+const deckCardCtrl = require('dbAPI/controllers/deckCardCtrl');
 
 router.route('/')
 	.post(deckCardCtrl.create);

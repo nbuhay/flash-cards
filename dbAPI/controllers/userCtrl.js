@@ -15,10 +15,10 @@ const http = require('http');
 function QueryFactory(type, conditions, options) {
 	return {
 		find: User.find(conditions),
-		findById: User.findById(conditions),
-			// .populate({ path: 'decks.created' })
-			// .populate({ path: 'decks.learning.deck'})
-			// .populate({ path: 'decks.learning.userCards', populate: { path: 'deckCard' } }),
+		findById: User.findById(conditions)
+			.populate({ path: 'decks.created' })
+			.populate({ path: 'decks.learning.deck' })
+			.populate({ path: 'decks.learning.userCards', populate: { path: 'deckCard' } }),
 		findByIdAndRemove: User.findByIdAndRemove(conditions),
 		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
 		findOne: User.findOne(conditions.conditions, conditions.projection, options),
@@ -99,7 +99,7 @@ function validateFindOne(body) {
 		} else if (body.queryParms.hasOwnProperty('options')){
 			if (body.queryParms.options === undefined 
 				|| body.queryParms.options === null) {
-				reject({message: str.errMsg.invalidQueryParmsOpts });
+				reject({ message: str.errMsg.invalidQueryParmsOpts });
 			} else {
 				resolve({
 					queryParms: {
@@ -175,10 +175,7 @@ function findAll(req, res) {
 function findById(req, res) {
 	var content = { message: errHeader + 'findById: ' };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => {
-			const _id = mongoose.Types.ObjectId(req.params._id);
-			return QueryFactory('findById', _id).exec();
-		})
+		.then(() => QueryFactory('findById', req.params._id).exec())
 		.then((user) => {
 			if (!user) {
 				content.message += str.errMsg.doesNotExist;

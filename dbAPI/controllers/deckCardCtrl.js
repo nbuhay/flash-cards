@@ -70,8 +70,11 @@ function validateUpdate(validReqBody) {
 }
 
 function findAll(req, res) {
-	return QueryFactory('find', {}).exec()
-		.then((deckCards) => ResFactory('jsonRes', res, resCode['OK'], deckCards))
+	const conditions = {};
+	return QueryFactory('find', conditions).exec()
+		.then((deckCards) => {
+			ResFactory('jsonRes', res, resCode['OK'], deckCards);
+		})
 		.catch((reason) => {
 			if (reason === undefined) {
 				var content = { message: errHeader + 'findAll: ' + str.errMsg.checkQuery };

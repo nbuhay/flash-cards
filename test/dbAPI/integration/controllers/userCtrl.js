@@ -73,7 +73,7 @@ describe('userCtrl.js', () => {
 	
 	});
 
-	describe('/api/user', () => {
+	describe('/api/user/all', () => {
 		
 		describe('GET', () => {
 
@@ -81,7 +81,7 @@ describe('userCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/user'
+						path: '/api/user/all'
 					};
 					var req = http.request(options, (res) => resolve(res.statusCode));
 					req.on('error', (err) => reject({ message: modulesStr.misc.errMsg.reqFail + err }));
@@ -95,7 +95,7 @@ describe('userCtrl.js', () => {
 				return new Promise((resolve, reject) => {
 					var options = {
 						port: config.app.dbAPI.port,
-						path: '/api/user'
+						path: '/api/user/all'
 					};
 					var callback = (res) => {
 						var users = '';
