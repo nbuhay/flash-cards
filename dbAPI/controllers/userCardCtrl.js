@@ -2,25 +2,10 @@ const http = require('http');
 const str = require('appStrings').dbAPI.controllers.userCardCtrl;
 const config = require('config').config();
 const resCode = require('config').resCode();
-const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
-const UserCard = require('dbAPI/models/userCard');
-
-function QueryFactory(type, conditions, options) {
-	return {
-		findAll: UserCard.find(conditions),
-		findById: UserCard.findById(conditions),
-		create: UserCard.create(conditions),
-		findByIdAndUpdate: UserCard.findByIdAndUpdate(conditions._id, conditions.updateData)
-	}[type];
-}
-
-function ResFactory(type, res, resCode, content) {
-	return {
-		jsonRes: jsonRes.send(res, resCode, content)
-	}[type];
-}
+const UserCardQuery = require('dbAPI/modules/queryFactory').UserCard;
+const ResFactory = require('dbAPI/modules/resFactory');
 
 function validateCreate(validReqBody) {
 	return new Promise((resolve, reject) => {
@@ -99,7 +84,7 @@ function validateDeckCardExists(validMongoId) {
 }
 
 function findAll(req, res) {
-	return QueryFactory('findAll', {}).exec()
+	return UserCardQuery('findAll', {}).exec()
 		.then((userCards) => ResFactory('jsonRes', res, resCode['OK'], userCards))
 		.catch((reason) => {
 			if (reason === undefined) {
@@ -112,7 +97,7 @@ function findAll(req, res) {
 function findById(req, res) {
 	var content = { message: errHeader + 'findById: ' };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => QueryFactory('findById', req.params._id).exec())
+		.then(() => UserCardQuery('findById', req.params._id).exec())
 		.then((userCard) => {
 			if (!userCard) {
 				content.message += str.errMsg.doesNotExist;
@@ -142,7 +127,7 @@ function create(req, res) {
 		.then(() => validateCreate(req.body))
 		.then((deckCardId) => jsonReq.validateMongoId(deckCardId))
 		.then(() => validateDeckCardExists(req.body.deckCard))
-		.then(() => QueryFactory('create', req.body).exec())
+		.then(() => UserCardQuery('create', req.body).exec())
 		.then((createdUserCard) => {
 			ResFactory('jsonRes', res, resCode['OK'], createdUserCard);
 		})
@@ -172,7 +157,7 @@ function findByIdAndUpdate(req, res) {
 				_id: req.params._id,
 				updateData: updateData
 			};
-			return QueryFactory('findByIdAndUpdate', conditions).exec();
+			return UserCardQuery('findByIdAndUpdate', conditions).exec();
 		})
 		.then(() => ResFactory('jsonRes', res, resCode['OK']))
 		.catch((reason) => {

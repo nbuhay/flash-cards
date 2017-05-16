@@ -1,26 +1,12 @@
 const resCode = require('config').resCode();
 const config = require('config').config();
 const mongoIdRe = require('config').mongoIdRe();
-const http = require('http');
 const Deck = require('dbAPI/models/deck');
-const jsonRes = require('modules/jsonResponse');
+const http = require('http');
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
-
-function QueryFactory(type, conditions, options) {
-	return {
-		find: Deck.find(conditions),
-		findById: Deck.findById(conditions),
-		findByIdAndRemove: Deck.findByIdAndRemove(conditions),
-		findByIdAndUpdate: Deck.findByIdAndUpdate(conditions._id, conditions.update, options)
-	}[type];
-}
-
-function ResFactory(type, res, resCode, content) {
-	return {
-		jsonRes: jsonRes.send(res, resCode, content)
-	}[type];
-}
+const DeckQuery = require('dbAPI/modules/queryFactory').Deck;
+const ResFactory = require('dbAPI/modules/resFactory');
 
 function validateCreateBody(validReqBody) {
 	return new Promise((resolve, reject) => {
@@ -61,10 +47,9 @@ function checkCreatorExists(validDeckBody) {
 	.catch((reason) => { throw Error(reason.message); });
 }
 
-
 function findAll(req, res) {
 	const conditions = {};
-	return QueryFactory('find', conditions).exec()
+	return DeckQuery('find', conditions).exec()
 		.then((decks) => ResFactory('jsonRes', res, resCode['OK'], decks))
 		.catch((reason) => {
 			if (reason === undefined) {
