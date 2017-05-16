@@ -11,6 +11,7 @@ const errHeader = require('modules/errorHeader')(__filename);
 const mongoose = require('mongoose');
 const validator = require('validator');
 const http = require('http');
+const url = require('url');
 
 function QueryFactory(type, conditions, options) {
 	return {
@@ -230,6 +231,27 @@ function findOne(req, res) {
 		});
 }
 
+function validateSearch(request) {
+	return new Promise((resolve, reject) => {
+		var query = url.parse(request.url, true).query;
+		(Object.keys(query).length) ?
+			resolve({ userName: query.userName }) :
+			reject({ message: str.errMsg.invalidQuerystring });
+	})
+	.catch((reason) => { throw Error(reason.message); });
+}
+
+function search(req, res) {
+	var content = { message: errHeader + str.funcHeader.search };
+	return validateSearch(req)
+		.then((data) => QueryFactory('find', data).exec())
+		.then((user) => ResFactory('jsonRes', res, resCode['OK'], user))
+		.catch((reason) => {
+			content.message += reason.message;
+			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+		});
+}
+
 function create(req, res) {
 	return jsonReq.validateBody(req)
 		.then(() => validateCreate(req.body))
@@ -439,6 +461,7 @@ module.exports = {
 	findAll,
 	findById,
 	findOne,
+	search,
 	create,
 	findByIdAndUpdate,
 	findByIdAndRemove,

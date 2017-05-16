@@ -25,7 +25,9 @@ var sandbox;
 var errorHeader;
 
 beforeEach(() => {
-	errorHeader = { message: 'error:dbAPI.userCtrl.' };
+	errorHeader = {
+		message: require('modules/errorHeader')(require.resolve('dbAPI/controllers/userCtrl'))
+	};
 	sandbox = sinon.sandbox.create();
 });
 
@@ -820,15 +822,77 @@ describe('userCtrl.js', () => {
 
 	});
 
+	describe('#search', () => {
+
+		beforeEach(() => errorHeader.message += str.funcHeader.search);
+
+		it('function search should exist', () => expect(userCtrl.search).to.exist);
+
+		it('should send 400 if querystring does not exist', () => {
+			const urlWithoutQuerystring = '/api/user/search';
+			const reqStub = {
+				url: urlWithoutQuerystring
+			};
+			const resDummy = { res: {} };
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.invalidQuerystring;
+
+			return userCtrl.search(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader)
+						.should.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should call User.find with the querystring as conditions', () => {
+			const url = '/api/user/search?';
+			const querystring = {
+				field: 'userName',
+				value: 'test'
+			};
+			const reqStub = {
+				url: `${url + querystring.field}=${querystring.value}` 
+			};
+			const resDummy = { res: {} };
+			const userStub = sandbox.stub(User, 'find');
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.search(reqStub, resDummy)
+				.then(() => {
+					expect(userStub.calledWithExactly({ userName: 'test' })).to.be.true;
+				})
+				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('should send 200 and user data if user exists', () => {
+			const url = '/api/user/search?';
+			const querystring = {
+				field: 'userName',
+				value: 'test'
+			};
+			const reqStub = {
+				url: `${url + querystring.field}=${querystring.value}` 
+			};
+			const resDummy = { res: {} };
+			const userData = { user: {} };
+			const execStub = sandbox.stub().resolves(userData);
+			const userStub = sandbox.stub(User, 'find', () => { return { exec: execStub }; });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCtrl.search(reqStub, resDummy)
+				.then(() => jsonResStub.calledWithExactly(resDummy, resCode['OK'], userData)
+					.should.be.true)
+				.catch((reason) => assert(false, reason.message));
+		});
+
+	});
+
 	describe('#create', () => {
 
-		beforeEach(() => {
-			errorHeader.message += str.funcHeader.create;
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.create);
 
-		it('function create should exist', () => {
-			expect(userCtrl.create).to.exist;
-		});
+		it('function create should exist', () => expect(userCtrl.create).to.exist);
 
 		it('should call jsonReq.validateBody passing req', () =>{
 			const reqDummy = { req: {} };

@@ -45,6 +45,7 @@
 				"funcHeader": {
 					"findAll": "findAll: ",
 					"create": "create: ",
+					"search": "search: ",
 					"updateLearning": "updateLearning: ",
 					"findByIdAndRemove": "findByIdAndRemove: ",
 					"findById": "findById: ",
@@ -66,7 +67,8 @@
 					"invalidQueryParmsCond": "invalid queryParms.conditions",
 					"invalidQueryParmsProj": "invalid queryParms.projection",
 					"invalidQueryParmsOpts": "invalid queryParms.options",
-					"emailExists": "user with email already exists"
+					"emailExists": "user with email already exists",
+					"invalidQuerystring": "no querystring provided"
 				}
 			},
 			"deckCardCtrl": {
