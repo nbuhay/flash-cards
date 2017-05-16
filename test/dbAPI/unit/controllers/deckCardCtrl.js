@@ -434,7 +434,7 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('should send 500 if DeckCard.create throws an exception', () => {
+		it.skip('should send 500 if DeckCard.create throws an exception', () => {
 			const validDeckCard = { 
 				question: ['true'], 
 				answer: ['true']
@@ -456,7 +456,7 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('should send 200 when DeckCard.create resolves', () => {
+		it.skip('should send 200 when DeckCard.create resolves', () => {
 			const validDeckCard = { 
 				question: ['true'], 
 				answer: ['true'] 

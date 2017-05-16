@@ -1,24 +1,9 @@
 const str = require('appStrings').dbAPI.controllers.deckCardCtrl;
 const resCode = require('config').resCode();
-const DeckCard = require('dbAPI/models/deckCard');
-const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
-
-function QueryFactory(type, conditions, options) {
-	return {
-		find: DeckCard.find(conditions),
-		findById: DeckCard.findById(conditions),
-		findByIdAndRemove: DeckCard.findByIdAndRemove(conditions),
-		findByIdAndUpdate: DeckCard.findByIdAndUpdate(conditions._id, conditions.update, options)
-	}[type];
-}
-
-function ResFactory(type, res, resCode, content) {
-	return {
-		jsonRes: jsonRes.send(res, resCode, content)
-	}[type];
-}
+const DeckCardQuery = require('dbAPI/modules/queryFactory').DeckCard;
+const ResFactory = require('dbAPI/modules/resFactory');
 
 function validateStringArray(stringArray) {
 	return new Promise((resolve, reject) => {
@@ -71,10 +56,8 @@ function validateUpdate(validReqBody) {
 
 function findAll(req, res) {
 	const conditions = {};
-	return QueryFactory('find', conditions).exec()
-		.then((deckCards) => {
-			ResFactory('jsonRes', res, resCode['OK'], deckCards);
-		})
+	return DeckCardQuery('find', conditions).exec()
+		.then((deckCards) => ResFactory('jsonRes', res, resCode['OK'], deckCards))
 		.catch((reason) => {
 			if (reason === undefined) {
 				var content = { message: errHeader + 'findAll: ' + str.errMsg.checkQuery };
@@ -85,7 +68,7 @@ function findAll(req, res) {
 
 function findById(req, res) {
 	return jsonReq.validateMongoId(req.params._id)
-	.then(() => { return QueryFactory('findById', req.params._id).exec(); })
+	.then(() => DeckCardQuery('findById', req.params._id).exec())
 	.then((deckCard) => {
 		if (!deckCard) {
 			var content = { message: errHeader + 'findById: ' + str.errMsg.doesNotExist };
@@ -110,9 +93,7 @@ function create(req, res) {
 	return jsonReq.validateBody(req)
 	.then((validReqBody) => validateCreate(validReqBody))
 	.then((validDeckCard) => DeckCard.create(validDeckCard))
-	.then((createdDeckCard) =>{
-		ResFactory('jsonRes', res, resCode['OK'], createdDeckCard);
-	})
+	.then((createdDeckCard) => ResFactory('jsonRes', res, resCode['OK'], createdDeckCard))
 	.catch((reason) => {
 		if (reason === undefined) {
 			content.message += str.errMsg.checkQuery;
@@ -127,7 +108,7 @@ function create(req, res) {
 function findByIdAndRemove(req, res) {
 	var content = { message: errHeader + 'findByIdAndRemove: ' };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => { return QueryFactory('findByIdAndRemove', req.params._id).exec(); })
+		.then(() => DeckCardQuery('findByIdAndRemove', req.params._id).exec())
 		.then((removedDeckCard) => {
 			if (removedDeckCard === null) {
 				content.message += str.errMsg.doesNotExist;
@@ -160,7 +141,7 @@ function findByIdAndUpdate(req, res) {
 			const options = {
 				new: true
 			};
-			return QueryFactory('findByIdAndUpdate', conditions, options).exec();
+			return DeckCardQuery('findByIdAndUpdate', conditions, options).exec();
 		})
 		.then((updatedDeckCard) => {
 			if (updatedDeckCard === null) {

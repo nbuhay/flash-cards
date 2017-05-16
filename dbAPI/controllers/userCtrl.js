@@ -3,35 +3,13 @@ const str = require('appStrings').dbAPI.controllers.userCtrl;
 const userNameSettings = require('config').userNameSettings();
 const pswdSettings = require('config').pswdSettings();
 const resCode = require('config').resCode();
-const User = require('dbAPI/models/user');
-const Deck = require('dbAPI/models/deck');
-const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
-const errHeader = require('modules/errorHeader')(__filename);
-const mongoose = require('mongoose');
 const validator = require('validator');
 const http = require('http');
 const url = require('url');
-
-function QueryFactory(type, conditions, options) {
-	return {
-		find: User.find(conditions),
-		findById: User.findById(conditions)
-			.populate({ path: 'decks.created' })
-			.populate({ path: 'decks.learning.deck' })
-			.populate({ path: 'decks.learning.userCards', populate: { path: 'deckCard' } }),
-		findByIdAndRemove: User.findByIdAndRemove(conditions),
-		findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
-		findOne: User.findOne(conditions.conditions, conditions.projection, options),
-		create: User.create(conditions)
-	}[type];
-}
-
-function ResFactory(type, res, resCode, content) {
-	return {
-		jsonRes: jsonRes.send(res, resCode, content)
-	}[type];
-}
+const errHeader = require('modules/errorHeader')(__filename);
+const UserQuery = require('dbAPI/modules/queryFactory').User;
+const ResFactory = require('dbAPI/modules/resFactory');
 
 function validateCreate(body) {
 	return new Promise((resolve, reject) => {
@@ -163,7 +141,7 @@ function validateUpdateLearning(body) {
 function findAll(req, res) {
 	var content = { message: errHeader + 'findAll: ' };
 	const conditions = {};
-	return QueryFactory('find', conditions).exec()
+	return UserQuery('find', conditions).exec()
 		.then((users) => {
 			ResFactory('jsonRes', res, resCode['OK'], users);
 		})
@@ -176,7 +154,7 @@ function findAll(req, res) {
 function findById(req, res) {
 	var content = { message: errHeader + 'findById: ' };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => QueryFactory('findById', req.params._id).exec())
+		.then(() => UserQuery('findById', req.params._id).exec())
 		.then((user) => {
 			if (!user) {
 				content.message += str.errMsg.doesNotExist;
@@ -204,10 +182,8 @@ function findOne(req, res) {
 	var content = { message: errHeader + str.funcHeader.findOne };
 	return jsonReq.validateBody(req)
 		.then(() => validateFindOne(req.body))
-		.then((validFindOne) => {
-			return QueryFactory('findOne', validFindOne.queryParms, validFindOne.options)
-				.exec()
-		})
+		.then((validFindOne) => UserQuery('findOne', 
+			validFindOne.queryParms, validFindOne.options).exec())
 		.then((user) => {
 			if (!user) {
 				content.message += str.errMsg.doesNotExist;
@@ -244,7 +220,7 @@ function validateSearch(request) {
 function search(req, res) {
 	var content = { message: errHeader + str.funcHeader.search };
 	return validateSearch(req)
-		.then((data) => QueryFactory('find', data).exec())
+		.then((data) => UserQuery('find', data).exec())
 		.then((user) => ResFactory('jsonRes', res, resCode['OK'], user))
 		.catch((reason) => {
 			content.message += reason.message;
@@ -288,7 +264,7 @@ function create(req, res) {
 			})
 			.catch((reason) => { throw Error(reason.message); });
 		})
-		.then(() => QueryFactory('create', req.body).exec())
+		.then(() => UserQuery('create', req.body).exec())
 		.then(() => {
 			var content = 'user creation successful';
 			ResFactory('jsonRes', res, resCode['OK'], content);
@@ -317,7 +293,7 @@ function findByIdAndUpdate(req, res) {
 function findByIdAndRemove(req, res) {
 	var content = { message: errHeader + str.funcHeader.findByIdAndRemove };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => QueryFactory('findByIdAndRemove', req.params._id).exec())
+		.then(() => UserQuery('findByIdAndRemove', req.params._id).exec())
 		.then((deletedUser) => {
 			if (deletedUser === null) {
 				content.message += str.errMsg.noUserMatch;
