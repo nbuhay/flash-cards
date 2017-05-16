@@ -12,11 +12,12 @@ Vagrant.configure("2") do |config|
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
     
     # Install Node and global modules
-    nvm install 6.3
-    nvm use 6.3
+    nvm install 6.9
+    nvm use 6.9
     npm install -g nodemon
     npm install -g gulp
     npm install -g node-inspector --unsafe-perm
+    npm install -g @angular/cli
 
     # Install mongodb-org
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
@@ -32,9 +33,13 @@ Vagrant.configure("2") do |config|
 
   SHELL
   config.vm.network "forwarded_port", guest: 3000, host: 3000, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 4200, host: 4200, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
   config.vm.network "forwarded_port", guest: 27017, host: 27017, host_ip: "127.0.0.1"
   config.vm.synced_folder "D:/code/flashCards", "/home/vagrant/flashCards"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
