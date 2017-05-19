@@ -3,8 +3,8 @@ const vReq = require('dbAPI/modules/validate/req');
 const vMongoId = require('dbAPI/modules/validate/mongoId');
 const vStringArray = require('dbAPI/modules/validate/stringArray');
 
-function findById(mongoId) {
-	return vMongoId.validate(mongoId)
+function findById(req) {
+	return vMongoId.validate(req.params._id)
 	.catch((reason) => { throw Error(reason.message) });
 }
 
@@ -20,6 +20,11 @@ function create(req) {
 	.then(() => vStringArray(body.answer))
 	.then(() => vStringArray(body.question))
 	.catch((reason) => { throw Error(reason.message); });
+}
+
+function findByIdAndRemove(req) {
+	return vMongoId.validate(req.params._id)
+	.catch((reason) => { throw Error(reason.message) });
 }
 
 function update(body) {
@@ -44,5 +49,6 @@ function update(body) {
 module.exports = {
 	findById,
 	create,
+	findByIdAndRemove,
 	update
 };

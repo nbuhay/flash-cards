@@ -20,7 +20,7 @@ function findAll(req, res) {
 
 function findById(req, res) {
 	var content = { message: errHeader + str.funcHeader.findById };
-	return Validate.findById(req.params._id)
+	return Validate.findById(req)
 	.then(() => Query('findById', req.params._id).exec())
 	.then((deckCard) => {
 		if (!deckCard) {
@@ -57,11 +57,9 @@ function create(req, res) {
 	});
 }
 
-// validating mongoId be its own module?
-// proper name for create
 function findByIdAndRemove(req, res) {
-	var content = { message: errHeader + 'findByIdAndRemove: ' };
-	return jsonReq.validateMongoId(req.params._id)
+	var content = { message: errHeader + str.funcHeader.findByIdAndRemove };
+	return Validate.findByIdAndRemove(req)
 	.then(() => Query('findByIdAndRemove', req.params._id).exec())
 	.then((removedDeckCard) => {
 		if (removedDeckCard === null) {

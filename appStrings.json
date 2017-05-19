@@ -91,10 +91,11 @@
 			},
 			"deckCardCtrl": {
 				"funcHeader": {
-					"findByIdAndUpdate": "findByIdAndUpdate: ",
 					"findAll": "findAll: ",
 					"create": "create: ",
-					"findById": "findById: "
+					"findById": "findById: ",
+					"findByIdAndURemove": "findByIdAndURemove: ",
+					"findByIdAndUpdate": "findByIdAndUpdate: "
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",

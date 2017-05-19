@@ -81,24 +81,24 @@ describe('deckCardCtrl.js', () => {
 
 		it('#findById should exist', () => assert.isFunction(deckCardCtrl.findAll));
 
-		it('call Validate.findById and pass req params _id', () => {
-			const reqStub = { params: { _id: validMongoId } };
+		it('call Validate.findById and pass req', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const validateStub = sandbox.stub(Validate, 'findById').rejects();
 
-			return deckCardCtrl.findById(reqStub, resDummy)
-				.catch(() => validateStub.calledWithExactly(reqStub.params._id).should.be.true);
+			return deckCardCtrl.findById(reqDummy, resDummy)
+				.catch(() => validateStub.calledWithExactly(reqDummy).should.be.true);
 		});
 
 		it('send 400 if Validate.findById rejects', () => {
-			const reqStub = { params: { _id: invalidMongoId } };
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const content = { message: 'invalid' };
 			const validateStub = sandbox.stub(Validate, 'findById').rejects(content);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += content.message;
 
-			return deckCardCtrl.findById(reqStub, resDummy)
+			return deckCardCtrl.findById(reqDummy, resDummy)
 				.then(() => {
 					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 			});
@@ -115,23 +115,6 @@ describe('deckCardCtrl.js', () => {
 				.then(() => deckCardStub.calledWithExactly(reqStub.params._id).should.be.true);
 		});
 
-		it('send 404 if _id does\'t exist in DeckCard collection', () => {
-			const idNotInCollection = validMongoId;
-			const reqStub = { params: { _id: idNotInCollection } };
-			const resDummy = { res: {} };
-			const validateStub = sandbox.stub(Validate, 'findById').resolves();
-			const stubCardData = null;
-			const execStub = sandbox.stub().resolves(stubCardData);
-			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: execStub });
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.doesNotExist;
-
-			return deckCardCtrl.findById(reqStub, resDummy)
-				.then(() => {
-					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader).should.be.true;
-				});
-		});
-
 		it('send 500 if DeckCard.findById rejects', () => {
 			const idInCollection = validMongoId;
 			const reqStub = { params: { _id: idInCollection } };
@@ -146,6 +129,23 @@ describe('deckCardCtrl.js', () => {
 			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
 					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
+				});
+		});
+
+		it('send 404 if _id does\'t exist in DeckCard collection', () => {
+			const idNotInCollection = validMongoId;
+			const reqStub = { params: { _id: idNotInCollection } };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'findById').resolves();
+			const stubCardData = null;
+			const execStub = sandbox.stub().resolves(stubCardData);
+			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.doesNotExist;
+
+			return deckCardCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader).should.be.true;
 				});
 		});
 
@@ -181,7 +181,6 @@ describe('deckCardCtrl.js', () => {
 
 			return deckCardCtrl.create(reqDummy, resDummy)
 				.then(() => expect(validateStub.calledWithExactly(reqDummy)).to.be.true)
-				.catch((reason) => assert(false, reason.message));
 		});
 
 		it('send 400 if Validate.create rejects', () => {
@@ -193,9 +192,9 @@ describe('deckCardCtrl.js', () => {
 			errorHeader.message += content.message;
 
 			return deckCardCtrl.create(reqDummy, resDummy)
-				.then(() => expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader))
-					.to.be.true)
-				.catch((reason) => assert(false, reason.message));
+				.then(() => {
+					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader)).to.be.true;
+				});
 		});
 
 		it.skip('create a DeckCard');
@@ -213,8 +212,7 @@ describe('deckCardCtrl.js', () => {
 			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)).to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+				});
 		});
 
 		it('send 200 and the new DeckCard when Query resolves', () => {
@@ -230,121 +228,95 @@ describe('deckCardCtrl.js', () => {
 			return deckCardCtrl.create(reqStub, resDummy)
 				.then(() => {
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], deckCard)).to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+				});
 		});
 
 	});
 
-	describe.skip('#findByIdAndRemove', () => {
+	describe('#findByIdAndRemove', () => {
 
-		beforeEach(function() {
-			errorHeader.message += 'findByIdAndRemove: ';
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.findByIdAndRemove);
 
-		it('function named findByIdAndRemove should exist', () => {
-			assert.isFunction(deckCardCtrl.findByIdAndRemove);
-		});
+		it('#findByIdAndRemove should exist', () => assert.isFunction(deckCardCtrl.findByIdAndRemove));
 
-		it('should call jsonReq.validateMongoId and pass _id', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('call Validate.findById and pass req', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').rejects();
+
+			return deckCardCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.catch(() => validateStub.calledWithExactly(reqDummy).should.be.true);
+		});
+
+		it('send 400 if Validate.findByIdAndRemove rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return deckCardCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+			});
+		});
+
+		it('call DeckCard.findByIdAndRemove and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndRemove').resolves();
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
-				.then(() => {
-					assert.equal(jsonReqSpy.callCount, 1, 'should be called once');
-					assert(jsonReqSpy.calledWithExactly(reqStub.params._id),
-					 'passed args not expected');
-				});
+				.then(() => deckCardStub.calledWithExactly(reqStub.params._id).should.be.true);
 		});
 
-		it('should send 400 if _id is not a valid Mongo ObjectID', () => {
-			const reqStub = {
-				params: {
-					_id: invalidMongoId
-				}
-			};
+		it('send 500 if DeckCard.findByIdAndRemove rejects', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
-
-			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
-				.then(() => {
-						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader), 
-							'passed args not expected');			
-				});
-		});
-
-		it('should send 500 if DeckCard.findByIdAndRemove rejects', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
-			const execStub = sandbox.stub().rejects();
-			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.checkQuery;
 
 			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
 				.then(() => {
-					assert.equal(jsonResStub.callCount, 1, 'should be called once');
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
-					 'passed args not expected');	
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
 				});
 		});
 
-		it('should send 404 if _id is not found in the DeckCard collection', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('send 404 if _id does\'t exist in DeckCard collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
-			const execStub = sandbox.stub().resolves(null);
-			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const stubCardData = null;
+			const execStub = sandbox.stub().resolves(stubCardData);
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.doesNotExist;
 
 			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
 				.then(() => {
-					assert.equal(jsonResStub.callCount, 1, 'should be called once');
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
-					 'passed args not expected');
+					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader).should.be.true;
 				});
 		});
 	
-		it('should send 200 and the deleted card if _id is deleted from the collection', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('send 200 and removed card data if _id is deleted from the collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves(reqStub.params._id);
-			const returnedDeckCardStub = { question: ['true'], answer: ['true'] };
-			const execStub = sandbox.stub().resolves(returnedDeckCardStub);
-			const deckCardStub = 
-				sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const stubCardData = true;
+			const execStub = sandbox.stub().resolves(stubCardData);
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndRemove').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return deckCardCtrl.findByIdAndRemove(reqStub, resDummy)
 				.then(() => {
-					assert.equal(jsonResStub.callCount, 1, 'should be called once');
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], returnedDeckCardStub),
-					 'passed args not expected');	
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], stubCardData).should.be.true;
 				});
 		});
 

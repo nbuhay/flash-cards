@@ -14,10 +14,11 @@ describe('deckCard.js', () => {
 
 	describe('#findById', () => {
 
-		it('pass mongoId param to be validated', () => {
+		it('pass req params _id to be validated', () => {
+			const reqStub = { params: { _id: validMongoId } }; 
 			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').resolves();
 			
-			return deckCard.findById(validMongoId)
+			return deckCard.findById(reqStub)
 				.then(() => vMongoIdStub.calledWithExactly(validMongoId).should.be.true);
 		});
 
@@ -43,6 +44,18 @@ describe('deckCard.js', () => {
 
 		it.skip('question should be a string array');
 		it.skip('answer should be a string array');
+
+	});
+
+	describe('#findByIdAndRemove', () => {
+
+		it('pass req params _id to be validated', () => {
+			const reqStub = { params: { _id: validMongoId } }; 
+			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').resolves();
+			
+			return deckCard.findByIdAndRemove(reqStub)
+				.then(() => vMongoIdStub.calledWithExactly(validMongoId).should.be.true);
+		});
 
 	});
 
