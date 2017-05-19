@@ -1,7 +1,4 @@
 {
-	"dbAPI": {
-
-	},
 	"test": {
 		
 	},
@@ -40,6 +37,27 @@
 		}
 	},
 	"dbAPI": {
+		"modules": {
+			"mongoId": {
+				"errMsg": {
+					"undefinedMongoId": "undefined MongoId",
+					"invalidMongoId": "invalid MongoId"
+				}
+			},
+			"req": {
+				"errMsg": {
+					"noContentType": "missing header content-type",
+					"invalidContentType": "content-type should be application/json, got ",
+					"invalidReqBody": "invalid request body"
+				}
+			},
+			"stringArray": {
+				"errMsg": {
+					"invalidArrayField": "invalid field: expected array, got ",
+					"invalidStringArray": "must be an array of only strings"
+				}
+			}
+		},
 		"controllers": {
 			"userCtrl": {
 				"funcHeader": {
@@ -73,7 +91,8 @@
 			},
 			"deckCardCtrl": {
 				"funcHeader": {
-					"findByIdAndUpdate": "findByIdAndUpdate: "
+					"findByIdAndUpdate": "findByIdAndUpdate: ",
+					"create": "create: "
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",

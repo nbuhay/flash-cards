@@ -38,7 +38,8 @@ module.exports = {
 			find: DeckCard.find(conditions),
 			findById: DeckCard.findById(conditions),
 			findByIdAndRemove: DeckCard.findByIdAndRemove(conditions),
-			findByIdAndUpdate: DeckCard.findByIdAndUpdate(conditions._id, conditions.update, options)
+			findByIdAndUpdate: DeckCard.findByIdAndUpdate(conditions._id, conditions.update, options),
+			create: DeckCard.create(conditions)
 		}[type];
 	}
 };

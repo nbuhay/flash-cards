@@ -8,7 +8,7 @@ function importTest(name, path) {
   describe(name, () => require(path));
 }
 
-describe('Mocha Test Runner', () => {
+describe('MochaRunner', () => {
 	before((done) => {
 		
 		console.log('   Bootstraping Test Env');
@@ -32,56 +32,53 @@ describe('Mocha Test Runner', () => {
 		});
 	});
 
-	describe('Testing Env Canaries', () => {
-
-		it('should ensure chai is available', () =>{
-			assert.ok(require('chai'));
-		});
-
-		it('should ensure chai-as-promised is available', () =>{
-			assert.ok(require('chai-as-promised'));
-		});		
-
-		it('should ensure istanbul is available', () => {
-			assert.ok(require('istanbul'));
-		});
-
-		it('should ensure sinon is available', () =>{
-			assert.ok(require('sinon'));
-		});
-		
-		it('should ensure sinon-as-promised is available', () =>{
-			assert.ok(require('sinon-as-promised'));
-		});
-
-		it('should ensure nock is available', () =>{
-			assert.ok(require('nock'));
-		});
-
+	describe('Testing Libraries Available', () => {
+		it('chai', () => assert.ok(require('chai')));
+		it('chai-as-promised', () => assert.ok(require('chai-as-promised')));
+		it('istanbul', () => assert.ok(require('istanbul')));
+		it('sinon', () => assert.ok(require('sinon')));
+		it('sinon-as-promised', () => assert.ok(require('sinon-as-promised')));
+		it('nock', () => assert.ok(require('nock')));
 	});
 
-	describe('Unit Tests', () => {
+	describe('Unit', () => {
 
-		describe('./modules/', () => {
+		describe('modules', () => {
 			importTest('', './modules/errorHeader');
 			importTest('', './modules/jsonRequest');
 			importTest('', './modules/jsonResponse');
 		});
 
-		describe('./dbAPI/controllers/', () => {
-			importTest('', './dbAPI/unit/controllers/deckCardCtrl');
-			importTest('', './dbAPI/unit/controllers/deckCtrl');
-			importTest('', './dbAPI/unit/controllers/userCtrl');
-			importTest('', './dbAPI/unit/controllers/userCardCtrl');
+		describe('dbAPI', () => {
+			describe('modules', () => {
+				describe('validate', () => {
+					importTest('', './dbAPI/unit/modules/validate/mongoId');
+					importTest('', './dbAPI/unit/modules/validate/req');
+					importTest('', './dbAPI/unit/modules/validate/stringArray');
+					importTest('', './dbAPI/unit/modules/validate/deckCard');
+				});
+			});
+
+			describe('controllers', () => {
+				importTest('', './dbAPI/unit/controllers/deckCardCtrl');
+				importTest('', './dbAPI/unit/controllers/deckCtrl');
+				importTest('', './dbAPI/unit/controllers/userCtrl');
+				importTest('', './dbAPI/unit/controllers/userCardCtrl');
+			});
+
 		});
 
 	});
 
-	describe('Integration Tests', () => {
+	describe('Integration', () => {
 
-		describe('dbAPI Routes', () => {
-			importTest('', './dbAPI/integration/controllers/deckCardCtrl');
-			importTest('', './dbAPI/integration/controllers/userCtrl');
+		describe('dbAPI', () => {
+			
+			describe('routes', () => {
+				importTest('', './dbAPI/integration/controllers/deckCardCtrl');
+				importTest('', './dbAPI/integration/controllers/userCtrl');
+			});
+
 		});
 
 	});
