@@ -6,7 +6,7 @@ const Query = require('dbAPI/modules/queryFactory').DeckCard;
 const Validate = require('dbAPI/modules/validateFactory').DeckCard;
 
 function findAll(req, res) {
-	var content = { message: errHeader + 'findAll: ' };
+	var content = { message: errHeader + str.funcHeader.findAll };
 	const conditions = {};
 	return Query('find', conditions).exec()
 	.then((deckCards) => Res('jsonRes', res, resCode['OK'], deckCards))

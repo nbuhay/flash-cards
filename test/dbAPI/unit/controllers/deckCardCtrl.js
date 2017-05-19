@@ -1,6 +1,5 @@
 const str = require('appStrings').dbAPI.controllers.deckCardCtrl;
 const modulesStr = require('appStrings').modules;
-const mongoose = require('mongoose');
 const assert = require('chai').assert;
 const sinon = require('sinon');
 require('sinon-as-promised');
@@ -30,66 +29,49 @@ describe('deckCardCtrl.js', () => {
 
 	describe('#findAll', () => {
 
-		beforeEach(function() {
-			errorHeader.message += 'findAll: ';
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.findAll);
 
-		it('function named findAll should exist', () => {
-			assert.isFunction(deckCardCtrl.findAll);
-		});
+		it('#findAll should exist', () => assert.isFunction(deckCardCtrl.findAll));
 
-		it('should call Deck.find with the empty list as the only arg', () => {
+		it('call Deck.find and pass an empty object', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const conditions = {};
-			const jsonResStub = sandbox.stub(jsonRes);
 			const execStub = sandbox.stub().resolves();
 			const deckCardStub = sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes);
 
 			return deckCardCtrl.findAll(reqDummy, resDummy)
-				.then(() => {
-					assert.equal(deckCardStub.callCount, 1, 'should be called once');
-					assert(deckCardStub.calledWithExactly(conditions), 'passed args not expected');
-				})
-				.catch((reason) => assert(false, reason.message));
+				.then(() => expect(deckCardStub.calledWithExactly(conditions)).to.be.true)
 		});
 
-		it('should send 200 when DeckCard.find resolves', () => {
+		it('send 500 when DeckCard.find rejects', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const allDeckCardData = { deckCards: {} };
-			const execStub = sandbox.stub().resolves(allDeckCardData);
-			
-			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
-
-			return deckCardCtrl.findAll(reqDummy, resDummy)
-				.then(() => {
-					assert.equal(jsonResStub.callCount, 1, 'should be called once');
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], allDeckCardData),
-						'passed args not expected');
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('should send 500 when DeckCard.find rejects', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const queryErrorSendsUndefinedReason = undefined;
 			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
-			
-			errorHeader.message += str.errMsg.checkQuery;
 			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
 
 			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					assert.equal(jsonResStub.callCount, 1, 'should be called once');
-					assert(jsonResStub.calledWith(resDummy, resCode['SERVFAIL'], errorHeader), 
-						'passed args not expected');
-					assert.equal(jsonResStub.firstCall.args[2].message, errorHeader.message, 'errorHeader');
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 				})
-				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('send 200 when DeckCard.find resolves', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const allDeckCardData = { deckCards: {} };
+			const execStub = sandbox.stub().resolves(allDeckCardData);
+			sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findAll(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], allDeckCardData));
+				})
 		});
 
 	});

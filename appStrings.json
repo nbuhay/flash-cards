@@ -92,6 +92,7 @@
 			"deckCardCtrl": {
 				"funcHeader": {
 					"findByIdAndUpdate": "findByIdAndUpdate: ",
+					"findAll": "findAll: ",
 					"create": "create: "
 				},
 				"errMsg": {
