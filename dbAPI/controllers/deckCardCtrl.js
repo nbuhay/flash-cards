@@ -19,11 +19,12 @@ function findAll(req, res) {
 }
 
 function findById(req, res) {
-	return jsonReq.validateMongoId(req.params._id)
+	var content = { message: errHeader + str.funcHeader.findById };
+	return Validate.findById(req.params._id)
 	.then(() => Query('findById', req.params._id).exec())
 	.then((deckCard) => {
 		if (!deckCard) {
-			var content = { message: errHeader + 'findById: ' + str.errMsg.doesNotExist };
+			content.message += str.errMsg.doesNotExist;
 			Res('jsonRes', res, resCode['NOTFOUND'], content);
 		} else {
 			Res('jsonRes', res, resCode['OK'], deckCard);			
@@ -31,10 +32,10 @@ function findById(req, res) {
 	})
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'findById: ' + str.errMsg.checkQuery };
+			content.message += str.errMsg.checkQuery;
 			Res('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'findById: ' + reason.message };
+			content.message += reason.message;
 			Res('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});

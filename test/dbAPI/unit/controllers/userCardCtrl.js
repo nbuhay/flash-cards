@@ -300,7 +300,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should call jsonReq.validateMongoId with req.body.deckCard', () => {
+		it.skip('should call jsonReq.validateMongoId with req.body.deckCard', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId

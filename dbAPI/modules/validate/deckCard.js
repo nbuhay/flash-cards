@@ -1,6 +1,12 @@
 const errMsg = require('appStrings').dbAPI.controllers.deckCardCtrl.errMsg;
-const vStringArray = require('dbAPI/modules/validate/stringArray');
 const vReq = require('dbAPI/modules/validate/req');
+const vMongoId = require('dbAPI/modules/validate/mongoId');
+const vStringArray = require('dbAPI/modules/validate/stringArray');
+
+function findById(mongoId) {
+	return vMongoId.validate(mongoId)
+	.catch((reason) => { throw Error(reason.message) });
+}
 
 function create(req) {
 	return vReq.validate(req)
@@ -36,6 +42,7 @@ function update(body) {
 }
 
 module.exports = {
+	findById,
 	create,
 	update
 };

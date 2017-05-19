@@ -37,15 +37,14 @@ describe('deckCardCtrl.js', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const conditions = {};
-			const execStub = sandbox.stub().resolves();
+			const execStub = sandbox.stub().rejects();
 			const deckCardStub = sandbox.stub(DeckCard, 'find').returns({ exec: execStub });
-			const jsonResStub = sandbox.stub(jsonRes);
 
 			return deckCardCtrl.findAll(reqDummy, resDummy)
-				.then(() => expect(deckCardStub.calledWithExactly(conditions)).to.be.true)
+				.catch(() => expect(deckCardStub.calledWithExactly(conditions)).to.be.true);
 		});
 
-		it('send 500 when DeckCard.find rejects', () => {
+		it('send 500 if DeckCard.find rejects', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const queryErrorSendsUndefinedReason = undefined;
@@ -60,7 +59,7 @@ describe('deckCardCtrl.js', () => {
 				})
 		});
 
-		it('send 200 when DeckCard.find resolves', () => {
+		it('send 200 if DeckCard.find resolves', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const allDeckCardData = { deckCards: {} };
@@ -76,106 +75,94 @@ describe('deckCardCtrl.js', () => {
 
 	});
 
-	describe.skip('#findById', () => {
+	describe('#findById', () => {
 
-		beforeEach(function() {
-			errorHeader.message += 'findById: ';
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.findById);
 
-		it('function named findById should exist', () => {
-			assert.isFunction(deckCardCtrl.findAll);
-		});
+		it('#findById should exist', () => assert.isFunction(deckCardCtrl.findAll));
 
-		it('should send 400 if _id is not a valid Mongo ObjectID', () => {
-			const reqStub = { 
-				params: {
-					_id: invalidMongoId
-				} 
-			};
+		it('call Validate.findById and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
+			const validateStub = sandbox.stub(Validate, 'findById').rejects();
+
+			return deckCardCtrl.findById(reqStub, resDummy)
+				.catch(() => validateStub.calledWithExactly(reqStub.params._id).should.be.true);
+		});
+
+		it('send 400 if Validate.findById rejects', () => {
+			const reqStub = { params: { _id: invalidMongoId } };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			const validateStub = sandbox.stub(Validate, 'findById').rejects(content);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
+			errorHeader.message += content.message;
 
 			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonReqSpy.callCount, 1, 'should be called once');
-						assert(jsonReqSpy.calledWithExactly(invalidMongoId), 'req spy passed args not expected');
-						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], 
-							errorHeader), 'res stub passed args not expected');			
-				})
-				.catch((reason) => assert(false, reason.message));
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+			});
+		});
+		
+		it('call DeckCard.findById and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'findById').resolves();
+			const deckCardStub = sandbox.stub(DeckCard, 'findById').resolves();
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCardCtrl.findById(reqStub, resDummy)
+				.then(() => deckCardStub.calledWithExactly(reqStub.params._id).should.be.true);
 		});
 
-		it('should send 404 if _id does\'t exist in DeckCard collection', () => {
+		it('send 404 if _id does\'t exist in DeckCard collection', () => {
 			const idNotInCollection = validMongoId;
-			const reqStub = { 
-				params: {
-					_id: idNotInCollection
-				} 
-			};
+			const reqStub = { params: { _id: idNotInCollection } };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateStub = sandbox.stub(Validate, 'findById').resolves();
 			const stubCardData = null;
+			const execStub = sandbox.stub().resolves(stubCardData);
+			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const mockExec = sandbox.stub().resolves(stubCardData);
-			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: mockExec });
 			errorHeader.message += str.errMsg.doesNotExist;
 
 			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
-							'passed args not expected');			
-				})
-				.catch((reason) => assert(false, reason.message));
+					jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader).should.be.true;
+				});
 		});
 
-		it('should send 500 if DeckCard.findById rejects', () => {
+		it('send 500 if DeckCard.findById rejects', () => {
 			const idInCollection = validMongoId;
-			const reqStub = { 
-				params: {
-					_id: idInCollection
-				} 
-			};
+			const reqStub = { params: { _id: idInCollection } };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateStub = sandbox.stub(Validate, 'findById').resolves();
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const mockExec = sandbox.stub().rejects();
-			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: mockExec });
 			errorHeader.message += str.errMsg.checkQuery;
 
 			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader), 
-							'passed args not expected');			
-				})
-				.catch((reason) => assert(false, reason.message));
+					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader).should.be.true;
+				});
 		});
 
-		it('should send 200 if _id exists in DeckCard collection', () => {
+		it('send 200 if _id exists in DeckCard collection', () => {
 			const idInCollection = validMongoId;
-			const reqStub = { 
-				params: {
-					_id: idInCollection
-				} 
-			};
+			const reqStub = { params: { _id: idInCollection } };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			const validateStub = sandbox.stub(Validate, 'findById').resolves();
 			const stubCardData = true;
+			const execStub = sandbox.stub().resolves(stubCardData);
+			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const mockExec = sandbox.stub().resolves(stubCardData);
-			const deckCardStub = sandbox.stub(DeckCard, 'findById').returns({ exec: mockExec });
 
 			return deckCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-						assert.equal(jsonResStub.callCount, 1, 'should be called once');
-						assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], stubCardData), 
-							'passed args not expected');			
-				})
-				.catch((reason) => assert(false, reason.message));
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], stubCardData).should.be.true;
+				});
 		});
 
 	});
