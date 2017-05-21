@@ -27,22 +27,29 @@ function findByIdAndRemove(req) {
 	.catch((reason) => { throw Error(reason.message) });
 }
 
-function update(body) {
-	return new Promise((resolve, reject) => {
-		(!body.hasOwnProperty('question') && !body.hasOwnProperty('answer')) ?
-			reject({ message: errMsg.invalidDeckCard }) : resolve();
-	})
+function findByIdAndUpdate(req) {
+	var validators = {
+		question: vStringArray.validate,
+		answer: vStringArray.validate
+	};
+	return vMongoId.validate(req.params._id)
 	.then(() => {
-		// why is this so complicated?
-		if (body.question && body.answer === undefined) {
-			return vStringArray(body.question);
-		} else if (body.answer && body.question === undefined) {
-			return vStringArray(body.answer);
-		} else {
-			return vStringArray(body.answer)
-				.then(vStringArray(body.question));
-		}
+		return new Promise((resolve, reject) => {
+			(!req.body.hasOwnProperty('question') && !req.body.hasOwnProperty('answer')) ?
+				reject({ message: errMsg.invalidUpdate }) : resolve();
+		})
+		.catch((reason) => { throw Error(reason.message)});
 	})
+	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
+		return new Promise((resolve, reject) => {
+			if (!validators[elem]) delete req.body[elem];
+			resolve();
+		})
+	})))
+	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
+		debugger;
+		validators[elem](req.body[elem]);
+	})))
 	.catch((reason) => { throw Error(reason.message); });
 }
 
@@ -50,5 +57,5 @@ module.exports = {
 	findById,
 	create,
 	findByIdAndRemove,
-	update
+	findByIdAndUpdate
 };

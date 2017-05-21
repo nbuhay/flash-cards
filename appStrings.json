@@ -99,6 +99,7 @@
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
+					"invalidUpdate": "no valid keys passed",
 					"doesNotExist": "DeckCard does not exist",
 					"invalidDeckCard": "invalid DeckCard",
 					"invalidArrayField": "invalid field: expected array, got ",

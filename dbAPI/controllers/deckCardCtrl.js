@@ -80,11 +80,9 @@ function findByIdAndRemove(req, res) {
 	});
 }
 
-// validateBody own module?
-// str.funcHeader shorter?
 function findByIdAndUpdate(req, res) {
 	var content = { message: errHeader + str.funcHeader.findByIdAndUpdate };
-	return jsonReq.validateMongoId(req.params._id)
+	return Validate.findByIdAndUpdate(req)
 	.then(() => jsonReq.validateBody(req))
 	.then(() => validateUpdate(req.body))
 	.then(() => {

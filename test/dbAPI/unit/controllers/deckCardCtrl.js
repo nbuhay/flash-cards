@@ -16,8 +16,8 @@ const expect = require('chai').expect;
 var sandbox;
 var errorHeader;
 
-beforeEach(function() {
-	errorHeader = { 
+beforeEach(() => {
+	errorHeader = {
 		message: require('modules/errorHeader')(require.resolve('dbAPI/controllers/deckCardCtrl')) 
 	};
 	sandbox = sinon.sandbox.create();
@@ -324,28 +324,17 @@ describe('deckCardCtrl.js', () => {
 
 	describe.skip('#findByIdAndUpdate', () => {
 
-		beforeEach(function() {
-			errorHeader.message += str.funcHeader.findByIdAndUpdate;
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.findByIdAndUpdate);
 
-		it('function named findByIdAndUpdate should exist', () => {
-			assert.isFunction(deckCardCtrl.findByIdAndUpdate);
-		});
-
-		it('should call jsonReq.validateMongoId and pass _id', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('#findByIdAndUpdate should exist', () => assert.isFunction(deckCardCtrl.findByIdAndUpdate));
+		
+		it('call Validate.findByIdAndUpdate and pass req', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
-			sandbox.stub(jsonRes, 'send');
+			const validateStub = sandbox.stub(Validate, 'findByIdAndUpdate').rejects();
 
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonReqSpy.calledWithExactly(reqStub.params._id));
-				});
+			return deckCardCtrl.findByIdAndUpdate(reqDummy, resDummy)
+				.catch(() => validateStub.calledWithExactly(reqDummy).should.be.true);
 		});
 
 		it('should send 400 if _id is not a valid Mongo ObjectID', () => {
