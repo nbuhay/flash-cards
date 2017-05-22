@@ -56,6 +56,7 @@ describe('MochaRunner', () => {
 					importTest('', './dbAPI/unit/modules/validate/req');
 					importTest('', './dbAPI/unit/modules/validate/stringArray');
 					importTest('', './dbAPI/unit/modules/validate/deckCard');
+					importTest('', './dbAPI/unit/modules/validate/userCard');
 				});
 			});
 

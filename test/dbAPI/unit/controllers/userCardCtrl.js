@@ -19,6 +19,7 @@ const validDate = require('config').validDate();
 const jsonRes = require('modules/jsonResponse');
 const jsonReq = require('modules/jsonRequest');
 const UserCard = require('dbAPI/models/userCard');
+const Validate = require('dbAPI/modules/validateFactory').UserCard;
 
 var sandbox;
 var errorHeader;
@@ -85,144 +86,108 @@ describe('userCardCtrl.js', () => {
 
 	describe('#findById', () => {
 
-		beforeEach(() => {
-			errorHeader.message += 'findById: ';
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.findById);
 
-		it('function named FindById should exist', () => {
-			expect(userCardCtrl.findById).to.exist;
-		});
+		it('#findById should exist', () => expect(userCardCtrl.findById).to.exist);
 
-		it('should send 400 if _id is not a valid Mongo ObjectID', () => {
-			const reqStub = {
-				params: {
-					_id: invalidMongoId
-				}
-			};
+		it('call Validate.findById and pass req', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqSpy = sandbox.spy(jsonReq, 'validateMongoId');
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const validateStub = sandbox.stub(Validate, 'findById').rejects();
 
-			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
+			return userCardCtrl.findById(reqDummy, resDummy)
+				.catch(() => validateStub.calledWithExactly(reqDummy).should.be.true);
+		});
+
+		it('send 400 if if Validate.findById rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			sandbox.stub(Validate, 'findById').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return userCardCtrl.findById(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
+				});
+		});
+
+		it('call UserCard.findById and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findById').resolves();
+			const userCardStub = sandbox.stub(UserCard, 'findById').rejects();
 
 			return userCardCtrl.findById(reqStub, resDummy)
-				.then(() => {
-					jsonReqSpy.callCount.should.equal(1);
-					expect(jsonReqSpy.calledWithExactly(reqStub.params._id),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+				.catch(() => assert(userCardStub.calledWithExactly(reqStub.params._id)));
 		});
 
-		it('should call UserCard.findById with _id as the only arg', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('send 500 if UserCard.findById rejects', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const userCardStub = sandbox.stub(UserCard, 'findById').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			return userCardCtrl.findById(reqStub, resDummy)
-				.then(() => {
-					userCardStub.callCount.should.equal(1);
-					expect(userCardStub.calledWithExactly(reqStub.params._id),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('should send 500 if UserCard.findById rejects', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const execStub = sandbox.stub().rejects();
-			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(Validate, 'findById').resolves();
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.checkQuery;
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
+				});
 		});
 
-		it('should send 404 if _id does\'t exist in UserCard collection', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('send 404 if _id DNE in UserCard collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			sandbox.stub(Validate, 'findById').resolves();
 			const userCardDoesNotExist = null;
 			const execStub = sandbox.stub().resolves(userCardDoesNotExist);
-			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.doesNotExist;
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader));
+				});
 		});
 
-		it('should send 200 if _id exists in UserCard collection', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('send 200 and UserCard if _id UserCard exists in collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			sandbox.stub(Validate, 'findById').resolves();
 			const userCardData = { user: {} };
 			const execStub = sandbox.stub().resolves(userCardData);
-			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], userCardData),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], userCardData));
+				});
 		});
 
-		it('should send 200 but no data if req.method is HEAD and _id exists in UserCard collection', () => {
-			const reqStub = {
-				params: {
-					_id: validMongoId
-				},
-				method: 'HEAD'
-			};
+		it('send 200 and no data if req method is HEAD and _id exists in collection', () => {
+			const reqStub = { params: { _id: validMongoId }, method: 'HEAD' };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			sandbox.stub(Validate, 'findById').resolves();
 			const userCardData = { user: {} };
 			const execStub = sandbox.stub().resolves(userCardData);
-			const userCardStub = sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCardCtrl.findById(reqStub, resDummy)
 				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], undefined),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], undefined));
+				});
 		});
 
 	});
 
-	describe('#create', () => {
+	describe.skip('#create', () => {
 
 		beforeEach(() => {
 			errorHeader.message += str.funcHeader.create;
@@ -232,7 +197,7 @@ describe('userCardCtrl.js', () => {
 			expect(userCardCtrl.create).to.exist;
 		});
 
-		it('should call jsonReq.validateBody with req.body', () => {
+		it('call jsonReq.validateBody with req.body', () => {
 			const reqStub = {
 				body: {}
 			};
@@ -247,7 +212,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 when req.body.deckCard is undefined', () => {
+		it('send 400 when req.body.deckCard is undefined', () => {
 			const reqStub = {
 				body: {}
 			};
@@ -264,7 +229,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 when req.body.deckCard is null', () => {
+		it('send 400 when req.body.deckCard is null', () => {
 			const reqStub = {
 				body: {
 					deckCard: null 
@@ -302,7 +267,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should make a http HEAD to check the deckCard exists', () => {
+		it('make a http HEAD to check the deckCard exists', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -326,7 +291,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 500 if http HEAD to check the deckCard exists fails', () => {
+		it('send 500 if http HEAD to check the deckCard exists fails', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -350,7 +315,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if req.body.deckCard does\'nt exist in the deckCard db', () => {
+		it('send 400 if req.body.deckCard does\'nt exist in the deckCard db', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -374,7 +339,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 500 if UserCard.create throws an error', () => {
+		it('send 500 if UserCard.create throws an error', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -400,7 +365,7 @@ describe('userCardCtrl.js', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-	it('should send 200 if UserCard.create resolves', () => {
+	it('send 200 if UserCard.create resolves', () => {
 			const reqStub = {
 				body: {
 					deckCard: validMongoId
@@ -428,7 +393,7 @@ describe('userCardCtrl.js', () => {
 
 	});
 
-describe('#findByIdAndUpdate', () => {
+describe.skip('#findByIdAndUpdate', () => {
 
 		beforeEach(() => {
 			errorHeader.message += str.funcHeader.findByIdAndUpdate;
@@ -438,7 +403,7 @@ describe('#findByIdAndUpdate', () => {
 			expect(userCardCtrl.findByIdAndUpdate).to.exist;
 		});
 
-		it('should call jsonReq.validateMongoId with req.params._id', () => {
+		it('call jsonReq.validateMongoId with req.params._id', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -455,7 +420,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if jsonReq.validateMongoId rejects', () => {
+		it('send 400 if jsonReq.validateMongoId rejects', () => {
 			const reqStub = {
 				params: {
 					_id: invalidMongoId
@@ -474,7 +439,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should call jsonReq.validateBody with req.body', () => {
+		it('call jsonReq.validateBody with req.body', () => {
 			const reqStub = {
 				params: {
 					_id: validMongoId
@@ -497,7 +462,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if jsonReq.validateBody rejects', () => {
+		it('send 400 if jsonReq.validateBody rejects', () => {
 			const invalidReqBody = {};
 			const reqStub = {
 				params: {
@@ -519,7 +484,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if jsonReq.validateMongoId rejects req.body.deckCard', () => {
+		it('send 400 if jsonReq.validateMongoId rejects req.body.deckCard', () => {
 			const invalidReqBody = {
 				deckCard: invalidMongoId
 			};
@@ -544,7 +509,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 400 if req.body.deckCard doesn\'t exist in deckCard collection', () => {
+		it('send 400 if req.body.deckCard doesn\'t exist in deckCard collection', () => {
 			const validReqBody = {
 				deckCard: validMongoId
 			};
@@ -572,7 +537,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.gotCorrect to false if it\'s undefined', () => {
+		it('default req.body.gotCorrect to false if it\'s undefined', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId
 			};
@@ -598,7 +563,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.gotCorrect to false if it\'s not a Boolean', () => {
+		it('default req.body.gotCorrect to false if it\'s not a Boolean', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: 'NotBoolean'
@@ -625,7 +590,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.lastSeen to current Date if it\'s undefined', () => {
+		it('default req.body.lastSeen to current Date if it\'s undefined', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true
@@ -653,7 +618,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.lastSeen to current Date if it\'s not a Date object', () => {
+		it('default req.body.lastSeen to current Date if it\'s not a Date object', () => {
 			const notDateObject = true;
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
@@ -683,7 +648,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.lastSeen to current Date if it\'s an invalid Date', () => {
+		it('default req.body.lastSeen to current Date if it\'s an invalid Date', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -712,7 +677,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.lastCorrect to current Date if it\'s undefined', () => {
+		it('default req.body.lastCorrect to current Date if it\'s undefined', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: validDate,
@@ -741,7 +706,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.lastSeen to current Date if it\'s not a Date object', () => {
+		it('default req.body.lastSeen to current Date if it\'s not a Date object', () => {
 			const notDateObject = true;
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
@@ -772,7 +737,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.lastCorrect to current Date if it\'s not a valid Date', () => {
+		it('default req.body.lastCorrect to current Date if it\'s not a valid Date', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -802,7 +767,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.correctStreak to 0 if it\'s undefined', () => {
+		it('default req.body.correctStreak to 0 if it\'s undefined', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -831,7 +796,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.correctStreak to 0 if it\'s NaN', () => {
+		it('default req.body.correctStreak to 0 if it\'s NaN', () => {
 			const notNumber = true;
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
@@ -862,7 +827,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.incorrectStreak to 0 if it\'s undefined', () => {
+		it('default req.body.incorrectStreak to 0 if it\'s undefined', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -892,7 +857,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.incorrectStreak to 0 if it\'s NaN', () => {
+		it('default req.body.incorrectStreak to 0 if it\'s NaN', () => {
 			const notNumber = true;
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
@@ -924,7 +889,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.totalViews to 0 if it\'s undefined', () => {
+		it('default req.body.totalViews to 0 if it\'s undefined', () => {
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -955,7 +920,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should default req.body.totalViews to 0 if it\'s NaN', () => {
+		it('default req.body.totalViews to 0 if it\'s NaN', () => {
 			const notNumber = true;
 			const invalidUserCardReqBody = {
 				deckCard: validMongoId,
@@ -988,7 +953,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should call UserCard.findByIdAndUpdate with the validated req.body', () => {
+		it('call UserCard.findByIdAndUpdate with the validated req.body', () => {
 			const validUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -1030,7 +995,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 500 when UserCard.findByIdAndUpdate rejects', () => {
+		it('send 500 when UserCard.findByIdAndUpdate rejects', () => {
 			const validUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,
@@ -1066,7 +1031,7 @@ describe('#findByIdAndUpdate', () => {
 				.catch((reason) => assert(false, reason.message));
 		});
 
-		it('should send 200 when UserCard.findByIdAndUpdate resolves', () => {
+		it('send 200 when UserCard.findByIdAndUpdate resolves', () => {
 			const validUserCardReqBody = {
 				deckCard: validMongoId,
 				gotCorrect: true,

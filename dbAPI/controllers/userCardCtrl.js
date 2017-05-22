@@ -2,10 +2,10 @@ const http = require('http');
 const str = require('appStrings').dbAPI.controllers.userCardCtrl;
 const config = require('config').config();
 const resCode = require('config').resCode();
-const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
 const Query = require('dbAPI/modules/queryFactory').UserCard;
 const Res = require('dbAPI/modules/resFactory');
+const Validate = require('dbAPI/modules/validateFactory').UserCard;
 
 function validateCreate(validReqBody) {
 	return new Promise((resolve, reject) => {
@@ -86,40 +86,40 @@ function validateDeckCardExists(validMongoId) {
 function findAll(req, res) {
 	var content = { message: errHeader + str.funcHeader.findAll };
 	return Query('findAll', {}).exec()
-		.then((userCards) => Res('jsonRes', res, resCode['OK'], userCards))
-		.catch((reason) => {
-			if (reason === undefined) {
-				content.message += str.errMsg.checkQuery;
-				Res('jsonRes', res, resCode['SERVFAIL'], content);
-			}
-		});
+	.then((userCards) => Res('jsonRes', res, resCode['OK'], userCards))
+	.catch((reason) => {
+		if (reason === undefined) {
+			content.message += str.errMsg.checkQuery;
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
+		}
+	});
 }
 
 function findById(req, res) {
-	var content = { message: errHeader + 'findById: ' };
-	return jsonReq.validateMongoId(req.params._id)
-		.then(() => Query('findById', req.params._id).exec())
-		.then((userCard) => {
-			if (!userCard) {
-				content.message += str.errMsg.doesNotExist;
-				Res('jsonRes', res, resCode['NOTFOUND'], content);
+	var content = { message: errHeader + str.funcHeader.findById };
+	return Validate.findById(req)
+	.then(() => Query('findById', req.params._id).exec())
+	.then((userCard) => {
+		if (!userCard) {
+			content.message += str.errMsg.doesNotExist;
+			Res('jsonRes', res, resCode['NOTFOUND'], content);
+		} else {
+			if (req.method !== 'HEAD') {
+				Res('jsonRes', res, resCode['OK'], userCard);
 			} else {
-				if (req.method !== 'HEAD') {
-					Res('jsonRes', res, resCode['OK'], userCard);
-				} else {
-					Res('jsonRes', res, resCode['OK'], undefined);
-				}
+				Res('jsonRes', res, resCode['OK'], undefined);
 			}
-		})
-		.catch((reason) => {
-			if (reason === undefined) {
-				content.message += str.errMsg.checkQuery;
-				Res('jsonRes', res, resCode['SERVFAIL'], content);
-			} else {
-				content.message += reason.message;
-				Res('jsonRes', res, resCode['BADREQ'], content);
-			}
-		});
+		}
+	})
+	.catch((reason) => {
+		if (reason === undefined) {
+			content.message += str.errMsg.checkQuery;
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			content.message += reason.message;
+			Res('jsonRes', res, resCode['BADREQ'], content);
+		}
+	});
 }
 
 function create(req, res) {
