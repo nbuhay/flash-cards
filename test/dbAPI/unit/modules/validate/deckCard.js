@@ -11,7 +11,7 @@ var sandbox;
 beforeEach(() => sandbox = sinon.sandbox.create());
 afterEach(() => sandbox.restore());
 
-describe.only('deckCard.js', () => {
+describe('deckCard.js', () => {
 
 	describe('#findById', () => {
 

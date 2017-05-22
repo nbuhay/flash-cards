@@ -108,6 +108,7 @@
 			},
 			"userCardCtrl": {
 				"funcHeader": {
+					"findAll": "findAll: ",
 					"findById": "findById: ",
 					"create": "create: ",
 					"findByIdAndUpdate": "findByIdAndUpdate: ",

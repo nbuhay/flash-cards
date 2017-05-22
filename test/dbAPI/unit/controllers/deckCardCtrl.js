@@ -25,7 +25,7 @@ beforeEach(() => {
 
 afterEach(() => sandbox.restore());
 
-describe.only('deckCardCtrl.js', () => {
+describe('deckCardCtrl.js', () => {
 
 	describe('#findAll', () => {
 

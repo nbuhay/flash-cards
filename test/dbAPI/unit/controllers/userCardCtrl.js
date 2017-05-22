@@ -24,77 +24,61 @@ var sandbox;
 var errorHeader;
 
 beforeEach(() => {
-	errorHeader = { message: 'error:dbAPI.userCardCtrl.' };
+	errorHeader = {
+		message: require('modules/errorHeader')(require.resolve('dbAPI/controllers/userCardCtrl')) 
+	};
 	sandbox = sinon.sandbox.create();
 });
 
-afterEach(() => {
-	sandbox.restore();
-});
+afterEach(() => sandbox.restore());
 
 describe('userCardCtrl.js', () => {
 
 	describe('#findAll', () => {
 
-		beforeEach(function() {
-			errorHeader.message += 'findAll: ';
-		});
+		beforeEach(() => { errorHeader.message += str.funcHeader.findAll; });
 
-		it('function named findAll should exist', () => {
-			expect(userCardCtrl.findAll).to.exist;
-		});
+		it('#findAll should exist', () => expect(userCardCtrl.findAll).to.exist);
 
-		it('should call UserCardCtrl.findAll with the empty list as the only arg', () => {
+		it('call UserCardCtrl.find and pass empty list', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} }; 
 			const conditions = {};
-			const execStub = sandbox.stub().resolves();
+			const execStub = sandbox.stub().rejects();
 			const userCardStub = sandbox.stub(UserCard, 'find').returns({ exec: execStub });
-			const jsonResStub = sandbox.stub(jsonRes);
+
+			return userCardCtrl.findAll(reqDummy, resDummy)
+				.catch(() => userCardStub.calledWithExactly(conditions).should.be.true);
+		});
+
+		it('send 500 if UserCard.find rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(UserCard, 'find').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
 
 			return userCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					userCardStub.callCount.should.equal(1);
-					userCardStub.calledWithExactly(conditions).should.be.true;
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 				});
 		});
 
-		it('should send 500 when UserCard.find rejects', () => {
+		it('send 200 and all UserCard data when UserCard.find resolves', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const queryErrorSendsUndefinedReason = undefined;
-			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
-			
-			errorHeader.message += str.errMsg.checkQuery;
-			sandbox.stub(UserCard, 'find').returns({ exec: execStub });
-
-			return userCardCtrl.findAll(reqDummy, resDummy)
-				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)
-						.should.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('should send 200 and all UserCard data when UserCard.find resolves', () => {
-			const reqDummy = { req: {} };
-			const resDummy = { res: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			const allUserCardData = { userCards: {} };
 			const execStub = sandbox.stub().resolves(allUserCardData);
-			
-			errorHeader.message += str.errMsg.checkQuery;
 			sandbox.stub(UserCard, 'find').returns({ exec: execStub });
-
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
+			
 			return userCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					jsonResStub.callCount.should.equal(1);
-					jsonResStub.calledWithExactly(resDummy, resCode['OK'], allUserCardData)
-						.should.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], allUserCardData));
+				});
 		});
 
 	});

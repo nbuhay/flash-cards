@@ -4,8 +4,8 @@ const config = require('config').config();
 const resCode = require('config').resCode();
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
-const UserCardQuery = require('dbAPI/modules/queryFactory').UserCard;
-const ResFactory = require('dbAPI/modules/resFactory');
+const Query = require('dbAPI/modules/queryFactory').UserCard;
+const Res = require('dbAPI/modules/resFactory');
 
 function validateCreate(validReqBody) {
 	return new Promise((resolve, reject) => {
@@ -84,12 +84,13 @@ function validateDeckCardExists(validMongoId) {
 }
 
 function findAll(req, res) {
-	return UserCardQuery('findAll', {}).exec()
-		.then((userCards) => ResFactory('jsonRes', res, resCode['OK'], userCards))
+	var content = { message: errHeader + str.funcHeader.findAll };
+	return Query('findAll', {}).exec()
+		.then((userCards) => Res('jsonRes', res, resCode['OK'], userCards))
 		.catch((reason) => {
 			if (reason === undefined) {
-				var content = { message: errHeader + 'findAll: ' + str.errMsg.checkQuery };
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+				content.message += str.errMsg.checkQuery;
+				Res('jsonRes', res, resCode['SERVFAIL'], content);
 			}
 		});
 }
@@ -97,26 +98,26 @@ function findAll(req, res) {
 function findById(req, res) {
 	var content = { message: errHeader + 'findById: ' };
 	return jsonReq.validateMongoId(req.params._id)
-		.then(() => UserCardQuery('findById', req.params._id).exec())
+		.then(() => Query('findById', req.params._id).exec())
 		.then((userCard) => {
 			if (!userCard) {
 				content.message += str.errMsg.doesNotExist;
-				ResFactory('jsonRes', res, resCode['NOTFOUND'], content);
+				Res('jsonRes', res, resCode['NOTFOUND'], content);
 			} else {
 				if (req.method !== 'HEAD') {
-					ResFactory('jsonRes', res, resCode['OK'], userCard);
+					Res('jsonRes', res, resCode['OK'], userCard);
 				} else {
-					ResFactory('jsonRes', res, resCode['OK'], undefined);
+					Res('jsonRes', res, resCode['OK'], undefined);
 				}
 			}
 		})
 		.catch((reason) => {
 			if (reason === undefined) {
 				content.message += str.errMsg.checkQuery;
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+				Res('jsonRes', res, resCode['SERVFAIL'], content);
 			} else {
 				content.message += reason.message;
-				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+				Res('jsonRes', res, resCode['BADREQ'], content);
 			}
 		});
 }
@@ -127,21 +128,21 @@ function create(req, res) {
 		.then(() => validateCreate(req.body))
 		.then((deckCardId) => jsonReq.validateMongoId(deckCardId))
 		.then(() => validateDeckCardExists(req.body.deckCard))
-		.then(() => UserCardQuery('create', req.body).exec())
+		.then(() => Query('create', req.body).exec())
 		.then((createdUserCard) => {
-			ResFactory('jsonRes', res, resCode['OK'], createdUserCard);
+			Res('jsonRes', res, resCode['OK'], createdUserCard);
 		})
 		.catch((reason) => {
 			if (reason === undefined) {
 				content.message += str.errMsg.checkQuery;
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+				Res('jsonRes', res, resCode['SERVFAIL'], content);
 			} else {
 				if (reason.message === str.errMsg.apiServfail) {
 					content.message += str.errMsg.apiServfail;
-					ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+					Res('jsonRes', res, resCode['SERVFAIL'], content);
 				} else {
 					content.message += reason.message;
-					ResFactory('jsonRes', res, resCode['BADREQ'], content);
+					Res('jsonRes', res, resCode['BADREQ'], content);
 				}
 			}
 		});
@@ -157,16 +158,16 @@ function findByIdAndUpdate(req, res) {
 				_id: req.params._id,
 				updateData: updateData
 			};
-			return UserCardQuery('findByIdAndUpdate', conditions).exec();
+			return Query('findByIdAndUpdate', conditions).exec();
 		})
-		.then(() => ResFactory('jsonRes', res, resCode['OK']))
+		.then(() => Res('jsonRes', res, resCode['OK']))
 		.catch((reason) => {
 			if (reason === undefined) {
 				content.message += str.errMsg.checkQuery;
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+				Res('jsonRes', res, resCode['SERVFAIL'], content);
 			} else {
 				content.message += reason.message;
-				ResFactory('jsonRes', res, resCode['BADREQ'], content);
+				Res('jsonRes', res, resCode['BADREQ'], content);
 			}
 		});
 }
