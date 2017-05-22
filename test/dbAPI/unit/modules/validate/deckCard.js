@@ -11,7 +11,7 @@ var sandbox;
 beforeEach(() => sandbox = sinon.sandbox.create());
 afterEach(() => sandbox.restore());
 
-describe('deckCard.js', () => {
+describe.only('deckCard.js', () => {
 
 	describe('#findById', () => {
 
@@ -62,7 +62,16 @@ describe('deckCard.js', () => {
 
 	describe('#findByIdAndUpdate', () => {
 
+		it('call req.validate and pass req', () => {
+			const reqDummy = { req: {} };
+			const vReqStub = sandbox.stub(vReq, 'validate').rejects();
+
+			return deckCard.findByIdAndUpdate(reqDummy)
+				.catch(() => vReqStub.calledWithExactly(reqDummy).should.be.true); 
+		});
+
 		it('call mongoId.validate and pass req params _id', () => {
+			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { params: { _id: validMongoId } }; 
 			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').rejects();
 			
@@ -71,6 +80,7 @@ describe('deckCard.js', () => {
 		});
 
 		it('reject if body does\'t have property question or answer', () => {
+			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { params: { _id: validMongoId }, body: {} };
 			sandbox.stub(vMongoId, 'validate').resolves();
 
@@ -78,6 +88,7 @@ describe('deckCard.js', () => {
 		});
 
 		it('cleanse undesired keys from req body', () => {
+			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { 
 				params: { _id: validMongoId }, 
 				body: {
@@ -93,12 +104,10 @@ describe('deckCard.js', () => {
 		});
 
 		it('call validation on each key', () => {
+			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { 
 				params: { _id: validMongoId }, 
-				body: {
-					question: 'test question',
-					answer: 'test answer',
-				}
+				body: { question: 'test question', answer: 'test answer' }
 			};
 			sandbox.stub(vMongoId, 'validate').resolves();
 			const vStringArrayStub = sandbox.stub(vStringArray, 'validate').resolves();
@@ -110,12 +119,18 @@ describe('deckCard.js', () => {
 				});
 		});
 
+		it('resolve validated data', () => {
+			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
+			const reqStub = { 
+				params: { _id: validMongoId }, 
+				body: { question: 'test question', answer: 'test answer' }
+			};
+			sandbox.stub(vMongoId, 'validate').resolves();
+			const vStringArrayStub = sandbox.stub(vStringArray, 'validate').resolves();
 
-		// check has either question or answer
-		//   nothing to update otherwise
-		// object that just captures possible values to update
-		//   extra values are dropped
-		//   handle undefined
-	})
+			return deckCard.findByIdAndUpdate(reqStub).should.eventually.equal(reqStub.body);
+		});
+
+	});
 
 });

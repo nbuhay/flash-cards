@@ -83,10 +83,8 @@ function findByIdAndRemove(req, res) {
 function findByIdAndUpdate(req, res) {
 	var content = { message: errHeader + str.funcHeader.findByIdAndUpdate };
 	return Validate.findByIdAndUpdate(req)
-	.then(() => jsonReq.validateBody(req))
-	.then(() => validateUpdate(req.body))
-	.then(() => {
-		const conditions = { _id: req.params._id, update: req.body };
+	.then((validatedData) => {
+		const conditions = { _id: req.params._id, update: validatedData };
 		const options = { new: true };
 		return Query('findByIdAndUpdate', conditions, options).exec();
 	})
@@ -104,7 +102,7 @@ function findByIdAndUpdate(req, res) {
 			Res('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
 			content.message += reason.message;
-			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			Res('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
 }

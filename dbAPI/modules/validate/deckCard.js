@@ -27,12 +27,15 @@ function findByIdAndRemove(req) {
 	.catch((reason) => { throw Error(reason.message) });
 }
 
+// need to check for valid request
+// resolve the updated body...
 function findByIdAndUpdate(req) {
-	var validators = {
+	const validators = {
 		question: vStringArray.validate,
 		answer: vStringArray.validate
 	};
-	return vMongoId.validate(req.params._id)
+	return vReq.validate(req)
+	.then(() => vMongoId.validate(req.params._id))
 	.then(() => {
 		return new Promise((resolve, reject) => {
 			(!req.body.hasOwnProperty('question') && !req.body.hasOwnProperty('answer')) ?
@@ -47,9 +50,9 @@ function findByIdAndUpdate(req) {
 		})
 	})))
 	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
-		debugger;
 		validators[elem](req.body[elem]);
 	})))
+	.then(() => { return req.body })
 	.catch((reason) => { throw Error(reason.message); });
 }
 

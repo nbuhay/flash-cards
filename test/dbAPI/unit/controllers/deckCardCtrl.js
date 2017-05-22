@@ -25,7 +25,7 @@ beforeEach(() => {
 
 afterEach(() => sandbox.restore());
 
-describe('deckCardCtrl.js', () => {
+describe.only('deckCardCtrl.js', () => {
 
 	describe('#findAll', () => {
 
@@ -197,7 +197,7 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it.skip('create a DeckCard');
+		it.skip('call DeckCard.create');
 
 		it('send 500 if Query rejects', () => {
 			const reqStub = { body: {} };
@@ -322,11 +322,13 @@ describe('deckCardCtrl.js', () => {
 
 	});
 
-	describe.skip('#findByIdAndUpdate', () => {
+	describe('#findByIdAndUpdate', () => {
 
 		beforeEach(() => errorHeader.message += str.funcHeader.findByIdAndUpdate);
 
-		it('#findByIdAndUpdate should exist', () => assert.isFunction(deckCardCtrl.findByIdAndUpdate));
+		it('#findByIdAndUpdate should exist', () => {
+			assert.isFunction(deckCardCtrl.findByIdAndUpdate);
+		});
 		
 		it('call Validate.findByIdAndUpdate and pass req', () => {
 			const reqDummy = { req: {} };
@@ -337,232 +339,43 @@ describe('deckCardCtrl.js', () => {
 				.catch(() => validateStub.calledWithExactly(reqDummy).should.be.true);
 		});
 
-		it('should send 400 if _id is not a valid Mongo ObjectID', () => {
-			const reqStub = {
-				params: {
-					_id: invalidMongoId
-				}
-			};
+		it('send 400 if Validate.findByIdAndUpdate rejects', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			const validateStub = sandbox.stub(Validate, 'findByIdAndUpdate').rejects(content);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidMongoId;
+			errorHeader.message += content.message;
 
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
+			return deckCardCtrl.findByIdAndUpdate(reqDummy, resDummy)
 				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));		
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
 				});
 		});
 
-		it('should send 400 if header content-type is undefined', () => {
-			const reqStub = { 
-				headers: {},
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('call DeckCard.findByIdAndUpdate and pass req params _id, validated req data,' + 
+			'and options to return the updated object', () => {
+			const reqStub = { params: { _id: validMongoId }, body: { question: 'test question' } };
 			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += modulesStr.jsonRequest.errMsg.noContentType;
+			const options = { new: true };
+			sandbox.stub(Validate, 'findByIdAndUpdate').resolves(reqStub.body);
+			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').rejects();
 
 			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
+				.catch(() => {
+					deckCardStub.calledWithExactly(reqStub.params._id, reqStub.body, options)
+						.should.be.true;
+			});
+
 		});
 
-		it('should send 400 if header content-type is not application/json', () => {
-			const reqStub = { 
-				headers: {
-					'content-type': 'text'
-				},
-				params: {
-					_id: validMongoId
-				}
-			};
+		it('send 500 if DeckCard.findByIdAndUpdate rejects', () => {
+			const reqStub = { params: { _id: validMongoId }, body: { question: 'test question' } };
 			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 
-				(modulesStr.jsonRequest.errMsg.invalidContentType + reqStub.headers['content-type']);
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 when req body is undefined', () => {
-			const reqStub = { 
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 when req body is null', () => {
-			const reqStub = { 
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: null
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += modulesStr.jsonRequest.errMsg.invalidReqBody;
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 when req body doesn\'t have either a question or answer field', () => {
-			const invalidDeckCard = {};
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: invalidDeckCard
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.invalidDeckCard;
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 if question is not an array', () => {
-			const invalidDeckCard = { question: true };
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: invalidDeckCard
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 
-				(str.errMsg.invalidArrayField + typeof reqStub.body.question);
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 if answer is not an array', () => {
-			const invalidDeckCard = { answer: true };
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: invalidDeckCard
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += 
-				(str.errMsg.invalidArrayField + typeof reqStub.body.answer);
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 if question is not an array of only strings', () => {
-			const invalidDeckCard = { question: [true] };
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: invalidDeckCard
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.invalidStringArray;
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
-				});
-		});
-
-		it('should send 400 if answer is not an array of only strings', () => {
-			const invalidDeckCard = { answer: [true] };
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: invalidDeckCard
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.invalidStringArray;
-
-			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
-				.then(() => {
-					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));				
-				});
-		});
-
-		it('should send 500 if DeckCard.findByIdAndUpdate rejects', () => {
-			const validDeckCard = { 
-				answer: ['true'], 
-				question: ['string'] 
-			};
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: validDeckCard
-			};
-			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const execStub = sandbox.stub().rejects();
-			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
+			sandbox.stub(Validate, 'findByIdAndUpdate').resolves(reqStub.body);
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.checkQuery;
 
@@ -572,25 +385,13 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('should send 404 if_id does not exist in the db', () => {
-			const validDeckCard = {
-				answer: ['true'],
-				question: ['string']
-			};
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: validDeckCard
-			};
+		it('send 404 if req params _id DNE exist in the db', () => {
+			const reqStub = { params: { _id: validMongoId }, body: { question: 'test question' } };
 			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
+			sandbox.stub(Validate, 'findByIdAndUpdate').resolves(reqStub.body);
 			const returnedDeckCardStub = null;
 			const execStub = sandbox.stub().resolves(returnedDeckCardStub);
-			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
+			sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.doesNotExist;
 
@@ -600,25 +401,13 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('should send 200 if DeckCard.findByIdAndUpdate resolves', () =>{
-			const validDeckCard = {
-				answer: ['true'],
-				question: ['string']
-			};
-			const reqStub = {
-				headers: {
-					'content-type': 'application/json'
-				},
-				params: {
-					_id: validMongoId
-				},
-				body: validDeckCard
-			};
+		it('send 200 and the updated DeckCard if DeckCard.findByIdAndUpdate resolves', () =>{
+			const reqStub = { params: { _id: validMongoId }, body: { question: 'test question' } };
 			const resDummy = { res: {} };
-			sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const returnedDeckCardStub = {};
+			sandbox.stub(Validate, 'findByIdAndUpdate').resolves(reqStub.body);
+			const returnedDeckCardStub = { deckCard: {} };
 			const execStub = sandbox.stub().resolves(returnedDeckCardStub);
-			const deckCardStub = sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
+			sandbox.stub(DeckCard, 'findByIdAndUpdate').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return deckCardCtrl.findByIdAndUpdate(reqStub, resDummy)
