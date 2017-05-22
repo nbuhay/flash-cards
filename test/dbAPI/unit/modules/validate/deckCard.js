@@ -5,6 +5,8 @@ const vMongoId = require('dbAPI/modules/validate/mongoId');
 const vStringArray = require('dbAPI/modules/validate/stringArray');
 const validMongoId = require('config').validMongoId();
 const sinon = require('sinon');
+const assert = require('chai').assert;
+const isEqual = require('lodash').isEqual;
 
 var sandbox;
 
@@ -25,27 +27,57 @@ describe('deckCard.js', () => {
 
 	});
 
-	describe.skip('#create', () => {
+	describe('#create', () => {
 
-		it.skip('pass req to be validated');
+		it('call req.validate and pass req', () => {
+			const reqDummy = { req: {} };
+			const vReqStub = sandbox.stub(vReq, 'validate').rejects();
+
+			return deckCard.create(reqDummy).catch(() => 
+				assert(vReqStub.calledWithExactly(reqDummy)));
+		});
 		
-		it('reject if body key question DNE', () => {
+		it('reject if req body key question DNE', () => {
 			const reqStub = { body: {} };
-			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
+			sandbox.stub(vReq, 'validate').resolves();
 
 			return deckCard.create(reqStub).should.be.rejectedWith(errMsg.invalidDeckCard);
 		});
 
 		it('reject if body key answer DNE', () => {
 			const reqStub = { body: { question: {} } };
-			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
+			sandbox.stub(vReq, 'validate').resolves();
 
 			return deckCard.create(reqStub).should.be.rejectedWith(errMsg.invalidDeckCard);
 		});
 
-		it.skip('question should be a string array');
-		it.skip('answer should be a string array');
-		// needs to resolve back data to be saved, don't trust the body
+		it('call stringArray.validate and pass req body answer', () => {
+			const reqStub = { body: { question: [ 'question' ], answer: [ 'answer' ] } };
+			sandbox.stub(vReq, 'validate').resolves();
+			const vStringArrayStub = sandbox.stub(vStringArray, 'validate').rejects();
+
+			return deckCard.create(reqStub)
+				.catch(() => assert(vStringArrayStub.calledWithExactly(reqStub.body.answer)));
+		});
+
+		it('call stringArray.validate and pass req body question', () => {
+			const reqStub = { body: { question: [ 'question' ], answer: [ 'answer' ] } };
+			sandbox.stub(vReq, 'validate').resolves();
+			const vStringArrayStub = sandbox.stub(vStringArray, 'validate');
+			vStringArrayStub.withArgs(reqStub.body.question).rejects();
+
+			return deckCard.create(reqStub)
+				.catch(() => assert(vStringArrayStub.calledWithExactly(reqStub.body.question)));
+		});
+
+		it('resolve validated data', () => {
+			const reqStub = { body: { question: [ 'question' ], answer: [ 'answer' ] } };
+			sandbox.stub(vReq, 'validate').resolves();
+			sandbox.stub(vStringArray, 'validate').resolves();
+
+			return deckCard.create(reqStub).then((data) => assert(isEqual(data, reqStub.body)));
+		});
+
 	});
 
 	describe('#findByIdAndRemove', () => {
@@ -55,7 +87,7 @@ describe('deckCard.js', () => {
 			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').resolves();
 			
 			return deckCard.findByIdAndRemove(reqStub)
-				.then(() => vMongoIdStub.calledWithExactly(validMongoId).should.be.true);
+				.then(() => assert(vMongoIdStub.calledWithExactly(validMongoId)));
 		});
 
 	});
@@ -79,7 +111,7 @@ describe('deckCard.js', () => {
 				.catch(() => vMongoIdStub.calledWithExactly(validMongoId).should.be.true);
 		});
 
-		it('reject if body does\'t have property question or answer', () => {
+		it('reject if body keys question or answer DNE', () => {
 			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { params: { _id: validMongoId }, body: {} };
 			sandbox.stub(vMongoId, 'validate').resolves();
@@ -92,8 +124,8 @@ describe('deckCard.js', () => {
 			const reqStub = { 
 				params: { _id: validMongoId }, 
 				body: {
-					question: 'test question',
-					answer: 'test answer',
+					question: [ 'test question' ],
+					answer: [ 'test answer' ],
 					undesiredKey: 'not in schema'
 				}
 			};
@@ -107,7 +139,7 @@ describe('deckCard.js', () => {
 			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { 
 				params: { _id: validMongoId }, 
-				body: { question: 'test question', answer: 'test answer' }
+				body: { question: [ 'test question' ], answer: [ 'test answer' ] }
 			};
 			sandbox.stub(vMongoId, 'validate').resolves();
 			const vStringArrayStub = sandbox.stub(vStringArray, 'validate').resolves();
@@ -123,12 +155,13 @@ describe('deckCard.js', () => {
 			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 			const reqStub = { 
 				params: { _id: validMongoId }, 
-				body: { question: 'test question', answer: 'test answer' }
+				body: { question: [ 'test question' ], answer: [ 'test answer' ] }
 			};
 			sandbox.stub(vMongoId, 'validate').resolves();
 			const vStringArrayStub = sandbox.stub(vStringArray, 'validate').resolves();
 
-			return deckCard.findByIdAndUpdate(reqStub).should.eventually.equal(reqStub.body);
+			return deckCard.findByIdAndUpdate(reqStub)
+				.then((data) => assert(isEqual(data, reqStub.body)));
 		});
 
 	});

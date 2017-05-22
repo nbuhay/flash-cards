@@ -197,35 +197,45 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it.skip('call DeckCard.create');
-
-		it('send 500 if Query rejects', () => {
-			const reqStub = { body: {} };
+		it('call DeckCard.create and pass validated req data', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const validateStub = sandbox.stub(Validate, 'create').resolves();
-			const content = undefined;
-			const execStub = sandbox.stub().rejects(content);
-			const deckCardStub = sandbox.stub(DeckCard, 'create').returns({ exec: execStub });
+			const validatedData = { validatedData: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const deckCardStub = sandbox.stub(DeckCard, 'create').rejects();
+
+			return deckCardCtrl.create(reqDummy, resDummy)
+				.catch(() => assert(deckCardStub.calledWithExactly(validatedData)));
+		});
+
+		it('send 500 if DeckCard.create rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validatedData = { validatedData: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(DeckCard, 'create').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.checkQuery;
 
-			return deckCardCtrl.create(reqStub, resDummy)
+			return deckCardCtrl.create(reqDummy, resDummy)
 				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)).to.be.true;
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 				});
 		});
 
-		it('send 200 and the new DeckCard when Query resolves', () => {
-			const reqStub = { body: {} };
+		it('send 200 and the new DeckCard when DeckCard.create resolves', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const validateStub = sandbox.stub(Validate, 'create').resolves();
+			const validatedData = { validatedData: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
 			const deckCard = { deckCard: {} };
 			const execStub = sandbox.stub().resolves(deckCard);
-			const deckCardStub = sandbox.stub(DeckCard, 'create').returns({ exec: execStub });
+			sandbox.stub(DeckCard, 'create').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.checkQuery;
 
-			return deckCardCtrl.create(reqStub, resDummy)
+			return deckCardCtrl.create(reqDummy, resDummy)
 				.then(() => {
 					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], deckCard)).to.be.true;
 				});

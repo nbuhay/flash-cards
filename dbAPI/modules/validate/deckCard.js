@@ -17,8 +17,9 @@ function create(req) {
 		})
 		.catch((reason) => { throw Error(reason.message) });
 	})
-	.then(() => vStringArray(body.answer))
-	.then(() => vStringArray(body.question))
+	.then(() => vStringArray.validate(req.body.answer))
+	.then(() => vStringArray.validate(req.body.question))
+	.then(() => { return { question: req.body.question, answer: req.body.answer }; })
 	.catch((reason) => { throw Error(reason.message); });
 }
 
@@ -27,8 +28,6 @@ function findByIdAndRemove(req) {
 	.catch((reason) => { throw Error(reason.message) });
 }
 
-// need to check for valid request
-// resolve the updated body...
 function findByIdAndUpdate(req) {
 	const validators = {
 		question: vStringArray.validate,

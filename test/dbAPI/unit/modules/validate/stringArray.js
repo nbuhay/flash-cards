@@ -1,6 +1,5 @@
 const errMsg = require('appStrings').dbAPI.modules.stringArray.errMsg;
 const vStringArray = require('dbAPI/modules/validate/stringArray');
-const chai = require('chai');
 
 describe('stringArray.js', () => {
 
