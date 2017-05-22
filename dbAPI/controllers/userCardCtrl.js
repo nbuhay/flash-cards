@@ -7,19 +7,6 @@ const Query = require('dbAPI/modules/queryFactory').UserCard;
 const Res = require('dbAPI/modules/resFactory');
 const Validate = require('dbAPI/modules/validateFactory').UserCard;
 
-function validateCreate(validReqBody) {
-	return new Promise((resolve, reject) => {
-			if (!validReqBody.hasOwnProperty('deckCard')) {
-				reject({ message: str.errMsg.undefinedDeckCard });
-			} else if (validReqBody.deckCard === null) {
-				reject({ message: str.errMsg.nullDeckCard });
-			} else {
-				resolve(validReqBody.deckCard);
-			}
-		})
-		.catch((reason) => { throw Error(reason.message); });
-}
-
 function validateFindByIdAndUpdate(validReqBody) {
 	var content = { message: str.funcHeader.validateFindByIdAndUpdate };
 	return jsonReq.validateMongoId(validReqBody.deckCard)
@@ -59,28 +46,6 @@ function validateFindByIdAndUpdate(validReqBody) {
 			.catch((rejectValue) => { throw Error(); });
 		}) 
 		.catch((reason) => { throw Error(content.message + reason.message); });
-}
-
-function validateDeckCardExists(validMongoId) {
-	return new Promise((resolve, reject) => {
-		var options = {
-			port: config.app.dbAPI.port,
-			path: '/api/deckCard/' + validMongoId,
-			method: 'HEAD'
-		};
-		var req = http.request(options, (res) => {
-			if (res.statusCode === resCode['OK']) {
-				resolve();
-			} else if (res.statusCode === resCode['NOTFOUND']) {
-				reject({ message: str.errMsg.deckCardDoesNotExist });
-			} else {
-				reject({ message: str.errMsg.apiServfail });
-			}
-		});
-		req.on('error', (err) => reject({ message: err }));
-		req.end();
-	})
-	.catch((reason) => { throw Error(reason.message); });
 }
 
 function findAll(req, res) {
@@ -123,29 +88,24 @@ function findById(req, res) {
 }
 
 function create(req, res) {
-	var content = { message: errHeader + 'create: ' };
-	return jsonReq.validateBody(req.body)
-		.then(() => validateCreate(req.body))
-		.then((deckCardId) => jsonReq.validateMongoId(deckCardId))
-		.then(() => validateDeckCardExists(req.body.deckCard))
-		.then(() => Query('create', req.body).exec())
-		.then((createdUserCard) => {
-			Res('jsonRes', res, resCode['OK'], createdUserCard);
-		})
-		.catch((reason) => {
-			if (reason === undefined) {
-				content.message += str.errMsg.checkQuery;
+	var content = { message: errHeader + str.funcHeader.create };
+	return Validate.create(req)
+	.then((validatedData) => Query('create', validatedData).exec())
+	.then((newUserCard) => Res('jsonRes', res, resCode['OK'], newUserCard))
+	.catch((reason) => {
+		if (reason === undefined) {
+			content.message += str.errMsg.checkQuery;
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			if (reason.message === str.errMsg.apiServfail) {
+				content.message += str.errMsg.apiServfail;
 				Res('jsonRes', res, resCode['SERVFAIL'], content);
 			} else {
-				if (reason.message === str.errMsg.apiServfail) {
-					content.message += str.errMsg.apiServfail;
-					Res('jsonRes', res, resCode['SERVFAIL'], content);
-				} else {
-					content.message += reason.message;
-					Res('jsonRes', res, resCode['BADREQ'], content);
-				}
+				content.message += reason.message;
+				Res('jsonRes', res, resCode['BADREQ'], content);
 			}
-		});
+		}
+	});
 }
 
 function findByIdAndUpdate(req, res) {

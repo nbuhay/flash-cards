@@ -180,7 +180,7 @@ describe('deckCardCtrl.js', () => {
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return deckCardCtrl.create(reqDummy, resDummy)
-				.then(() => expect(validateStub.calledWithExactly(reqDummy)).to.be.true)
+				.then(() => expect(validateStub.calledWithExactly(reqDummy)).to.be.true);
 		});
 
 		it('send 400 if Validate.create rejects', () => {

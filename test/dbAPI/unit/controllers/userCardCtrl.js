@@ -129,7 +129,7 @@ describe('userCardCtrl.js', () => {
 			sandbox.stub(Validate, 'findById').resolves();
 			const queryErrorSendsUndefinedReason = undefined;
 			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
-			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.checkQuery;
 
@@ -145,7 +145,7 @@ describe('userCardCtrl.js', () => {
 			sandbox.stub(Validate, 'findById').resolves();
 			const userCardDoesNotExist = null;
 			const execStub = sandbox.stub().resolves(userCardDoesNotExist);
-			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.doesNotExist;
 
@@ -161,7 +161,7 @@ describe('userCardCtrl.js', () => {
 			sandbox.stub(Validate, 'findById').resolves();
 			const userCardData = { user: {} };
 			const execStub = sandbox.stub().resolves(userCardData);
-			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCardCtrl.findById(reqStub, resDummy)
@@ -176,7 +176,7 @@ describe('userCardCtrl.js', () => {
 			sandbox.stub(Validate, 'findById').resolves();
 			const userCardData = { user: {} };
 			const execStub = sandbox.stub().resolves(userCardData);
-			sandbox.stub(UserCard, 'findById', () => { return { exec: execStub }; });
+			sandbox.stub(UserCard, 'findById').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCardCtrl.findById(reqStub, resDummy)
@@ -187,211 +187,101 @@ describe('userCardCtrl.js', () => {
 
 	});
 
-	describe.skip('#create', () => {
+	describe('#create', () => {
 
-		beforeEach(() => {
-			errorHeader.message += str.funcHeader.create;
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.create);
 
-		it('function named create should exist', () => {
-			expect(userCardCtrl.create).to.exist;
-		});
+		it('#create should exist', () => expect(userCardCtrl.create).to.exist);
 
-		it('call jsonReq.validateBody with req.body', () => {
-			const reqStub = {
-				body: {}
-			};
+		it('call Validate.create and pass req', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const validateStub = sandbox.stub(Validate, 'create').rejects();
 
-			return userCardCtrl.create(reqStub, resDummy)
+			return userCardCtrl.create(reqDummy, resDummy)
+				.catch(() => assert(validateStub.calledWithExactly(reqDummy)));
+		});
+
+		it('send 400 if Validate.create rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			sandbox.stub(Validate, 'create').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return userCardCtrl.create(reqDummy, resDummy)
 				.then(() => {
-					expect(jsonReqStub.calledWithExactly(reqStub.body)).to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
+				});
 		});
 
-		it('send 400 when req.body.deckCard is undefined', () => {
-			const reqStub = {
-				body: {}
-			};
+		it('send 500 if Validate.create rejects with apiServfail', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
+			const content = { message: str.errMsg.apiServfail };
+			sandbox.stub(Validate, 'create').rejects(content);
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.undefinedDeckCard;
-
-			return userCardCtrl.create(reqStub, resDummy)
-				then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader))
-						.to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('send 400 when req.body.deckCard is null', () => {
-			const reqStub = {
-				body: {
-					deckCard: null 
-				}
-			};
-			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			errorHeader.message += str.errMsg.nullDeckCard;
-
-			return userCardCtrl.create(reqStub, resDummy)
-				then(() => {
-					jsonResStub.callCount.should.equal(1);
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader),
-						'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it.skip('should call jsonReq.validateMongoId with req.body.deckCard', () => {
-			const reqStub = {
-				body: {
-					deckCard: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId');
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			return userCardCtrl.create(reqStub, resDummy)
-				.then(() => {
-					expect(jsonReqMongoStub.calledWithExactly(reqStub.body.deckCard)).to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('make a http HEAD to check the deckCard exists', () => {
-			const reqStub = {
-				body: {
-					deckCard: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const options = {
-				port: config.app.dbAPI.port,
-				path: '/api/deckCard/' + reqStub.body.deckCard,
-				method: 'HEAD'
-			};
-			const httpReqMock = sandbox.mock(http);
-
-			httpReqMock.expects('request').once().withArgs(options);
-
-			return userCardCtrl.create(reqStub, resDummy)
-				.then(() => httpReqMock.verify())
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('send 500 if http HEAD to check the deckCard exists fails', () => {
-			const reqStub = {
-				body: {
-					deckCard: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const httpRequestStub = sandbox.stub(http, 'request');
-			const expectedReqResult = { statusCode: resCode['SERVFAIL'] };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			httpRequestStub.callsArgWith(1, expectedReqResult);
 			errorHeader.message += str.errMsg.apiServfail;
 
-			return userCardCtrl.create(reqStub, resDummy)
+			return userCardCtrl.create(reqDummy, resDummy)
 				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader))
-						.to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
+				});
 		});
 
-		it('send 400 if req.body.deckCard does\'nt exist in the deckCard db', () => {
-			const reqStub = {
-				body: {
-					deckCard: validMongoId
-				}
-			};
+		it('call UserCard.create and pass returned data from Validate.create', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const httpRequestStub = sandbox.stub(http, 'request');
-			const expectedReqResult = { statusCode: resCode['NOTFOUND'] };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-
-			httpRequestStub.callsArgWith(1, expectedReqResult);
-			errorHeader.message += str.errMsg.deckCardDoesNotExist;
-
-			return userCardCtrl.create(reqStub, resDummy)
-				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader))
-						.to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('send 500 if UserCard.create throws an error', () => {
-			const reqStub = {
-				body: {
-					deckCard: validMongoId
-				}
-			};
-			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const httpRequestStub = sandbox.stub(http, 'request');
-			const expectedReqResult = { statusCode: resCode['OK'] };
+			const validatedData = { data: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
 			const execStub = sandbox.stub().rejects();
-			const userCardStub = sandbox.stub(UserCard, 'create', () => { return { exec: execStub }; });
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const userCardStub = sandbox.stub(UserCard, 'create').returns({ exec: execStub });
 
-			httpRequestStub.callsArgWith(1, expectedReqResult);
+			return userCardCtrl.create(reqDummy, resDummy)
+				.catch(() => assert(userCardStub.calledWithExactly(validatedData)));
+		});
+
+		it('send 500 if UserCard.create rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validatedData = { data: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const execStub = sandbox.stub().rejects();
+			const userCardStub = sandbox.stub(UserCard, 'create').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
 			errorHeader.message += str.errMsg.checkQuery;
 
-			return userCardCtrl.create(reqStub, resDummy)
-				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader))
-						.to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+			return userCardCtrl.create(reqDummy, resDummy).then(() => 
+				assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)));
 		});
 
-	it('send 200 if UserCard.create resolves', () => {
-			const reqStub = {
-				body: {
-					deckCard: validMongoId
-				}
-			};
+		it('send 200 and new UserCard if UserCard.create resolves', () => {
+			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const jsonReqStub = sandbox.stub(jsonReq, 'validateBody').resolves();
-			const savedUserCardData = { data: {} };
-			const jsonReqMongoStub = sandbox.stub(jsonReq, 'validateMongoId').resolves();
-			const httpRequestStub = sandbox.stub(http, 'request');
-			const expectedReqResult = { statusCode: resCode['OK'] };
-			const execStub = sandbox.stub().resolves(savedUserCardData);
-			const userCardStub = sandbox.stub(UserCard, 'create', () => { return { exec: execStub }; });
+			const validatedData = { data: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const newUserCard = { userCard: {} };
+			const execStub = sandbox.stub().resolves(newUserCard);
+			const userCardStub = sandbox.stub(UserCard, 'create').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
-			httpRequestStub.callsArgWith(1, expectedReqResult);
-
-			return userCardCtrl.create(reqStub, resDummy)
-				.then(() => {
-					expect(jsonResStub.calledWithExactly(resDummy, resCode['OK'], savedUserCardData))
-						.to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+			return userCardCtrl.create(reqDummy, resDummy).then(() => 
+				assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], newUserCard)));
 		});
 
 	});
+
+	describe.skip('#findByIdAndRemove', () => {
+
+		beforeEach(() => errorHeader.message += str.funcHeader.findByIdAndRemove);
+
+		it('#findByIdAndRemove should exist', () => expect(userCardCtrl.findByIdAndRemove).to.exist);
+
+		it('call Validate.create and pass req');
+		
+	});
+
 
 describe.skip('#findByIdAndUpdate', () => {
 

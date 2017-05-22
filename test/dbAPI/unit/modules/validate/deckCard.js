@@ -25,18 +25,18 @@ describe('deckCard.js', () => {
 
 	});
 
-	describe('#create', () => {
+	describe.skip('#create', () => {
 
 		it.skip('pass req to be validated');
 		
-		it('reject if body does\'t have property question', () => {
+		it('reject if body key question DNE', () => {
 			const reqStub = { body: {} };
 			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 
 			return deckCard.create(reqStub).should.be.rejectedWith(errMsg.invalidDeckCard);
 		});
 
-		it('reject if body does\'t have property answer', () => {
+		it('reject if body key answer DNE', () => {
 			const reqStub = { body: { question: {} } };
 			const vReqStub = sandbox.stub(vReq, 'validate').resolves();
 
@@ -45,7 +45,7 @@ describe('deckCard.js', () => {
 
 		it.skip('question should be a string array');
 		it.skip('answer should be a string array');
-
+		// needs to resolve back data to be saved, don't trust the body
 	});
 
 	describe('#findByIdAndRemove', () => {
