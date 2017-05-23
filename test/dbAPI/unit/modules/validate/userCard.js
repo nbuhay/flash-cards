@@ -7,6 +7,8 @@ const vMongoId = require('dbAPI/modules/validate/mongoId');
 const validMongoId = require('config').validMongoId();
 const sinon = require('sinon');
 const resCode = require('config').resCode();
+const assert = require('chai').assert;
+const isEqual = require('lodash').isEqual;
 
 var sandbox;
 
@@ -36,8 +38,6 @@ describe('userCard.js', () => {
 			return userCard.create(reqDummy)
 				.catch(() => vReqStub.calledWithExactly(reqDummy).should.be.true);
 		});
-
-		it.skip('throw error if req.validate rejects');
 
 		it('reject if req body key deckCard DNE', () => {
 			const reqStub = { body: {} };
@@ -108,8 +108,7 @@ describe('userCard.js', () => {
 			return userCard.create(reqStub).should.be.rejectedWith(Error, errMsg.apiServfail);
 		});
 
-		// not a great test, how to test data gets resolved approrpatiedly 
-		it.skip('resolve validated data if HEAD /api/deckCard/:_id res statusCode is 200', () => {
+		it('resolve validated data if HEAD /api/deckCard/:_id res statusCode is 200', () => {
 			const reqStub = { body: { deckCard: validMongoId } };
 			const resDummy = { res: {} };
 			sandbox.stub(vReq, 'validate').resolves();
@@ -122,12 +121,21 @@ describe('userCard.js', () => {
 			};
 			const expectedReqResult = { statusCode: resCode['OK'] };
 			httpRequestStub.callsArgWith(1, expectedReqResult);
-			const validatedDataStub = { deckCard: reqStub.body.deckCard };
+			const dataStub = { deckCard: reqStub.body.deckCard };
 
-			return userCard.create(reqStub)
-				.then((validatedData) => {
-					Object.keys(validatedDataStub)[0].should.equal(Object.keys(validatedData)[0]);
-				});
+			return userCard.create(reqStub).then((data) => assert(isEqual(data, dataStub)));
+		});
+
+	});
+
+	describe('#findByIdAndRemove', () => {
+
+		it('call mongoId.validate and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } }; 
+			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').resolves();
+			
+			return userCard.findByIdAndRemove(reqStub)
+				.then(() => assert(vMongoIdStub.calledWithExactly(validMongoId)));
 		});
 
 	});

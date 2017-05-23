@@ -22,6 +22,7 @@ module.exports = {
 			findAll: UserCard.find(conditions),
 			findById: UserCard.findById(conditions),
 			create: UserCard.create(conditions),
+			findByIdAndRemove: UserCard.findByIdAndRemove(conditions),
 			findByIdAndUpdate: UserCard.findByIdAndUpdate(conditions._id, conditions.updateData)
 		}[type];
 	},

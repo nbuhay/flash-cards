@@ -45,7 +45,13 @@ function create(req) {
 	.catch((reason) => { throw Error(reason.message) });
 }
 
+function findByIdAndRemove(req) {
+	return vMongoId.validate(req.params._id)
+	.catch((reason) => { throw Error(reason.message) });
+}
+
 module.exports = {
 	findById,
-	create
+	create,
+	findByIdAndRemove
 };

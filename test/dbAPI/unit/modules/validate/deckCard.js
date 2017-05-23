@@ -82,7 +82,7 @@ describe('deckCard.js', () => {
 
 	describe('#findByIdAndRemove', () => {
 
-		it('pass req params _id to be validated', () => {
+		it('call mongoId.validate and pass req params', () => {
 			const reqStub = { params: { _id: validMongoId } }; 
 			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').resolves();
 			

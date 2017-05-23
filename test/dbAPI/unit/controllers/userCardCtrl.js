@@ -263,7 +263,7 @@ describe('userCardCtrl.js', () => {
 			sandbox.stub(Validate, 'create').resolves(validatedData);
 			const newUserCard = { userCard: {} };
 			const execStub = sandbox.stub().resolves(newUserCard);
-			const userCardStub = sandbox.stub(UserCard, 'create').returns({ exec: execStub });
+			sandbox.stub(UserCard, 'create').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
 
 			return userCardCtrl.create(reqDummy, resDummy).then(() => 
@@ -272,16 +272,88 @@ describe('userCardCtrl.js', () => {
 
 	});
 
-	describe.skip('#findByIdAndRemove', () => {
+	describe('#findByIdAndRemove', () => {
 
 		beforeEach(() => errorHeader.message += str.funcHeader.findByIdAndRemove);
 
 		it('#findByIdAndRemove should exist', () => expect(userCardCtrl.findByIdAndRemove).to.exist);
 
-		it('call Validate.create and pass req');
-		
-	});
+		it('call Validate.findByIdAndRemove and pass req', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').rejects();
 
+			return userCardCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.catch(() => assert(validateStub.calledWithExactly(reqDummy)));
+		});
+
+		it('send 400 if Validate.findByIdAndRemove rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			sandbox.stub(Validate, 'findByIdAndRemove').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return userCardCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader)));
+		});
+
+		it('call UserCard.findByIdAndRemove and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const userCardStub = sandbox.stub(UserCard, 'findByIdAndRemove').rejects();
+
+			return userCardCtrl.findByIdAndRemove(reqStub, resDummy)
+				.catch(() => assert(userCardStub.calledWithExactly(reqStub.params._id)));
+		});
+
+		it('send 500 if UserCard.findByIdAndRemove rejects', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const execStub = sandbox.stub().rejects();
+			const userCardStub = sandbox.stub(UserCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
+
+			return userCardCtrl.findByIdAndRemove(reqStub, resDummy).then(() => 
+				assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)));		
+		});
+
+		it('send 404 if _id DNE in UserCard collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves(reqStub.body);
+			const returnedUserCardStub = null;
+			const execStub = sandbox.stub().resolves(returnedUserCardStub);
+			sandbox.stub(UserCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.doesNotExist;
+
+			return userCardCtrl.findByIdAndRemove(reqStub, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader));
+				});
+		});
+
+		it('send 200 and removed UserCard if _id is removed from the collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const returnedUserCardStub = { userCard: {} };
+			const execStub = sandbox.stub().resolves(returnedUserCardStub);
+			sandbox.stub(UserCard, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return userCardCtrl.findByIdAndRemove(reqStub, resDummy)
+				.then(() => {
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], returnedUserCardStub));
+				});
+		});
+
+	});
 
 describe.skip('#findByIdAndUpdate', () => {
 

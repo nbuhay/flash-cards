@@ -111,6 +111,7 @@
 					"findAll": "findAll: ",
 					"findById": "findById: ",
 					"create": "create: ",
+					"findByIdAndRemove": "findByIdAndRemove: ",
 					"findByIdAndUpdate": "findByIdAndUpdate: ",
 					"validateFindByIdAndUpdate": "validateFindByIdAndUpdate: "
 				},
