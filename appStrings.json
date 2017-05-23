@@ -117,6 +117,7 @@
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
+					"invalidUpdate": "no valid keys passed",
 					"doesNotExist": "UserCard does not exist",
 					"undefinedDeckCard": "undefined req.body.deckCard",
 					"nullDeckCard": "null req.body.deckCard",

@@ -46,7 +46,7 @@ function findByIdAndUpdate(req) {
 		return new Promise((resolve, reject) => {
 			if (!validators[elem]) delete req.body[elem];
 			resolve();
-		})
+		});
 	})))
 	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
 		validators[elem](req.body[elem]);

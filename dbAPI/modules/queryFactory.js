@@ -23,7 +23,7 @@ module.exports = {
 			findById: UserCard.findById(conditions),
 			create: UserCard.create(conditions),
 			findByIdAndRemove: UserCard.findByIdAndRemove(conditions),
-			findByIdAndUpdate: UserCard.findByIdAndUpdate(conditions._id, conditions.updateData)
+			findByIdAndUpdate: UserCard.findByIdAndUpdate(conditions._id, conditions.updateData, options)
 		}[type];
 	},
 	Deck: (type, conditions, options) => {

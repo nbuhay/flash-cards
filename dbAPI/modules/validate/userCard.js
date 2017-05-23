@@ -3,6 +3,8 @@ const config = require('config').config();
 const errMsg = require('appStrings').dbAPI.controllers.userCardCtrl.errMsg;
 const vReq = require('dbAPI/modules/validate/req');
 const vMongoId = require('dbAPI/modules/validate/mongoId');
+const vTypeof = require('dbAPI/modules/validate/typeof');
+const vInstanceof = require('dbAPI/modules/validate/instanceof');
 const resCode = require('config').resCode();
 
 function findById(req) {
@@ -50,8 +52,47 @@ function findByIdAndRemove(req) {
 	.catch((reason) => { throw Error(reason.message) });
 }
 
+function findByIdAndUpdate(req) {
+	const validators = (value) => {
+		return {
+			gotCorrect: vTypeof.validate(value, 'boolean'),
+			lastSeen: vInstanceof.validate(value, Date),
+			lastCorrect: vInstanceof.validate(value, Date),
+			correctStreak: vTypeof.validate(value, 'number'),
+			incorrectStreak: vTypeof.validate(value, 'number'),
+			totalViews: vTypeof.validate(value, 'number')
+		}
+	};
+	return vReq.validate(req)
+	.then(() => vMongoId.validate(req.params._id))
+	.then(() => {
+		return new Promise((resolve, reject) => {
+			(!req.body.hasOwnProperty('gotCorrect') &&
+			 !req.body.hasOwnProperty('lastSeen') &&
+			 !req.body.hasOwnProperty('lastCorrect') &&
+			 !req.body.hasOwnProperty('correctStreak') &&
+			 !req.body.hasOwnProperty('incorrectStreak') &&
+			 !req.body.hasOwnProperty('totalViews')) ?
+				reject({ message: errMsg.invalidUpdate }) : resolve();
+		})
+		.catch((reason) => { throw Error(reason.message)});
+	})
+	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
+		return new Promise((resolve, reject) => {
+			if (!validators()[elem]) delete req.body[elem];
+			resolve();
+		});
+	})))
+	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
+		validators(req.body[elem])[elem];
+	})))
+	.then(() => { return req.body })
+	.catch((reason) => { throw Error(reason.message); });
+}
+
 module.exports = {
 	findById,
 	create,
-	findByIdAndRemove
+	findByIdAndRemove,
+	findByIdAndUpdate
 };

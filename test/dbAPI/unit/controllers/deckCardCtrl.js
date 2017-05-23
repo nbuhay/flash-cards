@@ -376,7 +376,6 @@ describe('deckCardCtrl.js', () => {
 					deckCardStub.calledWithExactly(reqStub.params._id, reqStub.body, options)
 						.should.be.true;
 			});
-
 		});
 
 		it('send 500 if DeckCard.findByIdAndUpdate rejects', () => {
@@ -411,7 +410,7 @@ describe('deckCardCtrl.js', () => {
 				});
 		});
 
-		it('send 200 and the updated DeckCard if DeckCard.findByIdAndUpdate resolves', () =>{
+		it('send 200 and the updated DeckCard if DeckCard.findByIdAndUpdate resolves', () => {
 			const reqStub = { params: { _id: validMongoId }, body: { question: 'test question' } };
 			const resDummy = { res: {} };
 			sandbox.stub(Validate, 'findByIdAndUpdate').resolves(reqStub.body);

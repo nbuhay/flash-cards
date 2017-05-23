@@ -7,47 +7,6 @@ const Query = require('dbAPI/modules/queryFactory').UserCard;
 const Res = require('dbAPI/modules/resFactory');
 const Validate = require('dbAPI/modules/validateFactory').UserCard;
 
-function validateFindByIdAndUpdate(validReqBody) {
-	var content = { message: str.funcHeader.validateFindByIdAndUpdate };
-	return jsonReq.validateMongoId(validReqBody.deckCard)
-	.then(() => validateDeckCardExists(validReqBody.deckCard))
-	.then(() => {
-		return new Promise((resolve, reject) => {
-			if (validReqBody.gotCorrect === undefined || typeof validReqBody.gotCorrect !== 'boolean') {
-				validReqBody.gotCorrect = false;
-			}
-			if (validReqBody.lastSeen === undefined || !(validReqBody.lastSeen instanceof Date)
-				|| isNaN(validReqBody.lastSeen.valueOf())) {
-				validReqBody.lastSeen = new Date();
-			}
-			if (validReqBody.lastCorrect === undefined || !(validReqBody.lastCorrect instanceof Date)
-				|| isNaN(validReqBody.lastCorrect.valueOf())) {
-				validReqBody.lastCorrect = new Date();
-			}
-			if (validReqBody.correctStreak === undefined || typeof correctStreak !== 'number') {
-				validReqBody.correctStreak = 0;
-			}
-			if (validReqBody.incorrectStreak === undefined || typeof incorrectStreak !== 'number') {
-				validReqBody.incorrectStreak = 0;
-			}
-			if (validReqBody.totalViews === undefined || typeof totalViews !== 'number') {
-				validReqBody.totalViews = 0;
-			}
-			const updateData = {
-				gotCorrect: validReqBody.gotCorrect,
-				lastSeen: validReqBody.lastSeen,
-				lastCorrect: validReqBody.lastCorrect,
-				correctStreak: validReqBody.correctStreak,
-				incorrectStreak: validReqBody.incorrectStreak,
-				totalViews: validReqBody.totalViews
-			}
-			resolve(updateData);
-		})
-		.catch((rejectValue) => { throw Error(); });
-	}) 
-	.catch((reason) => { throw Error(content.message + reason.message); });
-}
-
 function findAll(req, res) {
 	var content = { message: errHeader + str.funcHeader.findAll };
 	return Query('findAll', {}).exec()
@@ -133,17 +92,20 @@ function findByIdAndRemove(req, res) {
 
 function findByIdAndUpdate(req, res) {
 	var content = { message: errHeader + str.funcHeader.findByIdAndUpdate };
-	return jsonReq.validateMongoId(req.params._id)
-	.then(() => jsonReq.validateBody(req.body))
-	.then(() => validateFindByIdAndUpdate(req.body))
-	.then((updateData) => {
-		const conditions = {
-			_id: req.params._id,
-			updateData: updateData
-		};
-		return Query('findByIdAndUpdate', conditions).exec();
+	return Validate.findByIdAndUpdate(req)
+	.then((validatedData) => {
+		const conditions = { _id: req.params._id, updateData: validatedData };
+		const options = { new: true };
+		return Query('findByIdAndUpdate', conditions, options).exec();
 	})
-	.then(() => Res('jsonRes', res, resCode['OK']))
+	.then((updatedDeckCard) => {
+		if (updatedDeckCard === null) {
+			content.message += str.errMsg.doesNotExist;
+			Res('jsonRes', res, resCode['NOTFOUND'], content);
+		} else {
+			Res('jsonRes', res, resCode['OK'], updatedDeckCard);
+		}
+	})
 	.catch((reason) => {
 		if (reason === undefined) {
 			content.message += str.errMsg.checkQuery;
