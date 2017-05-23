@@ -33,7 +33,7 @@ describe('deckCardCtrl.js', () => {
 
 		it('#findAll should exist', () => assert.isFunction(deckCardCtrl.findAll));
 
-		it('call Deck.find and pass an empty object', () => {
+		it('call DeckCard.find and pass an empty object', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const conditions = {};
@@ -70,7 +70,7 @@ describe('deckCardCtrl.js', () => {
 			return deckCardCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
 					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], allDeckCardData));
-				})
+				});
 		});
 
 	});

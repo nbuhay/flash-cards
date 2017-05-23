@@ -1,3 +1,4 @@
+const str = require('appStrings').dbAPI.controllers.deckCtrl;
 const resCode = require('config').resCode();
 const config = require('config').config();
 const mongoIdRe = require('config').mongoIdRe();
@@ -5,8 +6,8 @@ const Deck = require('dbAPI/models/deck');
 const http = require('http');
 const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
-const DeckQuery = require('dbAPI/modules/queryFactory').Deck;
-const ResFactory = require('dbAPI/modules/resFactory');
+const Query = require('dbAPI/modules/queryFactory').Deck;
+const Res = require('dbAPI/modules/resFactory');
 
 function validateCreateBody(validReqBody) {
 	return new Promise((resolve, reject) => {
@@ -48,18 +49,16 @@ function checkCreatorExists(validDeckBody) {
 }
 
 function findAll(req, res) {
+	var content = { message: errHeader + str.funcHeader.findAll };
 	const conditions = {};
-	return DeckQuery('find', conditions).exec()
-		.then((decks) => ResFactory('jsonRes', res, resCode['OK'], decks))
-		.catch((reason) => {
-			if (reason === undefined) {
-				var content = { message: errHeader + 'findAll: undefined reason, check query' };
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-			} else {
-				var content = { message: errHeader + 'findAll: ' + reason.message };
-				ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
-			}
-		});
+	return Query('find', conditions).exec()
+	.then((decks) => Res('jsonRes', res, resCode['OK'], decks))
+	.catch((reason) => {
+		if (reason === undefined) {
+			content.message += str.errMsg.checkQuery;
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
+		}
+	});
 }
 
 function create(req, res) {
@@ -67,14 +66,14 @@ function create(req, res) {
 	.then(() => validateCreateBody(req.body))
 	.then(() => checkCreatorExists(req.body))
 	.then(() => Deck.create(req.body))
-	.then((deck) => ResFactory('jsonRes', res, resCode['OK'], deck))
+	.then((deck) => Res('jsonRes', res, resCode['OK'], deck))
 	.catch((reason) => {
 		if (reason === undefined) {
 			var content = { message: errHeader + 'create: ' + reason.message };
-			ResFactory('jsonRes', res, resCode['SERVFAIL'], content);
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
 			var content = { message: errHeader + 'create: ' + reason.message };
-			ResFactory('jsonRes', res, resCode['BADREQ'], content);
+			Res('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
 }

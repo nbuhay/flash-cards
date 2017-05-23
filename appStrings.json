@@ -119,10 +119,23 @@
 					"checkQuery": "undefined reason, check query",
 					"invalidUpdate": "no valid keys passed",
 					"doesNotExist": "UserCard does not exist",
-					"undefinedDeckCard": "undefined req.body.deckCard",
-					"nullDeckCard": "null req.body.deckCard",
-					"deckCardDoesNotExist": "DeckCard does not exist",
+					"undefinedDeckCard": "undefined req.body.userCard",
+					"nullDeckCard": "null req.body.userCard",
+					"deckCardDoesNotExist": "UserCard does not exist",
 					"apiServfail": "flashCard API call failed"
+				}
+			},
+			"deckCtrl": {
+				"funcHeader": {
+					"findAll": "findAll: ",
+					"findById": "findById: ",
+					"create": "create: ",
+					"findByIdAndRemove": "findByIdAndRemove: ",
+					"findByIdAndUpdate": "findByIdAndUpdate: ",
+					"validateFindByIdAndUpdate": "validateFindByIdAndUpdate: "
+				},
+				"errMsg": {
+					"checkQuery": "undefined reason, check query"
 				}
 			}
 		}

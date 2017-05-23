@@ -14,10 +14,8 @@ const sinon = require('sinon');
 require('sinon-as-promised');
 const invalidMongoId = require('config').invalidMongoId();
 const validMongoId = require('config').validMongoId();
-const invalidDate = require('config').invalidDate();
 const validDate = require('config').validDate();
 const jsonRes = require('modules/jsonResponse');
-const jsonReq = require('modules/jsonRequest');
 const UserCard = require('dbAPI/models/userCard');
 const Validate = require('dbAPI/modules/validateFactory').UserCard;
 

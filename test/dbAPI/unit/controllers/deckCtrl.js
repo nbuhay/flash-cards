@@ -1,3 +1,4 @@
+const str = require('appStrings').dbAPI.controllers.deckCtrl;
 const mongoose = require('mongoose');
 const assert = require('chai').assert;
 const chai = require('chai');
@@ -13,82 +14,66 @@ const validMongoId = require('config').validMongoId();
 const jsonRes = require('modules/jsonResponse');
 const Deck = require('dbAPI/models/deck');
 const deckCtrl = require('dbAPI/controllers/deckCtrl');
-const dbBootstrap = require('test/dbBootstrap');
 
 var sandbox;
+var errorHeader;
+
+beforeEach(() => {
+	errorHeader = {
+		message: require('modules/errorHeader')(require.resolve('dbAPI/controllers/deckCtrl')) 
+	};
+	sandbox = sinon.sandbox.create();
+});
+
+afterEach(() => sandbox.restore());
 
 describe('deckCtrl.js', () => {
 
-	before(() => {
-		errorHeader = { message: 'error:dbAPI.deckCtrl.' };
-		return dbBootstrap.before();
-	});
-
-	beforeEach(function() {
-		sandbox = sinon.sandbox.create();
-		return dbBootstrap.beforeEach();
-	});
-
-	afterEach(function() {
-		sandbox.restore();
-	});
-
 	describe('#findAll', () => {
 
-		it('function named findAll should exist', () => {
-			expect(deckCtrl.findAll).to.exist;
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.findAll);
 
-		it('should call Deck.find with conditions equal to a empty object', () => {
-			const conditions = {};
-			const resDummy = { res: {} };
+		it('#findAll should exist', () => assert.isFunction(deckCtrl.findAll));
+
+		it('call Deck.find and pass an empty object', () => {
 			const reqDummy = { req: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const execStub = sandbox.stub().resolves();
-			const deckStub = sandbox.stub(Deck, 'find', () => { return { exec: execStub } });
-
-			return deckCtrl.findAll(resDummy, reqDummy)
-				.then(() => {
-					expect(deckStub.calledOnce, 'calledOnce').to.be.true;
-					expect(deckStub.calledWithExactly(conditions), 'calledWithExactly').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
-		});
-
-		it('should send a 500 when Deck.find rejects', () => {
-			const conditions = {};
 			const resDummy = { res: {} };
-			const reqDummy = { req: {} };
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const conditions = {};
 			const execStub = sandbox.stub().rejects();
-			const deckStub = sandbox.stub(Deck, 'find', () => { return { exec: execStub } });
+			const deckStub = sandbox.stub(Deck, 'find').returns({ exec: execStub });
 
 			return deckCtrl.findAll(reqDummy, resDummy)
-				.then(() => {
-					expect(deckStub.calledOnce, 'deck calledOnce').to.be.true;
-					expect(jsonResStub.calledOnce, 'jsonRes calledOnce').to.be.true;
-					expect(jsonResStub.
-						calledWithMatch(resDummy, resCode['SERVFAIL']),'calledWithMatch').to.be.true;
-				})
-				.catch((reason) => assert(false, reason.message));
+				.catch(() => expect(deckStub.calledWithExactly(conditions)).to.be.true);
 		});
 
-		it('should send a 200 when Deck.find resolves', () => {
-			const conditions = {};
-			const resDummy = { res: {} };
+		it('send 500 if Deck.find rejects', () => {
 			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(Deck, 'find').returns({ exec: execStub });
 			const jsonResStub = sandbox.stub(jsonRes, 'send');
-			const execStub = sandbox.stub().resolves();
-			const deckStub = sandbox.stub(Deck, 'find', () => { return { exec: execStub } });
+			errorHeader.message += str.errMsg.checkQuery;
 
 			return deckCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					expect(deckStub.calledOnce, 'deck calledOnce').to.be.true;
-					expect(jsonResStub.calledOnce, 'jsonRes calledOnce').to.be.true;
-					expect(jsonResStub.
-						calledWithMatch(resDummy, resCode['OK']),'calledWithMatch').to.be.true;
+					debugger;
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 				})
-				.catch((reason) => assert(false, reason.message));
+		});
+
+		it('send 200 if Deck.find resolves', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const allDeckData = { decks: {} };
+			const execStub = sandbox.stub().resolves(allDeckData);
+			sandbox.stub(Deck, 'find').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCtrl.findAll(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], allDeckData));
+				});
 		});
 
 	});
