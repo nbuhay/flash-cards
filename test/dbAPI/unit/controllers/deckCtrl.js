@@ -13,6 +13,7 @@ const config = require('config').config();
 const validMongoId = require('config').validMongoId();
 const jsonRes = require('modules/jsonResponse');
 const Deck = require('dbAPI/models/deck');
+const Validate = require('dbAPI/modules/validateFactory').Deck;
 const deckCtrl = require('dbAPI/controllers/deckCtrl');
 
 var sandbox;
@@ -78,11 +79,97 @@ describe('deckCtrl.js', () => {
 
 	});
 
+	describe('#findById', () => {
+
+		beforeEach(() => errorHeader.message += str.funcHeader.findById);
+
+		it('#findById should exist', () => assert.isFunction(deckCtrl.findById));
+
+		it('call Validate.findById and pass req', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'findById').rejects();
+
+			return deckCtrl.findById(reqDummy, resDummy)
+				.catch(() => validateStub.calledWithExactly(reqDummy).should.be.true);
+		});
+
+		it('send 400 if Validate.findById rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			sandbox.stub(Validate, 'findById').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return deckCtrl.findById(reqDummy, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader).should.be.true;
+			});
+		});
+
+		it('call Deck.findById and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findById').resolves();
+			const deckStub = sandbox.stub(Deck, 'findById').rejects();
+
+			return deckCtrl.findById(reqStub, resDummy)
+				.catch(() => deckStub.calledWithExactly(reqStub.params._id).should.be.true);
+		});
+
+		it('send 500 if Deck.findById rejects', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findById').resolves();
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(Deck, 'findById').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
+
+			return deckCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
+				});
+		});
+
+		it('send 404 if _id DNE in Deck collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findById').resolves();
+			const stubCardData = null;
+			const execStub = sandbox.stub().resolves(stubCardData);
+			sandbox.stub(Deck, 'findById').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.doesNotExist;
+
+			return deckCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader));
+				});
+		});
+
+		it('send 200 if _id exists in Deck collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findById').resolves();
+			const deckDataStub = true;
+			const execStub = sandbox.stub().resolves(deckDataStub);
+			sandbox.stub(Deck, 'findById').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCtrl.findById(reqStub, resDummy)
+				.then(() => {
+					jsonResStub.calledWithExactly(resDummy, resCode['OK'], deckDataStub).should.be.true;
+				});
+		});
+
+	});
+
 	describe('#create', () => {
 
-		beforeEach(() => {
-			errorHeader.message += 'create: ';
-		});
+		beforeEach(() => errorHeader.message += str.funcHeader.create);
 
 		it('should send a 400 when header content-type is undefined', () => {
 			const reqStub = {

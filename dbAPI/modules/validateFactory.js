@@ -1,7 +1,9 @@
-const deckCard = require('dbAPI/modules/validate/deckCard');
+const DeckCard = require('dbAPI/modules/validate/deckCard');
 const UserCard = require('dbAPI/modules/validate/userCard');
+const Deck = require('dbAPI/modules/validate/deck');
 
 module.exports = {
-	DeckCard: deckCard,
-	UserCard: UserCard
+	DeckCard: DeckCard,
+	UserCard: UserCard,
+	Deck: Deck
 };

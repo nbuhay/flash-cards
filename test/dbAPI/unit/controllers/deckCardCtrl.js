@@ -79,7 +79,7 @@ describe('deckCardCtrl.js', () => {
 
 		beforeEach(() => errorHeader.message += str.funcHeader.findById);
 
-		it('#findById should exist', () => assert.isFunction(deckCardCtrl.findAll));
+		it('#findById should exist', () => assert.isFunction(deckCardCtrl.findById));
 
 		it('call Validate.findById and pass req', () => {
 			const reqDummy = { req: {} };
@@ -108,11 +108,10 @@ describe('deckCardCtrl.js', () => {
 			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
 			const validateStub = sandbox.stub(Validate, 'findById').resolves();
-			const deckCardStub = sandbox.stub(DeckCard, 'findById').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const deckCardStub = sandbox.stub(DeckCard, 'findById').rejects();
 
 			return deckCardCtrl.findById(reqStub, resDummy)
-				.then(() => deckCardStub.calledWithExactly(reqStub.params._id).should.be.true);
+				.catch(() => deckCardStub.calledWithExactly(reqStub.params._id).should.be.true);
 		});
 
 		it('send 500 if DeckCard.findById rejects', () => {

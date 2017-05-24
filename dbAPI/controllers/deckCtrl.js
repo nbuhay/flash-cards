@@ -8,6 +8,7 @@ const jsonReq = require('modules/jsonRequest');
 const errHeader = require('modules/errorHeader')(__filename);
 const Query = require('dbAPI/modules/queryFactory').Deck;
 const Res = require('dbAPI/modules/resFactory');
+const Validate = require('dbAPI/modules/validateFactory').Deck;
 
 function validateCreateBody(validReqBody) {
 	return new Promise((resolve, reject) => {
@@ -61,6 +62,29 @@ function findAll(req, res) {
 	});
 }
 
+function findById(req, res) {
+	var content = { message: errHeader + str.funcHeader.findById };
+	return Validate.findById(req)
+	.then(() => Query('findById', req.params._id).exec())
+	.then((deck) => {
+		if (!deck) {
+			content.message += str.errMsg.doesNotExist;
+			Res('jsonRes', res, resCode['NOTFOUND'], content);
+		} else {
+			Res('jsonRes', res, resCode['OK'], deck);			
+		}
+	})
+	.catch((reason) => {
+		if (reason === undefined) {
+			content.message += str.errMsg.checkQuery;
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			content.message += reason.message;
+			Res('jsonRes', res, resCode['BADREQ'], content);
+		}
+	});
+}
+
 function create(req, res) {
 	return jsonReq.validateBody(req)
 	.then(() => validateCreateBody(req.body))
@@ -76,25 +100,6 @@ function create(req, res) {
 			Res('jsonRes', res, resCode['BADREQ'], content);
 		}
 	});
-}
-
-function findById(req, res) {
-	if (!mongoIdRe.test(req.params._id))
-		res.status(resCode['BADREQ']).json({ message: errHeader + 'findById: invalid _id' });
-	var query = Deck.findById(req.params._id);
-	var options = [
-		{
-			path: 'creator',
-			select: 'userName email',
-		},
-		{
-			path: 'cards'
-		}
-	];
-	return query.populate(options).exec()
-		.then((deck) => (res.status(resCode['OK']).json(deck)))
-		.catch((reason) => res.status(resCode['SERVFAIL'])
-			.json({ message: errHeader + 'findById: ' + reason.message }));
 }
 
 function findByIdAndUpdate(req, res) {
@@ -142,8 +147,8 @@ function findOneAndRemove(req, res) {
 
 module.exports = {
 	findAll,
-	create,
 	findById,
+	create,
 	findByIdAndUpdate,
 	findOneAndRemove
 }
