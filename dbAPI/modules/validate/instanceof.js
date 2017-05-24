@@ -1,6 +1,6 @@
 function validate(value, instance) {
 	return new Promise((resolve, reject) => {
-		resolve(true);
+		(value instanceof instance) ? resolve() : reject();
 	});
 }
 

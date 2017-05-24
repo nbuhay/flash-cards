@@ -175,11 +175,10 @@ describe('deckCardCtrl.js', () => {
 		it('call Validate.create and pass the req', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
-			const validateStub = sandbox.stub(Validate, 'create').resolves();
-			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			const validateStub = sandbox.stub(Validate, 'create').rejects();
 
 			return deckCardCtrl.create(reqDummy, resDummy)
-				.then(() => expect(validateStub.calledWithExactly(reqDummy)).to.be.true);
+				.catch(() => expect(validateStub.calledWithExactly(reqDummy)).to.be.true);
 		});
 
 		it('send 400 if Validate.create rejects', () => {

@@ -10,44 +10,44 @@ const Query = require('dbAPI/modules/queryFactory').Deck;
 const Res = require('dbAPI/modules/resFactory');
 const Validate = require('dbAPI/modules/validateFactory').Deck;
 
-function validateCreateBody(validReqBody) {
-	return new Promise((resolve, reject) => {
-		if (!validReqBody.hasOwnProperty('creator') || !mongoIdRe.test(validReqBody.creator)) {
-			reject({ message: 'invalid creator field' });
-		} else if (!validReqBody.hasOwnProperty('name') || typeof validReqBody.name !== 'string'
-			|| validReqBody.name.length === 0) {
-			reject({ message: 'invalid name field' });
-		} else if (!validReqBody.hasOwnProperty('description') || typeof validReqBody.name !== 'string'
-			|| validReqBody.name.length === 0) {
-			reject({ message: 'invalid description field' });
-		} else if (!validReqBody.hasOwnProperty('cards') || !(Array.isArray(validReqBody.cards))) {
-			reject({ message: 'invalid cards field' });
-		} else {
-			resolve();
-		}
-	})
-	.catch((reason) => { throw Error(reason.message); });
-}
+// function validateCreateBody(validReqBody) {
+// 	return new Promise((resolve, reject) => {
+// 		if (!validReqBody.hasOwnProperty('creator') || !mongoIdRe.test(validReqBody.creator)) {
+// 			reject({ message: 'invalid creator field' });
+// 		} else if (!validReqBody.hasOwnProperty('name') || typeof validReqBody.name !== 'string'
+// 			|| validReqBody.name.length === 0) {
+// 			reject({ message: 'invalid name field' });
+// 		} else if (!validReqBody.hasOwnProperty('description') || typeof validReqBody.name !== 'string'
+// 			|| validReqBody.name.length === 0) {
+// 			reject({ message: 'invalid description field' });
+// 		} else if (!validReqBody.hasOwnProperty('cards') || !(Array.isArray(validReqBody.cards))) {
+// 			reject({ message: 'invalid cards field' });
+// 		} else {
+// 			resolve();
+// 		}
+// 	})
+// 	.catch((reason) => { throw Error(reason.message); });
+// }
 
-function checkCreatorExists(validDeckBody) {
-	return new Promise((resolve, reject) => {
-		const options = {
-			port: config.app.dbAPI.port,
-			path: '/api/user/' + validDeckBody.creator
-		}
-		const callback = (response) => {
-			if (response.statusCode !== resCode['OK']) {
-				reject({ message: 'creator does not exist in db' })
-			} else {
-				resolve();
-			}
-		}
-		const request = http.request(options, callback);
-		request.on('error', (err) => reject({ message: 'Request error' }));
-		request.end();
-	})
-	.catch((reason) => { throw Error(reason.message); });
-}
+// function checkCreatorExists(validDeckBody) {
+// 	return new Promise((resolve, reject) => {
+// 		const options = {
+// 			port: config.app.dbAPI.port,
+// 			path: '/api/user/' + validDeckBody.creator
+// 		}
+// 		const callback = (response) => {
+// 			if (response.statusCode !== resCode['OK']) {
+// 				reject({ message: 'creator does not exist in db' })
+// 			} else {
+// 				resolve();
+// 			}
+// 		}
+// 		const request = http.request(options, callback);
+// 		request.on('error', (err) => reject({ message: 'Request error' }));
+// 		request.end();
+// 	})
+// 	.catch((reason) => { throw Error(reason.message); });
+// }
 
 function findAll(req, res) {
 	var content = { message: errHeader + str.funcHeader.findAll };
@@ -86,19 +86,38 @@ function findById(req, res) {
 }
 
 function create(req, res) {
-	return jsonReq.validateBody(req)
-	.then(() => validateCreateBody(req.body))
-	.then(() => checkCreatorExists(req.body))
-	.then(() => Deck.create(req.body))
+	var content = { message: errHeader + str.funcHeader.create };
+	return Validate.create(req)
+	.then((validatedData) => Query('create', validatedData).exec())
 	.then((deck) => Res('jsonRes', res, resCode['OK'], deck))
 	.catch((reason) => {
 		if (reason === undefined) {
-			var content = { message: errHeader + 'create: ' + reason.message };
+			content.message += str.errMsg.checkQuery;
 			Res('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			var content = { message: errHeader + 'create: ' + reason.message };
+			content.message += reason.message;
 			Res('jsonRes', res, resCode['BADREQ'], content);
 		}
+	});
+}
+
+function findOneAndRemove(req, res) {
+	var promise = new Promise((resolve, reject) => {
+		var options = {
+			_id: req.params._id
+		};
+		Deck.findOneAndRemove(options, (err, user) => {
+			if (err) {
+				reject('findOneAndRemove:%s', err);
+			}
+			resolve('findOneAndRemove:success:%s', user);
+		});
+	})
+	.then((resolveValue) => {
+		jsonRes.send(res, resCode['OK'], resolveValue);
+	})
+	.then(undefined, (rejectValue) => {
+		jsonRes.send(res, resCode['SERVFAIL'], rejectValue);
 	});
 }
 
@@ -123,32 +142,12 @@ function findByIdAndUpdate(req, res) {
 	.then(undefined, (rejectValue) => {
 		jsonRes.send(res, resCode['SERVFAIL'], { message: 'error:dbAPI:deckCtrl.' + rejectValue });
 	});
-};
-
-function findOneAndRemove(req, res) {
-	var promise = new Promise((resolve, reject) => {
-		var options = {
-			_id: req.params._id
-		};
-		Deck.findOneAndRemove(options, (err, user) => {
-			if (err) {
-				reject('findOneAndRemove:%s', err);
-			}
-			resolve('findOneAndRemove:success:%s', user);
-		});
-	})
-	.then((resolveValue) => {
-		jsonRes.send(res, resCode['OK'], resolveValue);
-	})
-	.then(undefined, (rejectValue) => {
-		jsonRes.send(res, resCode['SERVFAIL'], rejectValue);
-	});
-};
+}
 
 module.exports = {
 	findAll,
 	findById,
 	create,
-	findByIdAndUpdate,
-	findOneAndRemove
+	findOneAndRemove,
+	findByIdAndUpdate
 }

@@ -30,6 +30,7 @@ module.exports = {
 		return {
 			find: Deck.find(conditions),
 			findById: Deck.findById(conditions),
+			create: Deck.create(conditions),
 			findByIdAndRemove: Deck.findByIdAndRemove(conditions),
 			findByIdAndUpdate: Deck.findByIdAndUpdate(conditions._id, conditions.update, options)
 		}[type];

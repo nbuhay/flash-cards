@@ -55,8 +55,11 @@ describe('MochaRunner', () => {
 					importTest('', './dbAPI/unit/modules/validate/mongoId');
 					importTest('', './dbAPI/unit/modules/validate/req');
 					importTest('', './dbAPI/unit/modules/validate/stringArray');
+					importTest('', './dbAPI/unit/modules/validate/instanceof');
+					importTest('', './dbAPI/unit/modules/validate/typeof');
 					importTest('', './dbAPI/unit/modules/validate/deckCard');
 					importTest('', './dbAPI/unit/modules/validate/userCard');
+					importTest('', './dbAPI/unit/modules/validate/deck');
 				});
 			});
 

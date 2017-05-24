@@ -171,7 +171,44 @@ describe('deckCtrl.js', () => {
 
 		beforeEach(() => errorHeader.message += str.funcHeader.create);
 
-		it('should send a 400 when header content-type is undefined', () => {
+		it('#create exists', () => assert.isFunction(deckCtrl.create));
+
+		it('call Validate.create and pass the req', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'create').rejects();
+
+			return deckCtrl.create(reqDummy, resDummy)
+				.catch(() => expect(validateStub.calledWithExactly(reqDummy)).to.be.true);
+		});
+
+		it('send 400 if Validate.create rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			sandbox.stub(Validate, 'create').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return deckCtrl.create(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
+				});
+		});
+
+		it('call Deck.create and pass validated req data', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validatedData = { validatedData: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const deckStub = sandbox.stub(Deck, 'create').rejects();
+
+			return deckCtrl.create(reqDummy, resDummy)
+				.catch(() => assert(deckStub.calledWithExactly(validatedData)));
+		});
+
+		// 400 vreq
+		it.skip('should send a 400 when header content-type is undefined', () => {
 			const reqStub = {
 				headers: {}
 			};
@@ -186,7 +223,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when header content-type is undefined', () => {
+		// 400 vreq
+		it.skip('should send a 400 when header content-type is undefined', () => {
 			const reqStub = {
 				headers: {}
 			};
@@ -201,7 +239,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when header content-type is not application/json', () => {
+		// 400 vreq
+		it.skip('should send a 400 when header content-type is not application/json', () => {
 			const reqStub = {
 				headers: {
 					'content-type': 'text'
@@ -218,7 +257,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when no creator included in body', () => {
+		// 400 vreq
+		it.skip('should send a 400 when no creator included in body', () => {
 			const invalidBody = {};
 			const reqStub = {
 				headers: {
@@ -237,7 +277,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when the given creator is not a valid MongoId', () => {
+		// 400 vMongoId
+		it.skip('should send a 400 when the given creator is not a valid MongoId', () => {
 			const invalidMongoId = 'a'.repeat(23);
 			const invalidBody = {
 				creator: invalidMongoId,
@@ -261,7 +302,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 	
-		it('should send a 400 when no name included in body', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when no name included in body', () => {
 			const validMongoId = 'a'.repeat(24);
 			const invalidBody = {
 				creator: validMongoId
@@ -283,7 +325,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when body.name is not a string', () => {
+		// 400 reject typeOf
+		it.skip('should send a 400 when body.name is not a string', () => {
 			const validMongoId = 'a'.repeat(24);
 			const invalidName = 4;
 			const invalidBody = {
@@ -307,7 +350,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when body.name is an empty string', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when body.name is an empty string', () => {
 			const validMongoId = 'a'.repeat(24);
 			const invalidName = '';
 			const invalidBody = {
@@ -331,7 +375,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when no description included in body', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when no description included in body', () => {
 			const validMongoId = 'a'.repeat(24);
 			const validName = 'Test';
 			const invalidBody = {
@@ -355,7 +400,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when body.description is not a string', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when body.description is not a string', () => {
 			const validMongoId = 'a'.repeat(24);
 			const validName = 'Test';
 			const invalidDescription = 4;
@@ -381,7 +427,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when body.description is the empty string', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when body.description is the empty string', () => {
 			const validMongoId = 'a'.repeat(24);
 			const validName = 'Test';
 			const invalidDescription = '';
@@ -407,7 +454,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when no cards included in body', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when no cards included in body', () => {
 			const validMongoId = 'a'.repeat(24);
 			const validName = 'Test';
 			const validDescription = 'Description';
@@ -433,7 +481,8 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
-		it('should send a 400 when body.cards is not an array', () => {
+		// 400 reject Validate.create
+		it.skip('should send a 400 when body.cards is not an array', () => {
 			const validMongoId = 'a'.repeat(24);
 			const validName = 'Test';
 			const validDescription = 'Description';
@@ -461,6 +510,7 @@ describe('deckCtrl.js', () => {
 				});
 		});
 
+		// 400 reject Validate.create
 		it.skip('should send a 400 when body.creator does not exist in the db', () => {
 			const idDoesNotExistInDb = validMongoId;
 			const validName = 'Test';
@@ -541,7 +591,6 @@ describe('deckCtrl.js', () => {
 		// then write these unit tests to ensure it calls the validate functions
 
 	});
-	// describe('#create');
 	// describe('#findById');
 	// describe('#findByIdAndUpdate');
 	// describe('#findByIdAndRemove');

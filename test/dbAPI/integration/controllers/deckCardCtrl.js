@@ -3,7 +3,6 @@ const assert = require('chai').assert;
 const http = require('http');
 const resCode = require('config').resCode();
 const config = require('config').config();
-const jsonRes = require('dbAPI/modules/jsonResponse');
 const DeckCard = require('dbAPI/models/deckCard');
 const deckCardCtrl = require('dbAPI/controllers/deckCardCtrl');
 const mockDeckCards = require('config').mockDeckCards();
