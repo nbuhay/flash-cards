@@ -10,45 +10,6 @@ const Query = require('dbAPI/modules/queryFactory').Deck;
 const Res = require('dbAPI/modules/resFactory');
 const Validate = require('dbAPI/modules/validateFactory').Deck;
 
-// function validateCreateBody(validReqBody) {
-// 	return new Promise((resolve, reject) => {
-// 		if (!validReqBody.hasOwnProperty('creator') || !mongoIdRe.test(validReqBody.creator)) {
-// 			reject({ message: 'invalid creator field' });
-// 		} else if (!validReqBody.hasOwnProperty('name') || typeof validReqBody.name !== 'string'
-// 			|| validReqBody.name.length === 0) {
-// 			reject({ message: 'invalid name field' });
-// 		} else if (!validReqBody.hasOwnProperty('description') || typeof validReqBody.name !== 'string'
-// 			|| validReqBody.name.length === 0) {
-// 			reject({ message: 'invalid description field' });
-// 		} else if (!validReqBody.hasOwnProperty('cards') || !(Array.isArray(validReqBody.cards))) {
-// 			reject({ message: 'invalid cards field' });
-// 		} else {
-// 			resolve();
-// 		}
-// 	})
-// 	.catch((reason) => { throw Error(reason.message); });
-// }
-
-// function checkCreatorExists(validDeckBody) {
-// 	return new Promise((resolve, reject) => {
-// 		const options = {
-// 			port: config.app.dbAPI.port,
-// 			path: '/api/user/' + validDeckBody.creator
-// 		}
-// 		const callback = (response) => {
-// 			if (response.statusCode !== resCode['OK']) {
-// 				reject({ message: 'creator does not exist in db' })
-// 			} else {
-// 				resolve();
-// 			}
-// 		}
-// 		const request = http.request(options, callback);
-// 		request.on('error', (err) => reject({ message: 'Request error' }));
-// 		request.end();
-// 	})
-// 	.catch((reason) => { throw Error(reason.message); });
-// }
-
 function findAll(req, res) {
 	var content = { message: errHeader + str.funcHeader.findAll };
 	const conditions = {};

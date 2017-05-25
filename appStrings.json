@@ -136,7 +136,9 @@
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
-					"invalidDeck": "invalid Deck"
+					"invalidDeck": "invalid Deck",
+					"userDNE": "User does not exist",
+					"apiServfail": "flashCard API call failed"
 				}
 			}
 		}

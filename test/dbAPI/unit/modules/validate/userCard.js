@@ -93,7 +93,7 @@ describe('userCard.js', () => {
 		});
 
 		// not a great test, not really checking error message is what I say it is...
-		it.skip('reject if HEAD /api/deckCard/:_id res statusCode is not 404 or 200', () => {
+		it('reject if HEAD /api/deckCard/:_id res statusCode is not 404 or 200', () => {
 			const reqStub = { body: { deckCard: validMongoId } };
 			const resDummy = { res: {} };
 			sandbox.stub(vReq, 'validate').resolves();
