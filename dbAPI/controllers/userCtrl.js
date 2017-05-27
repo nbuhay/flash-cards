@@ -264,7 +264,7 @@ function create(req, res) {
 			})
 			.catch((reason) => { throw Error(reason.message); });
 		})
-		.then(() => UserQuery('create', req.body).exec())
+		.then(() => UserQuery('create', req.body)().exec())
 		.then(() => {
 			var content = 'user creation successful';
 			ResFactory('jsonRes', res, resCode['OK'], content);

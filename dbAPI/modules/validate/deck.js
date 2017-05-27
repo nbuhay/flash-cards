@@ -16,7 +16,6 @@ const validators = (value) => {
 			cards: () => vInstanceof.validate(value, Array)
 		},
 		optional: {
-			learning: () => vTypeof.validate(value, 'number'),
 			tags: () => vStringArray.validate(value)
 		}
 	}

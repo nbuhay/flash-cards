@@ -14,7 +14,7 @@ module.exports = {
 			findByIdAndRemove: User.findByIdAndRemove(conditions),
 			findByIdAndUpdate: User.findByIdAndUpdate(conditions._id, conditions.update, options),
 			findOne: User.findOne(conditions.conditions, conditions.projection, options),
-			create: User.create(conditions)
+			create: () => User.create(conditions)
 		}[type];
 	},
 	UserCard: (type, conditions, options) => {
