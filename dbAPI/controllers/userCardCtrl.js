@@ -49,7 +49,7 @@ function findById(req, res) {
 function create(req, res) {
 	var content = { message: errHeader + str.funcHeader.create };
 	return Validate.create(req)
-	.then((validatedData) => Query('create', validatedData).exec())
+	.then((validatedData) => Query('create', validatedData)().exec())
 	.then((newUserCard) => Res('jsonRes', res, resCode['OK'], newUserCard))
 	.catch((reason) => {
 		if (reason === undefined) {

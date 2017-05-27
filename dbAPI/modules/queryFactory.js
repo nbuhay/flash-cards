@@ -21,7 +21,7 @@ module.exports = {
 		return {
 			findAll: UserCard.find(conditions),
 			findById: UserCard.findById(conditions),
-			create: UserCard.create(conditions),
+			create: () => UserCard.create(conditions),
 			findByIdAndRemove: UserCard.findByIdAndRemove(conditions),
 			findByIdAndUpdate: UserCard.findByIdAndUpdate(conditions._id, conditions.updateData, options)
 		}[type];
@@ -30,7 +30,7 @@ module.exports = {
 		return {
 			find: Deck.find(conditions),
 			findById: Deck.findById(conditions),
-			create: Deck.create(conditions),
+			create: () => Deck.create(conditions),
 			findByIdAndRemove: Deck.findByIdAndRemove(conditions),
 			findByIdAndUpdate: Deck.findByIdAndUpdate(conditions._id, conditions.update, options)
 		}[type];
@@ -41,7 +41,7 @@ module.exports = {
 			findById: DeckCard.findById(conditions),
 			findByIdAndRemove: DeckCard.findByIdAndRemove(conditions),
 			findByIdAndUpdate: DeckCard.findByIdAndUpdate(conditions._id, conditions.update, options),
-			create: DeckCard.create(conditions)
+			create: () => DeckCard.create(conditions)
 		}[type];
 	}
 };
