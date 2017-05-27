@@ -166,7 +166,7 @@ describe('userCard.js', () => {
 			sandbox.stub(vReq, 'validate').resolves();
 			sandbox.stub(vMongoId, 'validate').resolves();
 
-			return userCard.findByIdAndUpdate(reqStub).should.be.rejectedWith(errMsg.invaldUpdate);
+			return userCard.findByIdAndUpdate(reqStub).should.be.rejectedWith(errMsg.invalidUpdate);
 		});
 
 		it('cleanse undesired keys from req body', () => {
@@ -184,9 +184,12 @@ describe('userCard.js', () => {
 			};
 			sandbox.stub(vReq, 'validate').resolves();
 			sandbox.stub(vMongoId, 'validate').resolves();
+			sandbox.stub(vTypeof, 'validate').resolves();
+			sandbox.stub(vInstanceof, 'validate').resolves();
 
 			return userCard.findByIdAndUpdate(reqStub)
-				.then(() => {
+				.then((data) => {
+					debugger;
 					(reqStub.body.hasOwnProperty('gotCorrect')).should.be.true;
 					(reqStub.body.hasOwnProperty('lastSeen')).should.be.true;
 					(reqStub.body.hasOwnProperty('lastCorrect')).should.be.true;

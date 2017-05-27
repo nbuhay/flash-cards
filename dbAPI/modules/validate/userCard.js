@@ -55,36 +55,29 @@ function findByIdAndRemove(req) {
 function findByIdAndUpdate(req) {
 	const validators = (value) => {
 		return {
-			gotCorrect: vTypeof.validate(value, 'boolean'),
-			lastSeen: vInstanceof.validate(value, Date),
-			lastCorrect: vInstanceof.validate(value, Date),
-			correctStreak: vTypeof.validate(value, 'number'),
-			incorrectStreak: vTypeof.validate(value, 'number'),
-			totalViews: vTypeof.validate(value, 'number')
+			gotCorrect: () => vTypeof.validate(value, 'boolean'),
+			lastSeen: () => vInstanceof.validate(value, Date),
+			lastCorrect: () => vInstanceof.validate(value, Date),
+			correctStreak: () => vTypeof.validate(value, 'number'),
+			incorrectStreak: () => vTypeof.validate(value, 'number'),
+			totalViews: () => vTypeof.validate(value, 'number')
 		}
 	};
 	return vReq.validate(req)
 	.then(() => vMongoId.validate(req.params._id))
 	.then(() => {
 		return new Promise((resolve, reject) => {
-			(!req.body.hasOwnProperty('gotCorrect') &&
-			 !req.body.hasOwnProperty('lastSeen') &&
-			 !req.body.hasOwnProperty('lastCorrect') &&
-			 !req.body.hasOwnProperty('correctStreak') &&
-			 !req.body.hasOwnProperty('incorrectStreak') &&
-			 !req.body.hasOwnProperty('totalViews')) ?
-				reject({ message: errMsg.invalidUpdate }) : resolve();
+			for (key in validators()) {
+				if (!req.body.hasOwnProperty(key)) reject({ message: errMsg.invalidUpdate });
+			}
+			for (key in req.body) {
+				if (!validators().hasOwnProperty(key)) delete req.body[key];
+			}
+			resolve();
 		})
-		.catch((reason) => { throw Error(reason.message)});
 	})
 	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
-		return new Promise((resolve, reject) => {
-			if (!validators()[elem]) delete req.body[elem];
-			resolve();
-		});
-	})))
-	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
-		validators(req.body[elem])[elem];
+		return validators(req.body[elem])[elem]();
 	})))
 	.then(() => { return req.body })
 	.catch((reason) => { throw Error(reason.message); });

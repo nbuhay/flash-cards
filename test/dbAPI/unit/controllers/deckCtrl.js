@@ -58,7 +58,6 @@ describe('deckCtrl.js', () => {
 
 			return deckCtrl.findAll(reqDummy, resDummy)
 				.then(() => {
-					debugger;
 					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
 				})
 		});

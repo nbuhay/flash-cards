@@ -191,7 +191,6 @@ describe('deck.js', () => {
 			
 			return deck.create(reqStub)
 				.then(() => {
-					assert(vTypeofStub.calledWith(reqStub.body.learning, 'number'));4
 					assert(vStringArrayStub.calledWithExactly(reqStub.body.tags));
 				});
 		});

@@ -86,7 +86,7 @@ function findByIdAndUpdate(req, res) {
 	.then((validatedData) => {
 		const conditions = { _id: req.params._id, update: validatedData };
 		const options = { new: true };
-		return Query('findByIdAndUpdate', conditions, options).exec();
+		return Query('findByIdAndUpdate', conditions, options).exec()
 	})
 	.then((updatedDeckCard) => {
 		if (updatedDeckCard === null) {

@@ -10,14 +10,14 @@ const vStringArray = require('dbAPI/modules/validate/stringArray');
 const validators = (value) => {
 	return {
 		required: {
-			creator: vMongoId.validate(value),
-			name: vTypeof.validate(value, 'string'),
-			description: vTypeof.validate(value, 'string'),
-			cards: vInstanceof.validate(value, Array)
+			creator: () => vMongoId.validate(value),
+			name: () => vTypeof.validate(value, 'string'),
+			description: () => vTypeof.validate(value, 'string'),
+			cards: () => vInstanceof.validate(value, Array)
 		},
 		optional: {
-			learning: vTypeof.validate(value, 'number'),
-			tags: vStringArray.validate(value)
+			learning: () => vTypeof.validate(value, 'number'),
+			tags: () => vStringArray.validate(value)
 		}
 	}
 };
@@ -65,11 +65,11 @@ function create(req) {
 			resolve();
 		});
 	})))
-	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
-		validators(req.body[elem]).required[elem];
+	.then(() => Promise.all(Object.keys(validators().required).map((elem) => {
+		validators(req.body[elem]).required[elem]();
 	})))
-	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
-		validators(req.body[elem]).optional[elem];
+	.then(() => Promise.all(Object.keys(validators().optional).map((elem) => {
+		if (req.body.hasOwnProperty(elem)) validators(req.body[elem]).optional[elem]();
 	})))
 	.then(() => { return req.body })
 	.catch((reason) => { throw Error(reason.message) });
