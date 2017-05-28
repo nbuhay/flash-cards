@@ -9,4 +9,6 @@ describe('instanceof.js', () => {
 	it('resolves new Date instanceof Object', () => 
 		vInstanceof.validate(new Date(), Object).should.be.fulfilled);
 
+	it('rejects with msg');
+
 });

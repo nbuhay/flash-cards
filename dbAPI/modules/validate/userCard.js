@@ -77,7 +77,7 @@ function findByIdAndUpdate(req) {
 		})
 	})
 	.then(() => Promise.all(Object.keys(req.body).map((elem) => {
-		return validators(req.body[elem])[elem]();
+		validators(req.body[elem])[elem]();
 	})))
 	.then(() => { return req.body })
 	.catch((reason) => { throw Error(reason.message); });

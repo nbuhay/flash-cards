@@ -70,6 +70,30 @@ function create(req) {
 	.then(() => Promise.all(Object.keys(validators().optional).map((elem) => {
 		if (req.body.hasOwnProperty(elem)) validators(req.body[elem]).optional[elem]();
 	})))
+	.then(() => Promise.all(req.body.cards.map((card) => {
+		return new Promise((resolve, reject) => {
+			var options = {
+				port: config.app.dbAPI.port,
+				path: '/api/deckCard',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Content-Length': Buffer.byteLength(JSON.stringify(card))
+				}		
+			};
+			var request = http.request(options, (res) => {
+				if (res.statusCode === resCode['OK']) {
+					resolve();
+				} else {
+					reject({ message: errMsg.apiServfail });
+				}
+			});
+			request.on('error', (err) => reject({ message: err }));
+			request.write(card);
+			request.end();
+		})
+		.catch((reason) => { throw Error(reason.message); });
+	})))
 	.then(() => { return req.body })
 	.catch((reason) => { throw Error(reason.message) });
 }

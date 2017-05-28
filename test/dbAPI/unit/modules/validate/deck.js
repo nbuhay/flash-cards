@@ -195,6 +195,71 @@ describe('deck.js', () => {
 				});
 		});
 
+		it('POST /api/deckCard with all req body cards', () => {
+			const reqStub = { 
+				body: {
+			 		creator: validMongoId,
+			 		name: 'name',
+			 		description: 'description',
+			 		cards: ['cards']
+				}
+			}; 
+			sandbox.stub(vReq, 'validate').resolves();
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const httpRequestStub = sandbox.stub(http, 'request');
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+			sandbox.stub(vMongoId, 'validate').resolves();
+			sandbox.stub(vInstanceof, 'validate').resolves();
+			sandbox.stub(vTypeof, 'validate').resolves();
+			sandbox.stub(vStringArray, 'validate').resolves();
+			const expectedPostResult = { statusCode: resCode['OK'] };
+			const options = {
+				port: config.app.dbAPI.port,
+				path: '/api/deckCard',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Content-Length': Buffer.byteLength(JSON.stringify(reqStub.body.cards[0]))
+				}
+			};
+			httpRequestStub.withArgs(options).callsArgWith(1, expectedPostResult);
+
+			return deck.create(reqStub)
+				.then(() => httpRequestStub.calledWith(options).should.be.true);
+		});
+
+		it('reject if POST /api/deckCard res statusCode is not 200 ', () => {
+			const reqStub = { 
+				body: {
+			 		creator: validMongoId,
+			 		name: 'name',
+			 		description: 'description',
+			 		cards: ['cards']
+				}
+			}; 
+			sandbox.stub(vReq, 'validate').resolves();
+			const expectedReqResult = { statusCode: resCode['OK'] };
+			const httpRequestStub = sandbox.stub(http, 'request');
+			httpRequestStub.callsArgWith(1, expectedReqResult);
+			sandbox.stub(vMongoId, 'validate').resolves();
+			sandbox.stub(vInstanceof, 'validate').resolves();
+			sandbox.stub(vTypeof, 'validate').resolves();
+			sandbox.stub(vStringArray, 'validate').resolves();
+			const expectedPostResult = { statusCode: resCode['NOTFOUND'] };
+			const options = {
+				port: config.app.dbAPI.port,
+				path: '/api/deckCard',
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Content-Length': Buffer.byteLength(JSON.stringify(reqStub.body.cards[0]))
+				}
+			};
+			httpRequestStub.withArgs(options).callsArgWith(1, expectedPostResult);
+
+			return deck.create(reqStub).should.be.rejectedWith(errMsg.apiServfail);
+		});
+
 		it('resolve validated data', () => {
 			const reqStub = { 
 				body: {

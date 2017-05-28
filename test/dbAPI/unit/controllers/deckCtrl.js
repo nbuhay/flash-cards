@@ -194,12 +194,22 @@ describe('deckCtrl.js', () => {
 					assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader));
 				});
 		});
+		
+		it('send 500 if Validate.create rejects with apiServfail', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: str.errMsg.apiServfail };
+			sandbox.stub(Validate, 'create').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
 
-		it('POST /api/deckCard with req body cards');
+			return deckCtrl.create(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
+				});
+		});
 
-		it('rejects if POST /api/deckCard with req body cards rejects');
-
-		it('call Deck.create and pass validated req data', () => {
+		it('call Deck.create and pass returned data from Validate.create', () => {
 			const reqDummy = { req: {} };
 			const resDummy = { res: {} };
 			const validatedData = { validatedData: {} };
@@ -210,22 +220,39 @@ describe('deckCtrl.js', () => {
 				.catch(() => assert(deckStub.calledWithExactly(validatedData)));
 		});
 
-		//   NEED http.request options to include hostname
-		//     Default has been going to localhost
-		// for all elements in the card array, call deckCardCreate
-		//   check every element in deck.cards array is a deckCard (question and answer)
-		//   if reject, fail
+		it('send 500 if Deck.create rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validatedData = { validatedData: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const queryErrorSendsUndefinedReason = undefined;
+			const execStub = sandbox.stub().rejects(queryErrorSendsUndefinedReason);
+			sandbox.stub(Deck, 'create').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
 
-		// need unit tests for validate functions first
-			// cards
-			// description
-			// creator
-			// name
-		// then write these unit tests to ensure it calls the validate functions
+			return deckCtrl.create(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader));
+			});
+		});
+
+		it('send 200 and new Deck if Deck.create resolves', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validatedData = { validatedData: {} };
+			sandbox.stub(Validate, 'create').resolves(validatedData);
+			const deckStub = { deck: {} };
+			const execStub = sandbox.stub().resolves(deckStub);
+			sandbox.stub(Deck, 'create').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCtrl.create(reqDummy, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], deckStub));
+			});
+		});
 
 	});
-	// describe('#findById');
-	// describe('#findByIdAndUpdate');
-	// describe('#findByIdAndRemove');
 
 });

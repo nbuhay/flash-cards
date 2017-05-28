@@ -9,4 +9,6 @@ describe('typeof.js', () => {
 	it('resolves  42 typeof number', () => 
 		vTypeof.validate(42, 'number').should.be.fulfilled);
 
+	it('rejects with msg');
+
 });

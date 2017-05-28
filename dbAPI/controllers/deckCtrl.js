@@ -56,8 +56,13 @@ function create(req, res) {
 			content.message += str.errMsg.checkQuery;
 			Res('jsonRes', res, resCode['SERVFAIL'], content);
 		} else {
-			content.message += reason.message;
-			Res('jsonRes', res, resCode['BADREQ'], content);
+			if (reason.message === str.errMsg.apiServfail) {
+				content.message += str.errMsg.apiServfail;
+				Res('jsonRes', res, resCode['SERVFAIL'], content);
+			} else {
+				content.message += reason.message;
+				Res('jsonRes', res, resCode['BADREQ'], content);
+			}
 		}
 	});
 }
