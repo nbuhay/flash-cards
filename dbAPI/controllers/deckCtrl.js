@@ -67,53 +67,37 @@ function create(req, res) {
 	});
 }
 
-function findOneAndRemove(req, res) {
-	var promise = new Promise((resolve, reject) => {
-		var options = {
-			_id: req.params._id
-		};
-		Deck.findOneAndRemove(options, (err, user) => {
-			if (err) {
-				reject('findOneAndRemove:%s', err);
-			}
-			resolve('findOneAndRemove:success:%s', user);
-		});
+function findByIdAndRemove(req, res) {
+	var content = { message: errHeader + str.funcHeader.findByIdAndRemove };
+	return Validate.findByIdAndRemove(req)
+	.then(() => Query('findByIdAndRemove', req.params._id).exec())
+	.then((removedDeck) => {
+		if (removedDeck === null) {
+			content.message += str.errMsg.doesNotExist;
+			Res('jsonRes', res, resCode['NOTFOUND'], content);
+		} else {
+			Res('jsonRes', res, resCode['OK'], removedDeck);
+		}
 	})
-	.then((resolveValue) => {
-		jsonRes.send(res, resCode['OK'], resolveValue);
-	})
-	.then(undefined, (rejectValue) => {
-		jsonRes.send(res, resCode['SERVFAIL'], rejectValue);
+	.catch((reason) => {
+		if (reason === undefined) {
+			content.message += str.errMsg.checkQuery;
+			Res('jsonRes', res, resCode['SERVFAIL'], content);
+		} else {
+			content.message += reason.message;
+			Res('jsonRes', res, resCode['BADREQ'], content);
+		}
 	});
 }
 
-function findByIdAndUpdate(req, res) {
-	// options params.req._id
-	// findByIdAndUpdate, passing options and req body
-	// see what it returns, promise probability
-	var promise = new Promise((resolve, reject) => {
-		var options = {
-			new: true
-		};
-		var updatedDeck = req.body;
-		delete updatedDeck._id;
-		Deck.findByIdAndUpdate(req.params._id, updatedDeck, options, (err, deck) => {
-			if (err) reject('findByIdAndUpdate:' + err);
-			resolve(deck);
-		});
-	})
-	.then((resolveValue) => {
-		jsonRes.send(res, resCode['OK'], resolveValue);
-	})
-	.then(undefined, (rejectValue) => {
-		jsonRes.send(res, resCode['SERVFAIL'], { message: 'error:dbAPI:deckCtrl.' + rejectValue });
-	});
+function findByIdAndUpdate() {
+	return true;
 }
 
 module.exports = {
 	findAll,
 	findById,
 	create,
-	findOneAndRemove,
+	findByIdAndRemove,
 	findByIdAndUpdate
 }

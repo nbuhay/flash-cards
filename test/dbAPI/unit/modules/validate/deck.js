@@ -283,4 +283,16 @@ describe('deck.js', () => {
 
 	});
 
+	describe('#findByIdAndRemove', () => {
+
+		it('call mongoId.validate and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } }; 
+			const vMongoIdStub = sandbox.stub(vMongoId, 'validate').resolves();
+			
+			return deck.findByIdAndRemove(reqStub)
+				.then(() => assert(vMongoIdStub.calledWithExactly(validMongoId)));
+		});
+
+	});
+
 });

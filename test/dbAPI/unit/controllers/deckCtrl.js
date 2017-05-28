@@ -255,4 +255,88 @@ describe('deckCtrl.js', () => {
 
 	});
 
+
+	describe('#findByIdAndRemove', () => {
+
+		beforeEach(() => errorHeader.message += str.funcHeader.findByIdAndRemove);
+
+		it('#findByIdAndRemove exists', () => assert.isFunction(deckCtrl.findByIdAndRemove));
+
+		it('call Validate.findByIdAndRemove and pass req', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const validateStub = sandbox.stub(Validate, 'findByIdAndRemove').rejects();
+
+			return deckCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.catch(() => assert(validateStub.calledWithExactly(reqDummy)));
+		});
+
+		it('send 400 if Validate.findByIdAndRemove rejects', () => {
+			const reqDummy = { req: {} };
+			const resDummy = { res: {} };
+			const content = { message: 'invalid' };
+			sandbox.stub(Validate, 'findByIdAndRemove').rejects(content);
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += content.message;
+
+			return deckCtrl.findByIdAndRemove(reqDummy, resDummy)
+				.then(() => assert(jsonResStub.calledWithExactly(resDummy, resCode['BADREQ'], errorHeader)));
+		});
+
+		it('call Deck.findByIdAndRemove and pass req params _id', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const deckStub = sandbox.stub(Deck, 'findByIdAndRemove').rejects();
+
+			return deckCtrl.findByIdAndRemove(reqStub, resDummy)
+				.catch(() => assert(deckStub.calledWithExactly(reqStub.params._id)));
+		});
+
+		it('send 500 if Deck.findByIdAndRemove rejects', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const execStub = sandbox.stub().rejects(undefined);
+			const deckStub = sandbox.stub(Deck, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.checkQuery;
+
+			return deckCtrl.findByIdAndRemove(reqStub, resDummy).then(() => 
+				assert(jsonResStub.calledWithExactly(resDummy, resCode['SERVFAIL'], errorHeader)));		
+		});
+
+		it('send 404 if _id DNE in Deck collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const returnedDeckStub = null;
+			const execStub = sandbox.stub().resolves(returnedDeckStub);
+			sandbox.stub(Deck, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+			errorHeader.message += str.errMsg.doesNotExist;
+
+			return deckCtrl.findByIdAndRemove(reqStub, resDummy)
+				.then(() => {
+					assert(jsonResStub.calledWithExactly(resDummy, resCode['NOTFOUND'], errorHeader));
+				});
+		});
+
+		it('send 200 and removed Deck if _id is removed from the collection', () => {
+			const reqStub = { params: { _id: validMongoId } };
+			const resDummy = { res: {} };
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
+			const removedDeckStub = { deck: {} };
+			const execStub = sandbox.stub().resolves(removedDeckStub);
+			sandbox.stub(Deck, 'findByIdAndRemove').returns({ exec: execStub });
+			const jsonResStub = sandbox.stub(jsonRes, 'send');
+
+			return deckCtrl.findByIdAndRemove(reqStub, resDummy)
+				.then(() => {
+						assert(jsonResStub.calledWithExactly(resDummy, resCode['OK'], removedDeckStub));
+				});
+		});
+
+	});
+
 });

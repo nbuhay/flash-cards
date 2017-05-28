@@ -131,12 +131,12 @@
 					"findById": "findById: ",
 					"create": "create: ",
 					"findByIdAndRemove": "findByIdAndRemove: ",
-					"findByIdAndUpdate": "findByIdAndUpdate: ",
-					"validateFindByIdAndUpdate": "validateFindByIdAndUpdate: "
+					"findByIdAndUpdate": "findByIdAndUpdate: "
 				},
 				"errMsg": {
 					"checkQuery": "undefined reason, check query",
 					"invalidDeck": "invalid Deck",
+					"doesNotExist": "Deck does not exist",
 					"userDNE": "User does not exist",
 					"apiServfail": "flashCard API call failed"
 				}

@@ -323,7 +323,7 @@ describe('userCardCtrl.js', () => {
 		it('send 404 if _id DNE in UserCard collection', () => {
 			const reqStub = { params: { _id: validMongoId } };
 			const resDummy = { res: {} };
-			sandbox.stub(Validate, 'findByIdAndRemove').resolves(reqStub.body);
+			sandbox.stub(Validate, 'findByIdAndRemove').resolves();
 			const returnedUserCardStub = null;
 			const execStub = sandbox.stub().resolves(returnedUserCardStub);
 			sandbox.stub(UserCard, 'findByIdAndRemove').returns({ exec: execStub });
